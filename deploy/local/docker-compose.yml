@@ -1,0 +1,68 @@
+services:
+  langflow:
+    image: langflowai/langflow:latest
+    container_name: custom-rag-LangFlow
+    ports:
+      - "7860:7860"
+    depends_on:
+      - postgres
+    volumes:
+      - custom-rag-langflow-data:/app/langflow
+      - ../../custom_components/langflow/:/app/custom_components/
+    env_file: "config/.env.langflow"
+
+  postgres:
+    image: postgres:16
+    container_name: custom-rag-PostgreSQL
+    ports:
+      - "5432:5432"
+    volumes:
+      - custom-rag-postgres-data:/var/lib/postgresql/data
+    env_file: "config/.env.psql"
+  
+  librechat:
+    image: ghcr.io/danny-avila/librechat:latest
+    container_name: custom-rag-LibreChat
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "3080:3080"
+    env_file: "config/.env.librechat"
+    volumes:
+      - custom-rag-librechat-images:/app/client/public/images
+      - custom-rag-librechat-logs:/app/api/logs
+      - type: bind
+        source: ./config/librechat.yaml
+        target: /app/librechat.yaml
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongo
+    container_name: custom-rag-MongoDB
+    volumes:
+      - custom-rag-mongodb-data:/data/db
+    command: mongod --noauth
+    ports:
+      - "27017:27017"
+
+  litellm:
+    image: ghcr.io/berriai/litellm:main-stable
+    ports: 
+      - "4000:4000"
+    env_file: "config/.env.litellm"
+    depends_on:
+      - postgres
+    volumes:
+      - ../../custom_components/litellm/:/app/langflowEP
+      - type: bind
+        source: ./config/litellm.yaml
+        target: /app/litellm.yaml
+    command: "--config /app/litellm.yaml"
+
+volumes:
+  custom-rag-langflow-data:
+  custom-rag-postgres-data:
+  custom-rag-librechat-images:
+  custom-rag-librechat-logs:
+  custom-rag-mongodb-data:
