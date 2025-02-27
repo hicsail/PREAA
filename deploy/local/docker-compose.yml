@@ -19,6 +19,11 @@ services:
     volumes:
       - custom-rag-postgres-data:/var/lib/postgresql/data
     env_file: "config/.env.psql"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "--host=localhost", "--username psql"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
   
   librechat:
     image: ghcr.io/danny-avila/librechat:latest
@@ -62,7 +67,6 @@ services:
 
   langfuse-worker:
     image: langfuse/langfuse-worker:3
-    restart: always
     depends_on: &langfuse-depends-on
       postgres:
         condition: service_healthy
@@ -78,7 +82,6 @@ services:
 
   langfuse-web:
     image: langfuse/langfuse:3
-    restart: always
     depends_on: *langfuse-depends-on
     ports:
       - "3000:3000"
@@ -86,7 +89,6 @@ services:
 
   clickhouse:
     image: clickhouse/clickhouse-server
-    restart: always
     user: "101:101"
     env_file: "config/.env.clickhouse"
     volumes:
@@ -144,6 +146,5 @@ volumes:
   custom-rag-librechat-logs:
   custom-rag-mongodb-data:
   custom-rag-langfuse-clickhouse-data:
-  custom-rag-langfuse-clickhouse-logs:
   custom-rag-langfuse-clickhouse-logs:
   custom-rag-langfuse-minio-data:
