@@ -90,8 +90,8 @@ services:
     user: "101:101"
     env_file: "config/.env.clickhouse"
     volumes:
-      - langfuse_clickhouse_data:/var/lib/clickhouse
-      - langfuse_clickhouse_logs:/var/log/clickhouse-server
+      - custom-rag-langfuse-clickhouse-data:/var/lib/clickhouse
+      - custom-rag-langfuse-clickhouse-logs:/var/log/clickhouse-server
     ports:
       - "8123:8123"
       - "9000:9000"
@@ -113,7 +113,7 @@ services:
       - "9090:9000"
       - "9091:9001"
     volumes:
-      - langfuse_minio_data:/data
+      - custom-rag-langfuse-minio-data:/data
     healthcheck:
       test: ["CMD", "mc", "ready", "local"]
       interval: 1s
@@ -137,26 +137,13 @@ services:
       retries: 10
     env_file: "config/.env.redis"
 
-  postgres:
-    image: postgres:${POSTGRES_VERSION:-latest}
-    restart: always
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 3s
-      timeout: 3s
-      retries: 10
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: postgres
-    ports:
-      - 5432:5432
-    volumes:
-      - langfuse_postgres_data:/var/lib/postgresql/data
-
 volumes:
   custom-rag-langflow-data:
   custom-rag-postgres-data:
   custom-rag-librechat-images:
   custom-rag-librechat-logs:
   custom-rag-mongodb-data:
+  custom-rag-langfuse-clickhouse-data:
+  custom-rag-langfuse-clickhouse-logs:
+  custom-rag-langfuse-clickhouse-logs:
+  custom-rag-langfuse-minio-data:
