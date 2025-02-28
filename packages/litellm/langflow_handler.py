@@ -4,6 +4,7 @@ import json
 import httpx  # type: ignore
 
 import litellm.litellm_core_utils
+from litellm.proxy.utils import PrismaClient
 import litellm.types
 import litellm.types.utils
 from litellm.types.utils import Message, ModelResponse
@@ -14,6 +15,8 @@ from litellm.llms.custom_httpx.http_handler import (
     AsyncHTTPHandler,
     HTTPHandler
 )
+from litellm.proxy.proxy_server import prisma_client
+
 
 EMPTY_CHUNK = GenericStreamingChunk(
     text='',
@@ -152,12 +155,17 @@ class LangflowChunkParser:
 
 
 class Langflow(CustomLLM):
+    def __init__(self, prisma_client: Optional[PrismaClient]):
+        self.prisma_client = prisma_client
+
+        verbose_logger.warning(prisma_client)
+
     def _get_langflow_url(self, model: str) -> str:
         """ 
         Helper to get the LangFlow URL based on the model specified. Currently not implemented so 
         returns a constant
         """
-        return 'http://langflow:7860/api/v1/run/f4d70007-3805-46b5-b595-d6b5d90ec168'
+        return 'http://langflow:7860/api/v1/run/8e785198-f630-4d9f-94fa-26c8e945da80'
 
     def _get_completion_response(self, response: httpx.Response) -> str:
         return response.json()['outputs'][0]['outputs'][0]['results']['message']['data']['text']
@@ -171,7 +179,7 @@ class Langflow(CustomLLM):
             'output_type': 'chat',
             'input_value': messages[-1]['content'],
             'tweaks': {
-                'CompletionInterface-RyZw3': {
+                'CompletionInterface-qNlsX': {
                     'messages': history
                 }
             }
@@ -239,6 +247,8 @@ class Langflow(CustomLLM):
 
     def _make_streaming(self, model: str, messages: list, client: HTTPHandler, sync_stream: bool) -> Iterator[GenericStreamingChunk]:
         base_url = self._get_langflow_url(model)
+
+        verbose_logger.warning(prisma_client)
 
         try:
             response = client.post(base_url, params={'stream': True}, json=self._make_request_body(messages))
@@ -383,7 +393,7 @@ class Langflow(CustomLLM):
         
         return result
 
-langflow = Langflow()
+langflow = Langflow(prisma_client)
 
 litellm.custom_provider_map = [ # 👈 KEY STEP - REGISTER HANDLER
     {"provider": "langflow", "custom_handler": langflow}
