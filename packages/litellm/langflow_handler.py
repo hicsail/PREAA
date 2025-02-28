@@ -3,6 +3,10 @@ import json
 
 import httpx  # type: ignore
 
+from prisma import Prisma
+
+import asyncio
+
 import litellm.litellm_core_utils
 from litellm.proxy.utils import PrismaClient
 import litellm.types
@@ -155,10 +159,23 @@ class LangflowChunkParser:
 
 
 class Langflow(CustomLLM):
-    def __init__(self, prisma_client: Optional[PrismaClient]):
-        self.prisma_client = prisma_client
+    def __init__(self, prisma: Prisma):
+        self.prisma: Prisma = prisma
 
-        verbose_logger.warning(prisma_client)
+    async def _make_table(self):
+        """
+        Helper to create the needed database table for keeping track of 
+        LangFlow URLs
+        """
+        table_exists = await self.prisma.execute_raw('''
+            SELECT EXISTS (
+               SELECT 1
+               FROM pg_tables
+               WHERE schemaname = 'public'
+               AND tablename = 'my_table'
+            )
+        ''')
+        verbose_logger.warning(f'HEEYYYYYYYYYYYYYYYYYY: {table_exists}')
 
     def _get_langflow_url(self, model: str) -> str:
         """ 
@@ -247,8 +264,6 @@ class Langflow(CustomLLM):
 
     def _make_streaming(self, model: str, messages: list, client: HTTPHandler, sync_stream: bool) -> Iterator[GenericStreamingChunk]:
         base_url = self._get_langflow_url(model)
-
-        verbose_logger.warning(prisma_client)
 
         try:
             response = client.post(base_url, params={'stream': True}, json=self._make_request_body(messages))
@@ -393,7 +408,27 @@ class Langflow(CustomLLM):
         
         return result
 
-langflow = Langflow(prisma_client)
+
+if prisma_client is None:
+    raise Exception('Prisma client is not defined')
+
+async def _setup_db_table(prisma: Prisma):
+    table_exists = await prisma.execute_raw('''
+        SELECT EXISTS (
+           SELECT 1
+           FROM pg_tables
+           WHERE schemaname = 'public'
+           AND tablename = 'my_table'
+        )
+    ''')
+
+    verbose_logger.warning(f'HEREEEEE: {table_exists}')
+
+# Run the setup logic
+loop = asyncio.get_event_loop()
+loop.create_task(_setup_db_table(prisma_client.db._original_prisma))
+
+langflow = Langflow(prisma_client.db._original_prisma)
 
 litellm.custom_provider_map = [ # 👈 KEY STEP - REGISTER HANDLER
     {"provider": "langflow", "custom_handler": langflow}
