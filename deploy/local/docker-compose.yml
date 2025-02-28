@@ -1,0 +1,148 @@
+services:
+  langflow:
+    image: langflowai/langflow:latest
+    container_name: custom-rag-LangFlow
+    ports:
+      - "7860:7860"
+    depends_on:
+      - postgres
+    volumes:
+      - custom-rag-langflow-data:/app/langflow
+      - ../../custom_components/langflow/:/app/custom_components/
+    env_file: "config/.env.langflow"
+
+  postgres:
+    image: postgres:16
+    container_name: custom-rag-PostgreSQL
+    ports:
+      - "5432:5432"
+    volumes:
+      - custom-rag-postgres-data:/var/lib/postgresql/data
+    env_file: "config/.env.psql"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "--host=localhost", "--username psql"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+  
+  librechat:
+    image: ghcr.io/danny-avila/librechat:latest
+    container_name: custom-rag-LibreChat
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "3080:3080"
+    env_file: "config/.env.librechat"
+    volumes:
+      - custom-rag-librechat-images:/app/client/public/images
+      - custom-rag-librechat-logs:/app/api/logs
+      - type: bind
+        source: ./config/librechat.yaml
+        target: /app/librechat.yaml
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongo
+    container_name: custom-rag-MongoDB
+    volumes:
+      - custom-rag-mongodb-data:/data/db
+    command: mongod --noauth
+    ports:
+      - "27017:27017"
+
+  litellm:
+    image: ghcr.io/berriai/litellm:main-stable
+    ports: 
+      - "4000:4000"
+    env_file: "config/.env.litellm"
+    depends_on:
+      - postgres
+    volumes:
+      - ../../custom_components/litellm/:/app/langflowEP
+      - type: bind
+        source: ./config/litellm.yaml
+        target: /app/litellm.yaml
+    command: "--config /app/litellm.yaml"
+
+  langfuse-worker:
+    image: langfuse/langfuse-worker:3
+    depends_on: &langfuse-depends-on
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+    ports:
+      - "3030:3030"
+    env_file: "config/.env.langfuse"
+
+  langfuse-web:
+    image: langfuse/langfuse:3
+    depends_on: *langfuse-depends-on
+    ports:
+      - "3000:3000"
+    env_file: "config/.env.langfuse" 
+
+  clickhouse:
+    image: clickhouse/clickhouse-server
+    user: "101:101"
+    env_file: "config/.env.clickhouse"
+    volumes:
+      - custom-rag-langfuse-clickhouse-data:/var/lib/clickhouse
+      - custom-rag-langfuse-clickhouse-logs:/var/log/clickhouse-server
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8123/ping || exit 1
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 1s
+
+  minio:
+    image: minio/minio
+    entrypoint: sh
+    # create the 'langfuse' bucket before starting the service
+    command: -c 'mkdir -p /data/langfuse && minio server --address ":9000" --console-address ":9001" /data'
+    env_file: "config/.env.minio"
+    ports:
+      - "9090:9000"
+      - "9091:9001"
+    volumes:
+      - custom-rag-langfuse-minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 1s
+      timeout: 5s
+      retries: 5
+      start_period: 1s
+
+  redis:
+    image: redis:7
+    command:
+      - /bin/sh
+      - -c
+      - redis-server --requirepass "$${REDIS_PASSWORD:?REDIS_PASSWORD variable is not set}"
+    ports:
+      - 6379:6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 10s
+      retries: 10
+    env_file: "config/.env.redis"
+
+volumes:
+  custom-rag-langflow-data:
+  custom-rag-postgres-data:
+  custom-rag-librechat-images:
+  custom-rag-librechat-logs:
+  custom-rag-mongodb-data:
+  custom-rag-langfuse-clickhouse-data:
+  custom-rag-langfuse-clickhouse-logs:
+  custom-rag-langfuse-minio-data:
