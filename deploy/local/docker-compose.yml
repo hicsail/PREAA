@@ -106,7 +106,6 @@ services:
 
   minio:
     image: minio/minio
-    restart: always
     entrypoint: sh
     # create the 'langfuse' bucket before starting the service
     command: -c 'mkdir -p /data/langfuse && minio server --address ":9000" --console-address ":9001" /data'
@@ -125,8 +124,6 @@ services:
 
   redis:
     image: redis:7
-    restart: always
-    command:
       - /bin/sh
       - -c
       - redis-server --requirepass "$${REDIS_PASSWORD:?REDIS_PASSWORD variable is not set}"
