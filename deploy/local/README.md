@@ -26,6 +26,7 @@ then follow the instructions below to find each secret that needs to be added in
 #### config/.env.langfuse
 
 * `ENCRYPTION_KEY`: openssl rand -hex 32
+* `SALT`: any generated string
 * `CLICKHOUSE_PASSWORD`: matching `CLICKHOUSE_PASSWORD` from `.env.clickhouse`
 * `LANGFUSE_S3_EVENT_UPLOAD_SECRET_ACCESS_KEY`: matching `MINIO_ROOT_PASSWORD` from `.env.minio`
 * `LANGFUSE_S3_MEDIA_UPLOAD_SECRET_ACCESS_KEY`: matching `MINIO_ROOT_PASSWORD` from `.env.minio`
