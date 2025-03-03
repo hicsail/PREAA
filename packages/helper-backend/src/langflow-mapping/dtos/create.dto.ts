@@ -1,9 +1,9 @@
 import { IsString, Validate } from 'class-validator';
-import { IsUniqueModel } from '../pipes/unique';
+import { IsUniqueModel, IsUniqueModelRule } from '../pipes/unique';
 
 export class CreateLangFlowMapping {
   @IsString()
-  @Validate(IsUniqueModel)
+  @IsUniqueModel()
   model: string;
 
   @IsString()

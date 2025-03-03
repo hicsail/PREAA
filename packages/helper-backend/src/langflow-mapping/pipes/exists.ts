@@ -3,29 +3,29 @@ import { ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface,
 import { LangflowMappingService } from '../langflow-mapping.service';
 
 
-@ValidatorConstraint({ async: true, name: 'IsUniqueModel' })
+@ValidatorConstraint({ async: true, name: 'DoesExistModel' })
 @Injectable()
-export class IsUniqueModelRule implements ValidatorConstraintInterface {
+export class DoesExistModelRule implements ValidatorConstraintInterface {
   constructor(private readonly langFlowMappingSerivce: LangflowMappingService) {}
 
   async validate(model: string): Promise<boolean> {
     const found = await this.langFlowMappingSerivce.get(model);
-    return !found;
+    return !!found;
   }
 
   defaultMessage(validationArguments?: ValidationArguments): string {
-      return `Model ${validationArguments?.value} already registered`;
+      return `Model ${validationArguments?.value} not found`;
   }
 }
 
-export function IsUniqueModel(validationOptions?: ValidationOptions) {
+export function DoesExistModel(validationOptions?: ValidationOptions) {
   return function (object: any, propertyName: string) {
     registerDecorator({
-      name: 'IsUniqueModel',
+      name: 'DoesExistModel',
       target: object.constructor,
       propertyName: propertyName,
       options: validationOptions,
-      validator: IsUniqueModelRule,
+      validator: DoesExistModelRule,
     });
   };
 }
