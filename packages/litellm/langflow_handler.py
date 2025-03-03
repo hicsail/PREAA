@@ -162,21 +162,6 @@ class Langflow(CustomLLM):
     def __init__(self, prisma: Prisma):
         self.prisma: Prisma = prisma
 
-    async def _make_table(self):
-        """
-        Helper to create the needed database table for keeping track of 
-        LangFlow URLs
-        """
-        table_exists = await self.prisma.execute_raw('''
-            SELECT EXISTS (
-               SELECT 1
-               FROM pg_tables
-               WHERE schemaname = 'public'
-               AND tablename = 'my_table'
-            )
-        ''')
-        verbose_logger.warning(f'HEEYYYYYYYYYYYYYYYYYY: {table_exists}')
-
     def _get_langflow_url(self, model: str) -> str:
         """ 
         Helper to get the LangFlow URL based on the model specified. Currently not implemented so 
