@@ -22,6 +22,6 @@ import { MongooseModule } from '@nestjs/mongoose';
     LangflowMappingModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService]
 })
 export class AppModule {}
