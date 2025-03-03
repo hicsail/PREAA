@@ -64,6 +64,8 @@ services:
         source: ./config/litellm.yaml
         target: /app/litellm.yaml
     command: "--config /app/litellm.yaml"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   langfuse-worker:
     image: langfuse/langfuse-worker:3
