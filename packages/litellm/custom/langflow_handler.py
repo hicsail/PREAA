@@ -4,8 +4,6 @@ import json
 
 import httpx  # type: ignore
 
-import asyncio
-
 import litellm.litellm_core_utils
 import litellm.types
 import litellm.types.utils
@@ -26,7 +24,8 @@ EMPTY_CHUNK = GenericStreamingChunk(
     usage=None,
     index=0,
     tool_use=None
-) 
+)
+
 
 class BaseLLMException(Exception):
     def __init__(
@@ -81,20 +80,20 @@ class LangflowChunkParser:
         if event_type is None:
             verbose_logger.warning(f'event type missing on chunk: {raw}')
             raise BaseLLMException(500, message='Missing event type in Langflow chunk')
-        
+
         # Some events are not passed back to the user and an empty chunk is sent instead
         unused_event_types = ['add_message']
         if event_type in unused_event_types:
-            return EMPTY_CHUNK 
+            return EMPTY_CHUNK
 
-        # Token message handling 
+        # Token message handling
         if event_type == 'token':
             # Get the token content from the chunk
             data = chunk_json.get('data', None)
             if data is None:
                 verbose_logger.warning(f'data missing on chunk: {raw}')
                 raise BaseLLMException(500, message='Missing data on Langflow chunk')
-            
+
             chunk_text = data.get('chunk', None)
             if chunk_text is None:
                 verbose_logger.warning(f'chunk is missing: {raw}')
@@ -108,7 +107,7 @@ class LangflowChunkParser:
                 index=0,
                 tool_use=None
             )
-        
+
         # Stop message handling
         if event_type == 'end':
             return GenericStreamingChunk(
@@ -142,7 +141,7 @@ class LangflowChunkParser:
     def __aiter__(self):
         return self
 
-    async def __anext__(self) -> GenericStreamingChunk: 
+    async def __anext__(self) -> GenericStreamingChunk:
         # Get the next chunk
         try:
             next_chunk = await anext(self.astream)
@@ -156,27 +155,25 @@ class LangflowChunkParser:
 
 
 class Langflow(CustomLLM):
-    
+
     def __init__(self):
         self.mapping_endpoint = f'{os.environ["HELPER_BACKEND"]}/mapping'
 
-
     def _get_langflow_url(self, model: str, client: HTTPHandler) -> Tuple[str, str]:
-        """ 
-        Helper to get the LangFlow URL based on the model specified. Currently not implemented so 
+        """
+        Helper to get the LangFlow URL based on the model specified. Currently not implemented so
         returns a constant
         """
-        response = client.get(f'{self.mapping_endpoint}/{model}').json() 
+        response = client.get(f'{self.mapping_endpoint}/{model}').json()
         return response['url'], response['historyComponentID']
 
     async def _aget_langflow_url(self, model: str, client: AsyncHTTPHandler) -> Tuple[str, str]:
-        """ 
-        Helper to get the LangFlow URL based on the model specified. Currently not implemented so 
+        """
+        Helper to get the LangFlow URL based on the model specified. Currently not implemented so
         returns a constant
         """
         response = (await client.get(f'{self.mapping_endpoint}/{model}')).json()
         return response['url'], response['historyComponentID']
-
 
     def _get_completion_response(self, response: httpx.Response) -> str:
         return response.json()['outputs'][0]['outputs'][0]['results']['message']['data']['text']
@@ -200,7 +197,7 @@ class Langflow(CustomLLM):
         """
         Make a single completition request
         """
-        base_url, historyComponent  = self._get_langflow_url(model, client)
+        base_url, historyComponent = self._get_langflow_url(model, client)
 
         try:
             response = client.post(base_url, params={'stream': False}, json=self._make_request_body(messages, historyComponent))
@@ -276,7 +273,7 @@ class Langflow(CustomLLM):
                 if isinstance(e, exception):
                     raise e
             raise BaseLLMException(status_code=500, message=str(e))
-        
+
         return LangflowChunkParser(response, sync_stream=sync_stream)
 
     async def _amake_streaming(self, model: str, messages: list, client: AsyncHTTPHandler) -> AsyncIterator[GenericStreamingChunk]:
@@ -300,111 +297,111 @@ class Langflow(CustomLLM):
                 if isinstance(e, exception):
                     raise e
             raise BaseLLMException(status_code=500, message=str(e))
-        
+
         return LangflowChunkParser(response, sync_stream=False)
 
     def completion(
-        self,
-        model: str,
-        messages: list,
-        api_base: str,
-        custom_prompt_dict: dict,
-        model_response: litellm.types.utils.ModelResponse,
-        print_verbose: Callable,
-        encoding,
-        api_key,
-        logging_obj,
-        optional_params: dict,
-        acompletion=None,
-        litellm_params=None,
-        logger_fn=None,
-        headers=...,
-        timeout: Optional[Union[float, httpx.Timeout]] = None,
-        client: Optional[HTTPHandler] = None) -> ModelResponse:
-        
+            self,
+            model: str,
+            messages: list,
+            api_base: str,
+            custom_prompt_dict: dict,
+            model_response: litellm.types.utils.ModelResponse,
+            print_verbose: Callable,
+            encoding,
+            api_key,
+            logging_obj,
+            optional_params: dict,
+            acompletion=None,
+            litellm_params=None,
+            logger_fn=None,
+            headers=...,
+            timeout: Optional[Union[float, httpx.Timeout]] = None,
+            client: Optional[HTTPHandler] = None) -> ModelResponse:
+
         client = client or HTTPHandler()
 
         return self._make_completion(model, messages, client)
 
     async def acompletion(
-        self,
-        model: str,
-        messages: list,
-        api_base: str,
-        custom_prompt_dict: dict,
-        model_response: litellm.types.utils.ModelResponse,
-        print_verbose: Callable,
-        encoding,
-        api_key,
-        logging_obj,
-        optional_params: dict,
-        acompletion=None,
-        litellm_params=None,
-        logger_fn=None,
-        headers=...,
-        timeout: Optional[Union[float, httpx.Timeout]] = None,
-        client: Optional[AsyncHTTPHandler] = None) -> litellm.types.utils.ModelResponse:
+            self,
+            model: str,
+            messages: list,
+            api_base: str,
+            custom_prompt_dict: dict,
+            model_response: litellm.types.utils.ModelResponse,
+            print_verbose: Callable,
+            encoding,
+            api_key,
+            logging_obj,
+            optional_params: dict,
+            acompletion=None,
+            litellm_params=None,
+            logger_fn=None,
+            headers=...,
+            timeout: Optional[Union[float, httpx.Timeout]] = None,
+            client: Optional[AsyncHTTPHandler] = None) -> litellm.types.utils.ModelResponse:
 
         client = client or AsyncHTTPHandler()
-        
+
         return await self._amake_completion(model, messages, client)
 
     def streaming(
-        self,
-        model: str,
-        messages: list,
-        api_base: str,
-        custom_prompt_dict: dict,
-        model_response: litellm.types.utils.ModelResponse,
-        print_verbose: Callable,
-        encoding,
-        api_key,
-        logging_obj,
-        optional_params: dict,
-        acompletion=None,
-        litellm_params=None,
-        logger_fn=None,
-        headers=...,
-        timeout: Optional[Union[float, httpx.Timeout]] = None,
-        client: Optional[HTTPHandler] = None) -> Iterator[GenericStreamingChunk]:
+            self,
+            model: str,
+            messages: list,
+            api_base: str,
+            custom_prompt_dict: dict,
+            model_response: litellm.types.utils.ModelResponse,
+            print_verbose: Callable,
+            encoding,
+            api_key,
+            logging_obj,
+            optional_params: dict,
+            acompletion=None,
+            litellm_params=None,
+            logger_fn=None,
+            headers=...,
+            timeout: Optional[Union[float, httpx.Timeout]] = None,
+            client: Optional[HTTPHandler] = None) -> Iterator[GenericStreamingChunk]:
 
         client = client or HTTPHandler()
-        
-        return self._make_streaming(model, messages, client, False) 
-    
+
+        return self._make_streaming(model, messages, client, False)
+
     def astreaming(
-        self, 
-        model: str,
-        messages: list,
-        api_base: str,
-        custom_prompt_dict: dict,
-        model_response: litellm.types.utils.ModelResponse,
-        print_verbose: Callable,
-        encoding,
-        api_key,
-        logging_obj,
-        optional_params: dict,
-        acompletion=None,
-        litellm_params=None,
-        logger_fn=None,
-        headers=...,
-        timeout: Optional[Union[float, httpx.Timeout]] = None,
-        client: Optional[AsyncHTTPHandler] = None) -> Iterator[GenericStreamingChunk]:
+            self,
+            model: str,
+            messages: list,
+            api_base: str,
+            custom_prompt_dict: dict,
+            model_response: litellm.types.utils.ModelResponse,
+            print_verbose: Callable,
+            encoding,
+            api_key,
+            logging_obj,
+            optional_params: dict,
+            acompletion=None,
+            litellm_params=None,
+            logger_fn=None,
+            headers=...,
+            timeout: Optional[Union[float, httpx.Timeout]] = None,
+            client: Optional[AsyncHTTPHandler] = None) -> Iterator[GenericStreamingChunk]:
         """
         NOTE: The implementation is currently a work around. It seems like this astreaming
         function is called further down the line but not awaited. Thus an error is thrown
-        where the iterator is attempted to be used without waiting on the coroutine. To 
+        where the iterator is attempted to be used without waiting on the coroutine. To
         get around that, the synchronous streaming call is made to generate an iterator without
         the use of a coroutine.
         """
         sync_client = HTTPHandler()
         result = self._make_streaming(model, messages, sync_client, True)
-        
+
         return result
 
 
 langflow = Langflow()
 
-litellm.custom_provider_map = [ # 👈 KEY STEP - REGISTER HANDLER
+litellm.custom_provider_map = [
     {"provider": "langflow", "custom_handler": langflow}
 ]

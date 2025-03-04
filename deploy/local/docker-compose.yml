@@ -1,6 +1,6 @@
 services:
   langflow:
-    image: langflowai/langflow:latest
+    image: langflowai/langflow:1.2.0
     container_name: custom-rag-LangFlow
     ports:
       - "7860:7860"
@@ -8,7 +8,7 @@ services:
       - postgres
     volumes:
       - custom-rag-langflow-data:/app/langflow
-      - ../../packages/langflow/:/app/custom_components/
+      - ../../packages/langflow/custom/:/app/custom_components/
     env_file: "config/.env.langflow"
 
   postgres:
@@ -24,7 +24,7 @@ services:
       interval: 3s
       timeout: 3s
       retries: 10
-  
+
   librechat:
     image: ghcr.io/danny-avila/librechat:latest
     container_name: custom-rag-LibreChat
@@ -52,14 +52,14 @@ services:
       - "27017:27017"
 
   litellm:
-    image: ghcr.io/berriai/litellm:main-stable
-    ports: 
+    image: ghcr.io/berriai/litellm:litellm_stable_release_branch-v1.61.20-stable
+    ports:
       - "4000:4000"
     env_file: "config/.env.litellm"
     depends_on:
       - postgres
     volumes:
-      - ../../packages/litellm/:/app/langflowEP
+      - ../../packages/litellm/custom/:/app/langflowEP
       - type: bind
         source: ./config/litellm.yaml
         target: /app/litellm.yaml
@@ -87,7 +87,7 @@ services:
     depends_on: *langfuse-depends-on
     ports:
       - "3000:3000"
-    env_file: "config/.env.langfuse" 
+    env_file: "config/.env.langfuse"
 
   clickhouse:
     image: clickhouse/clickhouse-server
