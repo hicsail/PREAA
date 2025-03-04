@@ -52,14 +52,14 @@ services:
       - "27017:27017"
 
   litellm:
-    image: ghcr.io/berriai/litellm:main-stable
+    image: ghcr.io/berriai/litellm:litellm_stable_release_branch-v1.61.20-stable
     ports: 
       - "4000:4000"
     env_file: "config/.env.litellm"
     depends_on:
       - postgres
     volumes:
-      - ../../packages/litellm/:/app/langflowEP
+      - ../../packages/litellm/litellm/:/app/langflowEP
       - type: bind
         source: ./config/litellm.yaml
         target: /app/litellm.yaml
