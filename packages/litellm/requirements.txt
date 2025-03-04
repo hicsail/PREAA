@@ -11,6 +11,7 @@ click==8.1.8
 distro==1.9.0
 exceptiongroup==1.2.2
 filelock==3.17.0
+flake8==7.1.2
 frozenlist==1.5.0
 fsspec==2025.2.0
 h11==0.14.0
@@ -27,13 +28,16 @@ jsonschema-specifications==2024.10.1
 lark==1.2.2
 litellm==1.61.20
 MarkupSafe==3.0.2
+mccabe==0.7.0
 multidict==6.1.0
 openai==1.65.2
 packaging==24.2
 pluggy==1.5.0
 propcache==0.3.0
+pycodestyle==2.12.1
 pydantic==2.10.6
 pydantic_core==2.27.2
+pyflakes==3.2.0
 pytest==8.3.5
 python-dotenv==1.0.1
 PyYAML==6.0.2
