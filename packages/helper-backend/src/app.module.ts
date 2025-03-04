@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { LangflowMappingModule } from './langflow-mapping/langflow-mapping.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -21,7 +20,7 @@ import { MongooseModule } from '@nestjs/mongoose';
     }),
     LangflowMappingModule
   ],
-  controllers: [AppController],
+  controllers: [],
   providers: [AppService]
 })
 export class AppModule {}
