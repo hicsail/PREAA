@@ -1,7 +1,10 @@
-from typing import Iterator, AsyncIterator, Optional, Union, Callable
+from typing import Iterator, AsyncIterator, Optional, Tuple, Union, Callable
+import os
 import json
 
 import httpx  # type: ignore
+
+import asyncio
 
 import litellm.litellm_core_utils
 import litellm.types
@@ -14,6 +17,7 @@ from litellm.llms.custom_httpx.http_handler import (
     AsyncHTTPHandler,
     HTTPHandler
 )
+
 
 EMPTY_CHUNK = GenericStreamingChunk(
     text='',
@@ -152,17 +156,32 @@ class LangflowChunkParser:
 
 
 class Langflow(CustomLLM):
-    def _get_langflow_url(self, model: str) -> str:
+    
+    def __init__(self):
+        self.mapping_endpoint = f'{os.environ["HELPER_BACKEND"]}/mapping'
+
+
+    def _get_langflow_url(self, model: str, client: HTTPHandler) -> Tuple[str, str]:
         """ 
         Helper to get the LangFlow URL based on the model specified. Currently not implemented so 
         returns a constant
         """
-        return 'http://langflow:7860/api/v1/run/f4d70007-3805-46b5-b595-d6b5d90ec168'
+        response = client.get(f'{self.mapping_endpoint}/{model}').json() 
+        return response['url'], response['historyComponentID']
+
+    async def _aget_langflow_url(self, model: str, client: AsyncHTTPHandler) -> Tuple[str, str]:
+        """ 
+        Helper to get the LangFlow URL based on the model specified. Currently not implemented so 
+        returns a constant
+        """
+        response = (await client.get(f'{self.mapping_endpoint}/{model}')).json()
+        return response['url'], response['historyComponentID']
+
 
     def _get_completion_response(self, response: httpx.Response) -> str:
         return response.json()['outputs'][0]['outputs'][0]['results']['message']['data']['text']
 
-    def _make_request_body(self, messages: list) -> dict:
+    def _make_request_body(self, messages: list, historyComponet: str) -> dict:
         history = dict()
         history['content'] = [messages[index] for index in range(0, len(messages) - 1)]
 
@@ -171,7 +190,7 @@ class Langflow(CustomLLM):
             'output_type': 'chat',
             'input_value': messages[-1]['content'],
             'tweaks': {
-                'CompletionInterface-RyZw3': {
+                historyComponet: {
                     'messages': history
                 }
             }
@@ -181,10 +200,10 @@ class Langflow(CustomLLM):
         """
         Make a single completition request
         """
-        base_url = self._get_langflow_url(model)
+        base_url, historyComponent  = self._get_langflow_url(model, client)
 
         try:
-            response = client.post(base_url, params={'stream': False}, json=self._make_request_body(messages))
+            response = client.post(base_url, params={'stream': False}, json=self._make_request_body(messages, historyComponent))
         except httpx.HTTPStatusError as e:
             error_headers = getattr(e, "headers", None)
             error_response = getattr(e, "response", None)
@@ -211,10 +230,10 @@ class Langflow(CustomLLM):
         """
         Make a single completition request
         """
-        base_url = self._get_langflow_url(model)
+        base_url, historyComponent = await self._aget_langflow_url(model, client)
 
         try:
-            response = await client.post(base_url, params={'stream': False}, json=self._make_request_body(messages))
+            response = await client.post(base_url, params={'stream': False}, json=self._make_request_body(messages, historyComponent))
         except httpx.HTTPStatusError as e:
             error_headers = getattr(e, "headers", None)
             error_response = getattr(e, "response", None)
@@ -238,10 +257,10 @@ class Langflow(CustomLLM):
         )
 
     def _make_streaming(self, model: str, messages: list, client: HTTPHandler, sync_stream: bool) -> Iterator[GenericStreamingChunk]:
-        base_url = self._get_langflow_url(model)
+        base_url, historyComponent = self._get_langflow_url(model, client)
 
         try:
-            response = client.post(base_url, params={'stream': True}, json=self._make_request_body(messages))
+            response = client.post(base_url, params={'stream': True}, json=self._make_request_body(messages, historyComponent))
         except httpx.HTTPStatusError as e:
             error_headers = getattr(e, "headers", None)
             error_response = getattr(e, "response", None)
@@ -261,10 +280,10 @@ class Langflow(CustomLLM):
         return LangflowChunkParser(response, sync_stream=sync_stream)
 
     async def _amake_streaming(self, model: str, messages: list, client: AsyncHTTPHandler) -> AsyncIterator[GenericStreamingChunk]:
-        base_url = self._get_langflow_url(model)
+        base_url, historyComponent = await self._aget_langflow_url(model, client)
 
         try:
-            request_body = self._make_request_body(messages)
+            request_body = self._make_request_body(messages, historyComponent)
             response = await client.post(base_url, params={'stream': True}, json=request_body)
         except httpx.HTTPStatusError as e:
             error_headers = getattr(e, "headers", None)
@@ -382,6 +401,7 @@ class Langflow(CustomLLM):
         result = self._make_streaming(model, messages, sync_client, True)
         
         return result
+
 
 langflow = Langflow()
 
