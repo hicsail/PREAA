@@ -9,7 +9,6 @@ from langchain_core.chat_history import BaseChatMessageHistory
 
 from langflow.custom import Component
 from langflow.field_typing.constants import Memory
-from langflow.template import Output
 from langflow.io import Output, NestedDictInput
 
 
@@ -20,7 +19,6 @@ class CompletionChatMessageHistory(BaseChatMessageHistory):
     def __init__(self, session_id: str):
         self.session_id = session_id
         self.messages = []
-
 
     async def aget_messages(self) -> list[BaseMessage]:
         """Async version of getting messages.
@@ -70,7 +68,6 @@ class CompletionInterface(Component):
     outputs = [
         Output(display_name="Memory", name="memory", method="build_message_history")
     ]
-
 
     def build_message_history(self) -> Memory:
         message_history = CompletionChatMessageHistory('temp')
