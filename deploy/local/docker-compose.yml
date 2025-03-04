@@ -59,7 +59,7 @@ services:
     depends_on:
       - postgres
     volumes:
-      - ../../packages/litellm/litellm/:/app/langflowEP
+      - ../../packages/litellm/custom/:/app/langflowEP
       - type: bind
         source: ./config/litellm.yaml
         target: /app/litellm.yaml

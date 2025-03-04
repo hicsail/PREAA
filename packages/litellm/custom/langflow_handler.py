@@ -4,8 +4,6 @@ import json
 
 import httpx  # type: ignore
 
-import asyncio
-
 import litellm.litellm_core_utils
 import litellm.types
 import litellm.types.utils
