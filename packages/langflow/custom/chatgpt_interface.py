@@ -1,8 +1,5 @@
 from collections.abc import Sequence
-import json
 
-from langflow.schema.message import Message
-from loguru import logger
 from pydantic import Field
 
 from langchain_core.messages import (
@@ -11,11 +8,9 @@ from langchain_core.messages import (
 from langchain_core.chat_history import BaseChatMessageHistory
 
 from langflow.custom import Component
-from langflow.field_typing.constants import Memory, NestedDict
+from langflow.field_typing.constants import Memory
 from langflow.template import Output
-from langflow.io import Output, NestedDictInput, DictInput
-from langflow.inputs import MessageTextInput
-from langflow.template import Input
+from langflow.io import Output, NestedDictInput
 
 
 class CompletionChatMessageHistory(BaseChatMessageHistory):
