@@ -1,6 +1,6 @@
 services:
   langflow:
-    image: langflowai/langflow:latest
+    image: langflowai/langflow:1.2.0
     container_name: custom-rag-LangFlow
     ports:
       - "7860:7860"
@@ -24,7 +24,7 @@ services:
       interval: 3s
       timeout: 3s
       retries: 10
-  
+
   librechat:
     image: ghcr.io/danny-avila/librechat:latest
     container_name: custom-rag-LibreChat
@@ -53,7 +53,7 @@ services:
 
   litellm:
     image: ghcr.io/berriai/litellm:litellm_stable_release_branch-v1.61.20-stable
-    ports: 
+    ports:
       - "4000:4000"
     env_file: "config/.env.litellm"
     depends_on:
@@ -87,7 +87,7 @@ services:
     depends_on: *langfuse-depends-on
     ports:
       - "3000:3000"
-    env_file: "config/.env.langfuse" 
+    env_file: "config/.env.langfuse"
 
   clickhouse:
     image: clickhouse/clickhouse-server
