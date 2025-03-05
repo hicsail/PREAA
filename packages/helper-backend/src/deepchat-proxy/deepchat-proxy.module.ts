@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { DeepchatProxy, DeepchatProxySchema } from './deepchat-proxy.schema';
 import { MongooseModule } from '@nestjs/mongoose';
-import { DeepchatProxyService } from './deepchat-proxy/deepchat-proxy.service';
+import { DeepchatProxyController } from './deepchat-proxy.controller';
 
 @Module({
   imports: [
@@ -9,8 +9,8 @@ import { DeepchatProxyService } from './deepchat-proxy/deepchat-proxy.service';
       { name: DeepchatProxy.name, schema: DeepchatProxySchema },
     ]),
   ],
-  controllers: [],
-  providers: [DeepchatProxyService],
+  controllers: [DeepchatProxyController],
+  providers: [],
   exports: [],
 })
 export class DeepchatProxyModule {}
