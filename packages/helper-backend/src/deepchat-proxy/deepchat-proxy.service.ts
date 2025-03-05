@@ -5,29 +5,31 @@ import { Model } from "mongoose";
 
 @Injectable()
 export class DeepchatProxyService {
-  constructor(@InjectModel(DeepchatProxy.name) private readonly langFlowMappingModel: Model<DeepchatProxyDocument>) {}
+  constructor(@InjectModel(DeepchatProxy.name) private readonly deepChatProxyModel: Model<DeepchatProxyDocument>) {}
 
   async get(model: string): Promise<DeepchatProxy | null> {
-    return this.langFlowMappingModel.findOne({ model });
+    return this.deepChatProxyModel.findOne({ model });
   }
 
   async getAll(): Promise<DeepchatProxy[]> {
-    return this.langFlowMappingModel.find();
+    return this.deepChatProxyModel.find();
   }
 
   async create(mapping: DeepchatProxy): Promise<DeepchatProxy> {
-    return await this.langFlowMappingModel.create(mapping);
+    return await this.deepChatProxyModel.create(mapping);
   }
 
   async update(mapping: DeepchatProxy): Promise<DeepchatProxy | null> {
-    return await this.langFlowMappingModel.findOneAndUpdate({ model: mapping.model }, mapping, {
+    return await this.deepChatProxyModel.findOneAndUpdate({ model: mapping.model }, mapping, {
       new: true,
       upsert: true,
     });
   }
 
   async delete(model: string): Promise<void> {
-    await this.langFlowMappingModel.deleteOne({ model });
+    await this.deepChatProxyModel.deleteOne({ model });
   }
+
+
 
 }
