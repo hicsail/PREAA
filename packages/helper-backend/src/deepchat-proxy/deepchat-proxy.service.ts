@@ -7,8 +7,8 @@ import { Model } from "mongoose";
 export class DeepchatProxyService {
   constructor(@InjectModel(DeepchatProxy.name) private readonly deepChatProxyModel: Model<DeepchatProxyDocument>) {}
 
-  async get(model: string): Promise<DeepchatProxy | null> {
-    return this.deepChatProxyModel.findOne({ model });
+  async get(id: string): Promise<DeepchatProxy | null> {
+    return this.deepChatProxyModel.findOne({ _id: id });
   }
 
   async getAll(): Promise<DeepchatProxy[]> {
@@ -29,25 +29,6 @@ export class DeepchatProxyService {
   async delete(model: string): Promise<void> {
     await this.deepChatProxyModel.deleteOne({ model });
   }
-
-  // requestInterceptor={(details: RequestDetails) => {
-  //   details.body.messages.forEach((message: any) => {
-  //     message.content = message.text;
-  //   });
-  //   return details;
-  // }}
-  // responseInterceptor={(response: any) => {
-  //   response.text = response.choices[0].message.content;
-  //   return response;
-  // }}
-  // connect={{
-  //   url: `${import.meta.env.VITE_LITELLM_BASE_URL}/chat/completions`,
-  //   additionalBodyProps: {
-  //     "model": "llama3.1",
-  //   },
-  //   headers: {
-  //     'x-goog-api-key': import.meta.env.VITE_LITELLM_API_KEY
-  //   },
 
   async proxyRequest(model: string, url: string, apiKey: string, body: any): Promise<any> {
     // reshape the body

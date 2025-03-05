@@ -16,11 +16,11 @@ import { DeepchatProxy } from './deepchat-proxy.schema';
 export class DeepchatProxyController {
   constructor(private readonly deepchatProxyService: DeepchatProxyService) {}
 
-  @Get('/:model')
-  async get(@Param('model') model: string): Promise<DeepchatProxy> {
-    const mapping = await this.deepchatProxyService.get(model);
+  @Get('/:id')
+  async get(@Param('id') id: string): Promise<DeepchatProxy> {
+    const mapping = await this.deepchatProxyService.get(id);
     if (!mapping) {
-      throw new NotFoundException(`No model ${model} found`);
+      throw new NotFoundException(`No model with ${id} found`);
     }
     return mapping;
   }
@@ -28,16 +28,6 @@ export class DeepchatProxyController {
   @Get()
   async getAll(): Promise<DeepchatProxy[]> {
     return this.deepchatProxyService.getAll();
-  }
-
-  @Post('/proxy')
-  async proxyRequest(@Req() request: Request): Promise<any> {
-    const apiKey = "";
-    const model = "";
-    const url = "";
-    const body = request.body;
-    const response = await this.deepchatProxyService.proxyRequest( model, url, apiKey, body);
-    return response;
   }
 
   @Post()
@@ -49,5 +39,17 @@ export class DeepchatProxyController {
   @Delete('/:model')
   async delete(@Param('model') model: string): Promise<void> {
     await this.deepchatProxyService.delete(model);
+  }
+
+  @Post('proxy/:id')
+  async proxyRequest(@Req() request: Request, @Param('id') id: string): Promise<any> {
+    
+    const modelData = await this.deepchatProxyService.get(id);
+    if (!modelData) {
+      throw new NotFoundException(`No model ${id} found`);
+    }
+    const body = request.body;
+    const response = await this.deepchatProxyService.proxyRequest( modelData.model, modelData.url, modelData.apiKey, body);
+    return response;
   }
 }
