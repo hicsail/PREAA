@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { DeepchatProxyService } from './deepchat-proxy.service';
 import { DeepchatProxy } from './deepchat-proxy.schema';
+import { ProxyCompletion } from './dtos/proxy-completion.dto';
 
 @Controller('deepchat-proxy')
 export class DeepchatProxyController {
@@ -42,14 +43,14 @@ export class DeepchatProxyController {
   }
 
   @Post('proxy/:id')
-  async proxyRequest(@Req() request: Request, @Param('id') id: string): Promise<any> {
+  async proxyRequest(@Body() request: ProxyCompletion, @Param('id') id: string): Promise<any> {
     
     const modelData = await this.deepchatProxyService.get(id);
     if (!modelData) {
       throw new NotFoundException(`No model ${id} found`);
     }
-    const body = request.body;
-    const response = await this.deepchatProxyService.proxyRequest( modelData.model, modelData.url, modelData.apiKey, body);
+    
+    const response = await this.deepchatProxyService.proxyRequest( modelData.model, modelData.url, modelData.apiKey, request);
     return response;
   }
 }
