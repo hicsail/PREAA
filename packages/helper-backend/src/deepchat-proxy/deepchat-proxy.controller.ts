@@ -49,7 +49,6 @@ export class DeepchatProxyController {
     if (!modelData) {
       throw new NotFoundException(`No model ${id} found`);
     }
-    
     const response = await this.deepchatProxyService.proxyRequest( modelData.model, modelData.url, modelData.apiKey, request);
     return response;
   }

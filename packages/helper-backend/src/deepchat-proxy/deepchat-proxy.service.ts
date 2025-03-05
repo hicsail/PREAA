@@ -2,10 +2,12 @@ import { Injectable } from "@nestjs/common";
 import { DeepchatProxy, DeepchatProxyDocument } from "./deepchat-proxy.schema";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
+import { LiteLLMService } from "src/litellm/litellm.service";
 
 @Injectable()
 export class DeepchatProxyService {
-  constructor(@InjectModel(DeepchatProxy.name) private readonly deepChatProxyModel: Model<DeepchatProxyDocument>) {}
+  constructor(@InjectModel(DeepchatProxy.name) private readonly deepChatProxyModel: Model<DeepchatProxyDocument>,
+              private readonly liteLLMService: LiteLLMService) {}
 
   async get(id: string): Promise<DeepchatProxy | null> {
     return this.deepChatProxyModel.findOne({ _id: id });
@@ -32,23 +34,8 @@ export class DeepchatProxyService {
 
   async proxyRequest(model: string, url: string, apiKey: string, body: any): Promise<any> {
     // reshape the body
-    body.messages.forEach((message: any) => {
-      message.content = message.text;
-    });
-    body.model = model;
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'x-goog-api-key': apiKey
-      },
-      body: JSON.stringify(body),
-    });
-
-    // reshape the response
-    const responseJson = await response.json();
-    responseJson.text = responseJson.choices[0].message.content;
-
-    return responseJson;
+    const response = this.liteLLMService.completion(model, apiKey, url, body);
+    return response;
   }
 
 }
