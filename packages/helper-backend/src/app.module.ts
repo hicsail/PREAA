@@ -4,6 +4,8 @@ import { LangflowMappingModule } from './langflow-mapping/langflow-mapping.modul
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import configuration from './config/configuration';
 import { MongooseModule } from '@nestjs/mongoose';
+import { DeepchatProxyModule } from './deepchat-proxy/deepchat-proxy.module';
+import { LitellmModule } from './litellm/litellm.module';
 
 @Module({
   imports: [
@@ -18,7 +20,9 @@ import { MongooseModule } from '@nestjs/mongoose';
         uri: configService.getOrThrow<string>('mongo.uri')
       })
     }),
-    LangflowMappingModule
+    LangflowMappingModule,
+    DeepchatProxyModule,
+    LitellmModule
   ],
   controllers: [],
   providers: [AppService]
