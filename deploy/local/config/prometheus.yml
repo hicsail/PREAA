@@ -4,3 +4,8 @@ scrape_configs:
     static_configs:
       - targets:
           - 'librechat-metrics:8000'
+  - job_name: 'langflow_metrics'
+    scrape_interval: 60s
+    static_configs:
+      - targets:
+          - 'langflow:9090'
