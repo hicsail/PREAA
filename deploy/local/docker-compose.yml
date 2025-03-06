@@ -139,6 +139,28 @@ services:
       retries: 10
     env_file: "config/.env.redis"
 
+  prometheus:
+    image: prom/prometheus:v3.2.1
+    container_name: custom-rag-prometheus
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+
+  librechat-metrics:
+    image: ghcr.io/virtuos/librechat_exporter:main
+    depends_on:
+      - mongodb
+    env_file: "config/.env.librechat-metrics"
+
+  grafana:
+    image: grafana/grafana-enterprise
+    ports:
+      - "3002:3000"
+    volumes:
+      - custom-rag-grafana-data:/var/lib/grafana
+
+
 volumes:
   custom-rag-langflow-data:
   custom-rag-postgres-data:
@@ -148,3 +170,4 @@ volumes:
   custom-rag-langfuse-clickhouse-data:
   custom-rag-langfuse-clickhouse-logs:
   custom-rag-langfuse-minio-data:
+  custom-rag-grafana-data:
