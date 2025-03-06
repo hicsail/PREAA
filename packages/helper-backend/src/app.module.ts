@@ -6,6 +6,7 @@ import configuration from './config/configuration';
 import { MongooseModule } from '@nestjs/mongoose';
 import { DeepchatProxyModule } from './deepchat-proxy/deepchat-proxy.module';
 import { LitellmModule } from './litellm/litellm.module';
+import { OauthEchoModule } from './oauth-echo/oauth-echo.module';
 
 @Module({
   imports: [
@@ -22,7 +23,8 @@ import { LitellmModule } from './litellm/litellm.module';
     }),
     LangflowMappingModule,
     DeepchatProxyModule,
-    LitellmModule
+    LitellmModule,
+    OauthEchoModule
   ],
   controllers: [],
   providers: [AppService]
