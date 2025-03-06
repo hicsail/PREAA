@@ -31,6 +31,16 @@ export class DeepchatProxyController {
     return this.deepchatProxyService.getAll();
   }
 
+  // update a mapping
+  @Put('/:id')
+  async update(@Param('id') id: string, @Body() mapping: DeepchatProxy): Promise<DeepchatProxy> {
+    const updatedMapping = await this.deepchatProxyService.update(id, mapping);
+    if (!updatedMapping) {
+      throw new NotFoundException(`No model with ${id} found`);
+    }
+    return updatedMapping;
+  }
+
   @Post()
   async create(@Body() mapping: DeepchatProxy): Promise<DeepchatProxy> {
     return this.deepchatProxyService.create(mapping);
