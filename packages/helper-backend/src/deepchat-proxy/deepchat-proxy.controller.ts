@@ -33,8 +33,7 @@ export class DeepchatProxyController {
 
   @Post()
   async create(@Body() mapping: DeepchatProxy): Promise<DeepchatProxy> {
-    //return this.deepchatProxyService.create(mapping);
-    return {} as DeepchatProxy;
+    return this.deepchatProxyService.create(mapping);
   }
 
   @Delete('/:model')
@@ -45,11 +44,7 @@ export class DeepchatProxyController {
   @Post('proxy/:id')
   async proxyRequest(@Body() request: ProxyCompletion, @Param('id') id: string): Promise<any> {
     
-    const modelData = await this.deepchatProxyService.get(id);
-    if (!modelData) {
-      throw new NotFoundException(`No model ${id} found`);
-    }
-    const response = await this.deepchatProxyService.proxyRequest( modelData.model, modelData.url, modelData.apiKey, request);
+    const response = await this.deepchatProxyService.proxyRequest(id, request);
     return response;
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { DeepchatProxy, DeepchatProxyDocument } from './deepchat-proxy.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -24,9 +24,9 @@ export class DeepchatProxyService {
     return await this.deepChatProxyModel.create(mapping);
   }
 
-  async update(mapping: DeepchatProxy): Promise<DeepchatProxy | null> {
+  async update(id: string, mapping: DeepchatProxy): Promise<DeepchatProxy | null> {
     return await this.deepChatProxyModel.findOneAndUpdate(
-      { _id: mapping._id },
+      { _id: id },
       mapping,
       {
         new: true,
@@ -40,13 +40,17 @@ export class DeepchatProxyService {
   }
 
   async proxyRequest(
-    model: string,
-    url: string,
-    apiKey: string,
+    id: string,
     body: any,
   ): Promise<any> {
     // reshape the body
-    const response = this.liteLLMService.completion(model, apiKey, url, body);
+    console.log(id);
+    const modelData = await this.get(id);
+    console.log(modelData);
+    if (!modelData) {
+      throw new NotFoundException(`No model ${id} found`);
+    }
+    const response = this.liteLLMService.completion(modelData.model, modelData.apiKey, modelData.url, body);
     return response;
   }
 }

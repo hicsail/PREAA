@@ -3,7 +3,7 @@ export class LiteLLMService {
   constructor() {
   }
 
-  async completion(model: string, apiKey: string, url: string, body: any): Promise<any> {
+  async completion(model: string, apiKey: string, url: string, body: any): Promise<Response> {
     body.messages.forEach((message: any) => {
       message.content = message.text;
     });
