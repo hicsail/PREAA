@@ -7,11 +7,11 @@ import {
   Put,
   Delete,
   NotFoundException,
-  Req,
 } from '@nestjs/common';
 import { DeepchatProxyService } from './deepchat-proxy.service';
 import { DeepchatProxy } from './deepchat-proxy.schema';
 import { ProxyCompletion } from './dtos/proxy-completion.dto';
+import { CompletionResponse } from 'src/litellm/dtos/litellm.dto';
 
 @Controller('deepchat-proxy')
 export class DeepchatProxyController {
@@ -52,8 +52,7 @@ export class DeepchatProxyController {
   }
 
   @Post('proxy/:id')
-  async proxyRequest(@Body() request: ProxyCompletion, @Param('id') id: string): Promise<any> {
-    
+  async proxyRequest(@Body() request: ProxyCompletion, @Param('id') id: string): Promise<CompletionResponse> {
     const response = await this.deepchatProxyService.proxyRequest(id, request);
     return response;
   }
