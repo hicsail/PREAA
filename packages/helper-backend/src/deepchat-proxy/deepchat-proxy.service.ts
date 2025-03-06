@@ -43,10 +43,7 @@ export class DeepchatProxyService {
     id: string,
     body: any,
   ): Promise<any> {
-    // reshape the body
-    console.log(id);
     const modelData = await this.get(id);
-    console.log(modelData);
     if (!modelData) {
       throw new NotFoundException(`No model ${id} found`);
     }

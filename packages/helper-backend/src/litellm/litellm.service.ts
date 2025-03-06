@@ -1,9 +1,11 @@
+import { CompletionResponse } from "./dtos/litellm.dto";
+
 export class LiteLLMService {
 
   constructor() {
   }
 
-  async completion(model: string, apiKey: string, url: string, body: any): Promise<Response> {
+  async completion(model: string, apiKey: string, url: string, body: any): Promise<CompletionResponse> {
     body.messages.forEach((message: any) => {
       message.content = message.text;
     });
