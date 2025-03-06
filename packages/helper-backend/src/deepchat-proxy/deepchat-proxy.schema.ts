@@ -2,6 +2,10 @@ import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 
 @Schema()
 export class DeepchatProxy {
+
+  @Prop()
+  _id: string;
+
   /** The name the mapping should go by */
   @Prop({ required: true })
   model: string;
@@ -11,7 +15,7 @@ export class DeepchatProxy {
   url: string;
 
   // API KEY to pass as header to LiteLLM
-  @Prop({ requied: true })
+  @Prop({ required: true })
   apiKey: string;
 }
 

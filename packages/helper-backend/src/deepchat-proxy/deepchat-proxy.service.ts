@@ -26,7 +26,7 @@ export class DeepchatProxyService {
 
   async update(mapping: DeepchatProxy): Promise<DeepchatProxy | null> {
     return await this.deepChatProxyModel.findOneAndUpdate(
-      { model: mapping.model },
+      { _id: mapping._id },
       mapping,
       {
         new: true,
