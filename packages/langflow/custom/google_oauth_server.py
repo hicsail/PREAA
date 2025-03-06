@@ -1,10 +1,36 @@
+"""
+Modification of LangFlow's Google authentication component, original license below
+
+MIT License
+
+Copyright (c) 2024 Langflow
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
+
 import json
 import re
 from pathlib import Path
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
+from google_auth_oauthlib.flow import Flow
 
 from langflow.custom import Component
 from langflow.io import FileInput, MultilineInput, Output
@@ -32,10 +58,15 @@ class GoogleOAuthTokenServer(Component):
             file_types=["json"],
             required=True,
         ),
+        MultilineInput(
+            name="redirect_uri",
+            display_name="Redirect URI",
+            required=True
+        )
     ]
 
     outputs = [
-        Output(display_name="Output", name="output", method="build_output"),
+        Output(display_name="Output", name="auth_url", method="build_output"),
     ]
 
     def validate_scopes(self, scopes):
@@ -53,7 +84,7 @@ class GoogleOAuthTokenServer(Component):
             error_message = "Invalid scope format."
             raise ValueError(error_message)
 
-    def build_output(self) -> Data:
+    def build_output(self) -> str:
         self.validate_scopes(self.scopes)
 
         user_scopes = [scope.strip() for scope in self.scopes.split(",")]
@@ -63,31 +94,14 @@ class GoogleOAuthTokenServer(Component):
             error_message = "Incorrect scope, check the scopes field."
             raise ValueError(error_message)
 
-        creds = None
-        token_path = Path("token.json")
+        if self.oauth_credentials:
+            client_secret_file = self.oauth_credentials
+        else:
+            error_message = "OAuth 2.0 Credentials file not provided."
+            raise ValueError(error_message)
 
-        if token_path.exists():
-            with token_path.open(mode="r", encoding="utf-8") as token_file:
-                creds = Credentials.from_authorized_user_file(
-                    str(token_path), scopes)
+        flow = Flow.from_client_secrets_file(
+            client_secret_file, scopes, redirect_uri=self.redirect_uri)
+        auth_url, _ = flow.authorization_url(prompt='consent')
 
-        if not creds or not creds.valid:
-            if creds and creds.expired and creds.refresh_token:
-                creds.refresh(Request())
-            else:
-                if self.oauth_credentials:
-                    client_secret_file = self.oauth_credentials
-                else:
-                    error_message = "OAuth 2.0 Credentials file not provided."
-                    raise ValueError(error_message)
-
-                flow = InstalledAppFlow.from_client_secrets_file(
-                    client_secret_file, scopes)
-                creds = flow.run_local_server(port=0)
-
-            with token_path.open(mode="w", encoding="utf-8") as token_file:
-                token_file.write(creds.to_json())
-
-        creds_json = json.loads(creds.to_json())
-
-        return Data(data=creds_json)
+        return auth_url
