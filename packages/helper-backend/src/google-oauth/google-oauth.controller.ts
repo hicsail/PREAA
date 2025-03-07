@@ -1,6 +1,7 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { GoogleOauthService } from './google-oauth.service';
 import { GetOAuthURL } from './dtos/get-url.dto';
+import { Credentials } from 'google-auth-library';
 
 @Controller('google-oauth')
 export class GoogleOauthController {
@@ -14,20 +15,22 @@ export class GoogleOauthController {
   }
 
   @Get('/callback')
-  async callback(@Query('code') code: string | undefined, @Query('error') error: string | undefined): Promise<string> {
+  async callback(@Query('state') state: string, @Query('code') code: string | undefined, @Query('error') error: string | undefined): Promise<string> {
+
+    console.log(state);
     if (error || !code) {
       const msg = `OAuth flow failed with code: ${error}`;
       console.error(msg);
       return msg;
     }
 
-    await this.googleOauthService.handleCallback(code);
+    await this.googleOauthService.handleCallback(code, state);
     return 'success';
   }
 
-  @Get('/credentials')
-  async getCredentials(): Promise<void> {
-
+  @Get('/credentials/:id')
+  async getCredentials(@Param('id') id: string): Promise<Credentials> {
+    return this.googleOauthService.getCredentials(id);
   }
 
 }
