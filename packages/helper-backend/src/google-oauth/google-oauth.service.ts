@@ -6,19 +6,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { GoogleOAuthCredentials, GoogleOAuthCredentialsDocument } from './google-oauth.schema';
 import { Model } from 'mongoose';
 import { Credentials } from 'google-auth-library';
-import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class GoogleOauthService {
-  private readonly baseURL: string;
 
   constructor(
     @Inject(GOOGLE_OAUTH_PROVIDER) private readonly oauth: OAuth2Client,
     @InjectModel(GoogleOAuthCredentials.name) private readonly credentialsModel: Model<GoogleOAuthCredentialsDocument>,
-    private readonly configService: ConfigService
-  ) {
-    this.baseURL = configService.getOrThrow<string>('baseURL');
-  }
+  ) {}
 
   async getAuthURL(urlRequest: GetOAuthURL): Promise<string> {
     return this.oauth.generateAuthUrl({
@@ -39,7 +34,7 @@ export class GoogleOauthService {
     });
   }
 
-  async getCredentials(id: string): Promise<Credentials> {
+  async getCredentials(id: string): Promise<Credentials & { client_id: string, client_secret: string }> {
     const creds = await this.credentialsModel.findOne({ userID: id });
     if (!creds) {
       throw new NotFoundException(`Credentials not found for the ID ${id}`);
@@ -61,7 +56,11 @@ export class GoogleOauthService {
     });
 
     // Returned the refreshed credenials
-    return refresh.credentials;
+    return {
+      ...refresh.credentials,
+      client_id: this.oauth._clientId!,
+      client_secret: this.oauth._clientSecret!
+    };
   }
 
 }

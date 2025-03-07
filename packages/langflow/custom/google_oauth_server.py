@@ -23,24 +23,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-
-import json
 import re
-from pathlib import Path
 
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import Flow
+import requests
+
 
 from langflow.custom import Component
-from langflow.io import FileInput, MultilineInput, Output
-from langflow.schema import Data
+from langflow.io import MessageInput, MultilineInput, Output
 
 
 class GoogleOAuthTokenServer(Component):
     display_name = "Google OAuth Token Server"
     description = "Generates a JSON string with your Google OAuth token."
-    documentation: str = "https://developers.google.com/identity/protocols/oauth2/web-server?hl=pt-br#python_1"
     icon = "Google"
     name = "GoogleOAuthTokenServer"
 
@@ -51,16 +45,14 @@ class GoogleOAuthTokenServer(Component):
             info="Input scopes for your application.",
             required=True,
         ),
-        FileInput(
-            name="oauth_credentials",
-            display_name="Credentials File",
-            info="Input OAuth Credentials file (e.g. credentials.json).",
-            file_types=["json"],
-            required=True,
-        ),
         MultilineInput(
-            name="redirect_uri",
-            display_name="Redirect URI",
+            name="request_uri",
+            display_name="Request URI",
+            required=True
+        ),
+        MessageInput(
+            name="id",
+            display_name="Credential ID",
             required=True
         )
     ]
@@ -94,14 +86,15 @@ class GoogleOAuthTokenServer(Component):
             error_message = "Incorrect scope, check the scopes field."
             raise ValueError(error_message)
 
-        if self.oauth_credentials:
-            client_secret_file = self.oauth_credentials
-        else:
-            error_message = "OAuth 2.0 Credentials file not provided."
-            raise ValueError(error_message)
+        response = requests.post(self.request_uri, json={ 'scopes': scopes, 'userID': self.id.text })
 
-        flow = Flow.from_client_secrets_file(
-            client_secret_file, scopes, redirect_uri=self.redirect_uri)
-        auth_url, _ = flow.authorization_url(prompt='consent')
+        # Make sure the response code is valid
+        if response.status_code < 200 or response.status_code >= 300:
+            raise Exception(f'Failed generating auth urL: {response.text}')
 
-        return auth_url
+        # Get the needed field from the body
+        body = response.json()
+        if not 'url' in body:
+            raise Exception(f'Malformed response body: {body}')
+
+        return body['url']

@@ -29,8 +29,7 @@ export class GoogleOauthController {
   }
 
   @Get('/credentials/:id')
-  async getCredentials(@Param('id') id: string): Promise<Credentials> {
+  async getCredentials(@Param('id') id: string): Promise<Credentials & { client_id: string, client_secret: string }> {
     return this.googleOauthService.getCredentials(id);
   }
-
 }
