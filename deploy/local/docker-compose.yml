@@ -10,6 +10,8 @@ services:
       - custom-rag-langflow-data:/app/langflow
       - ../../packages/langflow/custom/:/app/custom_components/
     env_file: "config/.env.langflow"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   postgres:
     image: postgres:16
