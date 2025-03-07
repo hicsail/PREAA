@@ -25,4 +25,9 @@ export class GoogleOauthController {
     return 'success';
   }
 
+  @Get('/credentials')
+  async getCredentials(): Promise<void> {
+
+  }
+
 }
