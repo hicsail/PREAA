@@ -15,4 +15,10 @@ export class GoogleOauthService {
     });
   }
 
+  async handleCallback(code: string): Promise<void> {
+    const { tokens } = await this.oauth.getToken(code);
+
+    console.log(tokens);
+  }
+
 }
