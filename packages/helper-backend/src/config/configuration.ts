@@ -8,5 +8,6 @@ export default () => ({
       clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET,
       redirectURL: process.env.GOOGLE_OAUTH_REDIRECT_URL
     }
-  }
+  },
+  baseURL: process.env.BASE_URL || 'http://localhost:3001'
 });
