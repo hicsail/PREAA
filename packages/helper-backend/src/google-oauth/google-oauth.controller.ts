@@ -16,8 +16,6 @@ export class GoogleOauthController {
 
   @Get('/callback')
   async callback(@Query('state') state: string, @Query('code') code: string | undefined, @Query('error') error: string | undefined): Promise<string> {
-
-    console.log(state);
     if (error || !code) {
       const msg = `OAuth flow failed with code: ${error}`;
       console.error(msg);
