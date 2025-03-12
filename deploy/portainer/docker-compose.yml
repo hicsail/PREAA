@@ -1,0 +1,163 @@
+services:
+  langflow:
+    image: langflowai/langflow:1.2.0
+    container_name: portainer-LangFlow
+    ports:
+      - "7860:7860"
+    depends_on:
+      - postgres
+    volumes:
+      - portainer-langflow-data:/app/langflow
+      - ../../packages/langflow/custom/:/app/custom_components/
+    env_file: "config/.env.langflow"
+
+  postgres:
+    image: postgres:16
+    container_name: portainer-PostgreSQL
+    ports:
+      - "5432:5432"
+    volumes:
+      - portainer-postgres-data:/var/lib/postgresql/data
+    env_file: "config/.env.psql"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "--host=localhost", "--username psql"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  librechat:
+    image: ghcr.io/danny-avila/librechat:latest
+    container_name: portainer-LibreChat
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "3080:3080"
+    env_file: "config/.env.librechat"
+    volumes:
+      - portainer-librechat-images:/app/client/public/images
+      - portainer-librechat-logs:/app/api/logs
+      - type: bind
+        source: ./config/librechat.yaml
+        target: /app/librechat.yaml
+    depends_on:
+      - mongodb
+
+  mongodb:
+    image: mongo
+    container_name: portainer-MongoDB
+    volumes:
+      - portainer-mongodb-data:/data/db
+    command: mongod --noauth
+
+  litellm:
+    image: ghcr.io/berriai/litellm:litellm_stable_release_branch-v1.61.20-stable
+    ports:
+      - "4000:4000"
+    env_file: "config/.env.litellm"
+    depends_on:
+      - postgres
+    volumes:
+      - ../../packages/litellm/custom/:/app/langflowEP
+      - type: bind
+        source: ./config/litellm.yaml
+        target: /app/litellm.yaml
+    command: "--config /app/litellm.yaml"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  langfuse-worker:
+    image: langfuse/langfuse-worker:3
+    depends_on: &langfuse-depends-on
+      postgres:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      clickhouse:
+        condition: service_healthy
+    ports:
+      - "3030:3030"
+    env_file: "config/.env.langfuse"
+
+  langfuse-web:
+    image: langfuse/langfuse:3
+    depends_on: *langfuse-depends-on
+    ports:
+      - "3000:3000"
+    env_file: "config/.env.langfuse"
+
+  clickhouse:
+    image: clickhouse/clickhouse-server
+    user: "101:101"
+    env_file: "config/.env.clickhouse"
+    volumes:
+      - portainer-langfuse-clickhouse-data:/var/lib/clickhouse
+      - portainer-langfuse-clickhouse-logs:/var/log/clickhouse-server
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8123/ping || exit 1
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 1s
+
+  minio:
+    image: minio/minio
+    entrypoint: sh
+    # create the 'langfuse' bucket before starting the service
+    command: -c 'mkdir -p /data/langfuse && minio server --address ":9000" --console-address ":9001" /data'
+    env_file: "config/.env.minio"
+    volumes:
+      - portainer-langfuse-minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 1s
+      timeout: 5s
+      retries: 5
+      start_period: 1s
+
+  redis:
+    image: redis:7
+    command:
+      - /bin/sh
+      - -c
+      - redis-server --requirepass "$${REDIS_PASSWORD:?REDIS_PASSWORD variable is not set}"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 10s
+      retries: 10
+    env_file: "config/.env.redis"
+
+  prometheus:
+    image: prom/prometheus:v3.2.1
+    container_name: portainer-prometheus
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+
+  librechat-metrics:
+    image: ghcr.io/virtuos/librechat_exporter:main
+    depends_on:
+      - mongodb
+    env_file: "config/.env.librechat-metrics"
+
+  grafana:
+    image: grafana/grafana-enterprise
+    ports:
+      - "3002:3000"
+    volumes:
+      - portainer-grafana-data:/var/lib/grafana
+
+
+volumes:
+  portainer-langflow-data:
+  portainer-postgres-data:
+  portainer-librechat-images:
+  portainer-librechat-logs:
+  portainer-mongodb-data:
+  portainer-langfuse-clickhouse-data:
+  portainer-langfuse-clickhouse-logs:
+  portainer-langfuse-minio-data:
+  portainer-grafana-data:
