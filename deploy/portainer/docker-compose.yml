@@ -9,7 +9,9 @@ services:
     volumes:
       - portainer-langflow-data:/app/langflow
       - ../../packages/langflow/custom/:/app/custom_components/
-    env_file: "config/.env.langflow"
+    env_file:
+			-../../stack.env
+			-./stack.env
 
   postgres:
     image: postgres:16
@@ -18,7 +20,9 @@ services:
       - "5432:5432"
     volumes:
       - portainer-postgres-data:/var/lib/postgresql/data
-    env_file: "config/.env.psql"
+    env_file:
+			-../../stack.env
+			-./stack.env
     healthcheck:
       test: ["CMD-SHELL", "pg_isready", "--host=localhost", "--username psql"]
       interval: 3s
@@ -32,7 +36,9 @@ services:
       - "host.docker.internal:host-gateway"
     ports:
       - "3080:3080"
-    env_file: "config/.env.librechat"
+    env_file:
+			-../../stack.env
+			-./stack.env
     volumes:
       - portainer-librechat-images:/app/client/public/images
       - portainer-librechat-logs:/app/api/logs
@@ -53,7 +59,9 @@ services:
     image: ghcr.io/berriai/litellm:litellm_stable_release_branch-v1.61.20-stable
     ports:
       - "4000:4000"
-    env_file: "config/.env.litellm"
+    env_file:
+			-../../stack.env
+			-./stack.env
     depends_on:
       - postgres
     volumes:
@@ -78,19 +86,25 @@ services:
         condition: service_healthy
     ports:
       - "3030:3030"
-    env_file: "config/.env.langfuse"
+    env_file:
+			-../../stack.env
+			-./stack.env
 
   langfuse-web:
     image: langfuse/langfuse:3
     depends_on: *langfuse-depends-on
     ports:
       - "3000:3000"
-    env_file: "config/.env.langfuse"
+    env_file:
+			-../../stack.env
+			-./stack.env
 
   clickhouse:
     image: clickhouse/clickhouse-server
     user: "101:101"
-    env_file: "config/.env.clickhouse"
+    env_file:
+			-../../stack.env
+			-./stack.env
     volumes:
       - portainer-langfuse-clickhouse-data:/var/lib/clickhouse
       - portainer-langfuse-clickhouse-logs:/var/log/clickhouse-server
@@ -106,7 +120,9 @@ services:
     entrypoint: sh
     # create the 'langfuse' bucket before starting the service
     command: -c 'mkdir -p /data/langfuse && minio server --address ":9000" --console-address ":9001" /data'
-    env_file: "config/.env.minio"
+    env_file:
+			-../../stack.env
+			-./stack.env
     volumes:
       - portainer-langfuse-minio-data:/data
     healthcheck:
@@ -127,7 +143,9 @@ services:
       interval: 3s
       timeout: 10s
       retries: 10
-    env_file: "config/.env.redis"
+    env_file:
+			-../../stack.env
+			-./stack.env
 
   prometheus:
     image: prom/prometheus:v3.2.1
@@ -141,7 +159,9 @@ services:
     image: ghcr.io/virtuos/librechat_exporter:main
     depends_on:
       - mongodb
-    env_file: "config/.env.librechat-metrics"
+    env_file:
+			-../../stack.env
+			-./stack.env
 
   grafana:
     image: grafana/grafana-enterprise
