@@ -1,13 +1,4 @@
-import {
-  Body,
-  Controller,
-  Param,
-  Post,
-  Get,
-  Put,
-  Delete,
-  NotFoundException,
-} from '@nestjs/common';
+import { Body, Controller, Param, Post, Get, Put, Delete, NotFoundException } from '@nestjs/common';
 import { DeepchatProxyService } from './deepchat-proxy.service';
 import { DeepchatProxy } from './deepchat-proxy.schema';
 import { ProxyCompletion } from './dtos/proxy-completion.dto';

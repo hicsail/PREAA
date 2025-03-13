@@ -6,13 +6,9 @@ import { DeepchatProxyService } from './deepchat-proxy.service';
 import { LiteLLMService } from 'src/litellm/litellm.service';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([
-      { name: DeepchatProxy.name, schema: DeepchatProxySchema },
-    ]),
-  ],
+  imports: [MongooseModule.forFeature([{ name: DeepchatProxy.name, schema: DeepchatProxySchema }])],
   controllers: [DeepchatProxyController],
   providers: [DeepchatProxyService, LiteLLMService],
-  exports: [],
+  exports: []
 })
 export class DeepchatProxyModule {}

@@ -1,6 +1,5 @@
-import { IsOptional, IsString } from "class-validator";
-import { DoesExistModel } from "../pipes/exists";
-
+import { IsOptional, IsString } from 'class-validator';
+import { DoesExistModel } from '../pipes/exists';
 
 export class UpdateLangFlowMapping {
   @IsString()

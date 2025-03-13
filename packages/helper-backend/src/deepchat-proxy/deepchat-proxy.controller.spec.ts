@@ -6,7 +6,7 @@ describe('DeepchatProxyController', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [DeepchatProxyController],
+      controllers: [DeepchatProxyController]
     }).compile();
 
     controller = module.get<DeepchatProxyController>(DeepchatProxyController);

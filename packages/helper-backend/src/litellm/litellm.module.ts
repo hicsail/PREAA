@@ -5,6 +5,6 @@ import { LiteLLMService } from './litellm.service';
   imports: [],
   controllers: [],
   providers: [LiteLLMService],
-  exports: [LiteLLMService],
+  exports: [LiteLLMService]
 })
 export class LitellmModule {}

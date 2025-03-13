@@ -1,0 +1,225 @@
+name: helper-backend
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'packages/helper-backend/**'
+    branches:
+      - main
+    tags:
+      - "v*.*.*"
+  pull_request:
+    paths:
+      - 'packages/helper-backend/**'
+    branches:
+      - main
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    name: Check for Linting Errors
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: NPM Install
+        run: npm install --only=dev
+        shell: bash
+
+      - name: Check for Linting Issues
+        run: npm run prettier --workspace=packages/client
+
+  build:
+    runs-on: ubuntu-latest
+    name: Build Code
+    defaults:
+      run:
+        working-directory: packages/client
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: NPM Install
+        run: npm install
+        shell: bash
+
+      - name: Build
+        run: npm run build
+
+  staging-deploy:
+    runs-on: ubuntu-latest
+    name: Deploy to Staging
+    needs: [lint, build]
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    defaults:
+      run:
+        working-directory: packages/client
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # App Engine deploy logic does not play well with
+      - name: Cleanup
+        run: rm package-lock.json
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Capture Environment Variables
+        run: |
+          echo VITE_GRAPHQL_ENDPOINT=${{ secrets.STAGING_GRAPHQL_ENDPOINT }} >> .env
+          echo VITE_ASL_LEXICON_ID=${{ secrets.STAGING_ASL_LEXICON_ID }} >> .env
+          echo VITE_NAME=${{ secrets.STAGING_ASL_LEX_NAME }} >> .env
+          echo VITE_AUTH_API_KEY=${{ secrets.STAGING_AUTH_API_KEY }} >> .env
+          echo VITE_AUTH_DOMAIN=${{ secrets.STAGING_AUTH_DOMAIN }} >> .env
+          echo VITE_HEALTH_ENDPOINT=${{ secrets.STAGING_HEALTH_ENDPOINT }} >> .env
+
+      - name: NPM Install
+        run: npm install
+        shell: bash
+
+      - name: Build
+        run: npm run build
+
+      - name: GCP Auth
+        uses: 'google-github-actions/auth@v2'
+        with:
+          project_id: ${{ secrets.GCP_STAGING_PROJECT_ID }}
+          workload_identity_provider: ${{ secrets.GCP_STAGING_ID_PROVIDER }}
+          service_account: ${{ secrets.STAGING_GCP_SERVICE_ACCOUNT }}
+
+      - name: Upload Files
+        uses: 'google-github-actions/upload-cloud-storage@v2'
+        with:
+          path: packages/client/dist/
+          destination: ${{ secrets.GCP_FRONTEND_BUCKET }}
+          parent: false
+
+  eu-prod-deploy:
+    runs-on: ubuntu-latest
+    name: Deploy to EU Prod
+    needs: [lint, build]
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    if: startsWith(github.ref, 'refs/tags/v')
+    defaults:
+      run:
+        working-directory: packages/client
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # App Engine deploy logic does not play well with
+      - name: Cleanup
+        run: rm package-lock.json
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Capture Environment Variables
+        run: |
+          echo VITE_GRAPHQL_ENDPOINT=${{ secrets.PROD_EU_GRAPHQL_ENDPOINT }} >> .env
+          echo VITE_ASL_LEXICON_ID=${{ secrets.PROD_EU_ASL_LEXICON_ID }} >> .env
+          echo VITE_NAME=${{ secrets.PROD_EU_ASL_LEX_NAME }} >> .env
+          echo VITE_AUTH_API_KEY=${{ secrets.PROD_EU_AUTH_API_KEY }} >> .env
+          echo VITE_AUTH_DOMAIN=${{ secrets.PROD_EU_AUTH_DOMAIN }} >> .env
+          echo VITE_HEALTH_ENDPOINT=${{ secrets.PROD_EU_HEALTH_ENDPOINT }} >> .env
+
+      - name: NPM Install
+        run: npm install
+        shell: bash
+
+      - name: Build
+        run: npm run build
+
+      - name: GCP Auth
+        uses: 'google-github-actions/auth@v2'
+        with:
+          project_id: ${{ secrets.GCP_PROD_EU_PROJECT_ID }}
+          workload_identity_provider: ${{ secrets.GCP_PROD_EU_ID_PROVIDER }}
+          service_account: ${{ secrets.PROD_EU_GCP_SERVICE_ACCOUNT }}
+
+      - name: Upload Files
+        uses: 'google-github-actions/upload-cloud-storage@v2'
+        with:
+          path: packages/client/dist/
+          destination: ${{ secrets.PROD_EU_GCP_FRONTEND_BUCKET }}
+          parent: false
+
+  us-prod-deploy:
+    runs-on: ubuntu-latest
+    name: Deploy to EU Prod
+    needs: [lint, build]
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    if: startsWith(github.ref, 'refs/tags/v')
+    defaults:
+      run:
+        working-directory: packages/client
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # App Engine deploy logic does not play well with
+      - name: Cleanup
+        run: rm package-lock.json
+
+      - name: Setup NodeJS
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Capture Environment Variables
+        run: |
+          echo VITE_GRAPHQL_ENDPOINT=${{ secrets.PROD_US_GRAPHQL_ENDPOINT }} >> .env
+          echo VITE_ASL_LEXICON_ID=${{ secrets.PROD_US_ASL_LEXICON_ID }} >> .env
+          echo VITE_NAME=${{ secrets.PROD_US_ASL_LEX_NAME }} >> .env
+          echo VITE_AUTH_API_KEY=${{ secrets.PROD_US_AUTH_API_KEY }} >> .env
+          echo VITE_AUTH_DOMAIN=${{ secrets.PROD_US_AUTH_DOMAIN }} >> .env
+          echo VITE_HEALTH_ENDPOINT=${{ secrets.PROD_US_HEALTH_ENDPOINT }} >> .env
+
+      - name: NPM Install
+        run: npm install
+        shell: bash
+
+      - name: Build
+        run: npm run build
+
+      - name: GCP Auth
+        uses: 'google-github-actions/auth@v2'
+        with:
+          project_id: ${{ secrets.GCP_PROD_US_PROJECT_ID }}
+          workload_identity_provider: ${{ secrets.GCP_PROD_US_ID_PROVIDER }}
+          service_account: ${{ secrets.PROD_US_GCP_SERVICE_ACCOUNT }}
+
+      - name: Upload Files
+        uses: 'google-github-actions/upload-cloud-storage@v2'
+        with:
+          path: packages/client/dist/
+          destination: ${{ secrets.PROD_US_GCP_FRONTEND_BUCKET }}
+          parent: false

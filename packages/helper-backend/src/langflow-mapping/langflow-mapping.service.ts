@@ -7,7 +7,9 @@ import { UpdateLangFlowMapping } from './dtos/update.dto';
 
 @Injectable()
 export class LangflowMappingService {
-  constructor(@InjectModel(LangFlowMapping.name) private readonly langFlowMappingModel: Model<LangFlowMappingDocument>) {}
+  constructor(
+    @InjectModel(LangFlowMapping.name) private readonly langFlowMappingModel: Model<LangFlowMappingDocument>
+  ) {}
 
   async get(model: string): Promise<LangFlowMapping | null> {
     return this.langFlowMappingModel.findOne({ model });
@@ -16,13 +18,16 @@ export class LangflowMappingService {
   async getAll(): Promise<LangFlowMapping[]> {
     return this.langFlowMappingModel.find();
   }
-  
+
   async create(mapping: CreateLangFlowMapping): Promise<LangFlowMapping> {
     return await this.langFlowMappingModel.create(mapping);
   }
 
   async update(mapping: UpdateLangFlowMapping): Promise<LangFlowMapping | null> {
-    return await this.langFlowMappingModel.findOneAndUpdate({ model: mapping.model }, mapping, { new: true, upsert: true });
+    return await this.langFlowMappingModel.findOneAndUpdate({ model: mapping.model }, mapping, {
+      new: true,
+      upsert: true
+    });
   }
 
   async delete(model: string): Promise<void> {
