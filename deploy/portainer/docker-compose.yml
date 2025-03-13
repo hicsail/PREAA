@@ -1,6 +1,7 @@
 services:
   langflow:
     image: langflowai/langflow:1.2.0
+    restart: unless-stopped
     container_name: portainer-LangFlow
     ports:
       - "7860:7860"
@@ -15,6 +16,7 @@ services:
 
   postgres:
     image: postgres:16
+    restart: unless-stopped
     container_name: portainer-PostgreSQL
     ports:
       - "5432:5432"
@@ -31,6 +33,7 @@ services:
 
   librechat:
     image: ghcr.io/danny-avila/librechat:latest
+    restart: unless-stopped
     container_name: portainer-LibreChat
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -48,6 +51,7 @@ services:
 
   mongodb:
     image: mongo
+    restart: unless-stopped
     container_name: portainer-MongoDB
     volumes:
       - portainer-mongodb-data:/data/db
@@ -55,6 +59,7 @@ services:
 
   litellm:
     image: ghcr.io/berriai/litellm:litellm_stable_release_branch-v1.61.20-stable
+    restart: unless-stopped
     ports:
       - "4000:4000"
     env_file:
@@ -63,14 +68,14 @@ services:
     depends_on:
       - postgres
     volumes:
-      - portainer-litellm-components:/app/langflowEP
-      - portainer-litellm-config:/app/config
+      - portainer-litellm:/app/config
     command: "--config /app/config/litellm.yaml"
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
   langfuse-worker:
     image: langfuse/langfuse-worker:3
+    restart: unless-stopped
     depends_on: &langfuse-depends-on
       postgres:
         condition: service_healthy
@@ -88,6 +93,7 @@ services:
 
   langfuse-web:
     image: langfuse/langfuse:3
+    restart: unless-stopped
     depends_on: *langfuse-depends-on
     ports:
       - "3000:3000"
@@ -97,6 +103,7 @@ services:
 
   clickhouse:
     image: clickhouse/clickhouse-server
+    restart: unless-stopped
     user: "101:101"
     env_file:
       - ../../stack.env
@@ -113,6 +120,7 @@ services:
 
   minio:
     image: minio/minio
+    restart: unless-stopped
     entrypoint: sh
     # create the 'langfuse' bucket before starting the service
     command: -c 'mkdir -p /data/langfuse && minio server --address ":9000" --console-address ":9001" /data'
@@ -130,6 +138,7 @@ services:
 
   redis:
     image: redis:7
+    restart: unless-stopped
     command:
       - /bin/sh
       - -c
@@ -145,14 +154,16 @@ services:
 
   prometheus:
     image: prom/prometheus:v3.2.1
+    restart: unless-stopped
     container_name: portainer-prometheus
     volumes:
-      - portainer-prometheus-config:/etc/prometheus/prometheus.yml
+      - portainer-prometheus-config:/etc/prometheus/config/prometheus.yml
     command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--config.file=/etc/prometheus/config/prometheus.yml'
 
   librechat-metrics:
     image: ghcr.io/virtuos/librechat_exporter:main
+    restart: unless-stopped
     depends_on:
       - mongodb
     env_file:
@@ -161,6 +172,7 @@ services:
 
   grafana:
     image: grafana/grafana-enterprise
+    restart: unless-stopped
     ports:
       - "3002:3000"
     volumes:
@@ -175,8 +187,7 @@ volumes:
   portainer-librechat-logs:
   portainer-librechat-config:
   portainer-mongodb-data:
-  portainer-litellm-components:
-  portainer-litellm-config:
+  portainer-litellm:
   portainer-langfuse-clickhouse-data:
   portainer-langfuse-clickhouse-logs:
   portainer-langfuse-minio-data:
