@@ -10,8 +10,8 @@ services:
       - portainer-langflow-data:/app/langflow
       - portainer-langflow-components:/app/custom_components/
     env_file:
-			-../../stack.env
-			-./stack.env
+      - ../../stack.env
+      - stack.env
 
   postgres:
     image: postgres:16
@@ -21,8 +21,8 @@ services:
     volumes:
       - portainer-postgres-data:/var/lib/postgresql/data
     env_file:
-			-../../stack.env
-			-./stack.env
+      - ../../stack.env
+      - stack.env
     healthcheck:
       test: ["CMD-SHELL", "pg_isready", "--host=localhost", "--username psql"]
       interval: 3s
@@ -37,8 +37,8 @@ services:
     ports:
       - "3080:3080"
     env_file:
-			-../../stack.env
-			-./stack.env
+      - ../../stack.env
+      - stack.env
     volumes:
       - portainer-librechat-images:/app/client/public/images
       - portainer-librechat-logs:/app/api/logs
@@ -58,8 +58,8 @@ services:
     ports:
       - "4000:4000"
     env_file:
-			-../../stack.env
-			-./stack.env
+      - ../../stack.env
+      - stack.env
     depends_on:
       - postgres
     volumes:
@@ -83,8 +83,8 @@ services:
     ports:
       - "3030:3030"
     env_file:
-			-../../stack.env
-			-./stack.env
+      - ../../stack.env
+      - stack.env
 
   langfuse-web:
     image: langfuse/langfuse:3
@@ -92,15 +92,15 @@ services:
     ports:
       - "3000:3000"
     env_file:
-			-../../stack.env
-			-./stack.env
+      - ../../stack.env
+      - stack.env
 
   clickhouse:
     image: clickhouse/clickhouse-server
     user: "101:101"
     env_file:
-			-../../stack.env
-			-./stack.env
+      - ../../stack.env
+      - stack.env
     volumes:
       - portainer-langfuse-clickhouse-data:/var/lib/clickhouse
       - portainer-langfuse-clickhouse-logs:/var/log/clickhouse-server
@@ -117,8 +117,8 @@ services:
     # create the 'langfuse' bucket before starting the service
     command: -c 'mkdir -p /data/langfuse && minio server --address ":9000" --console-address ":9001" /data'
     env_file:
-			-../../stack.env
-			-./stack.env
+      - ../../stack.env
+      - stack.env
     volumes:
       - portainer-langfuse-minio-data:/data
     healthcheck:
@@ -140,14 +140,14 @@ services:
       timeout: 10s
       retries: 10
     env_file:
-			-../../stack.env
-			-./stack.env
+      - ../../stack.env
+      - stack.env
 
   prometheus:
     image: prom/prometheus:v3.2.1
     container_name: portainer-prometheus
     volumes:
-      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+      - portainer-prometheus-config:/etc/prometheus/prometheus.yml
     command:
       - '--config.file=/etc/prometheus/prometheus.yml'
 
@@ -156,8 +156,8 @@ services:
     depends_on:
       - mongodb
     env_file:
-			-../../stack.env
-			-./stack.env
+      - ../../stack.env
+      - stack.env
 
   grafana:
     image: grafana/grafana-enterprise
@@ -180,4 +180,5 @@ volumes:
   portainer-langfuse-clickhouse-data:
   portainer-langfuse-clickhouse-logs:
   portainer-langfuse-minio-data:
+  portainer-prometheus-config:
   portainer-grafana-data:
