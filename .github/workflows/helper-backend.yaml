@@ -98,8 +98,8 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           push: ${{ github.event_name != 'pull_request' }}
-          context: ./packages/server
-          file: ./packages/server/Dockerfile
+          context: ./packages/helper-backend
+          file: ./packages/helper-backend/Dockerfile
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=gateway
