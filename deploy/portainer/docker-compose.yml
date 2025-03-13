@@ -8,7 +8,7 @@ services:
       - postgres
     volumes:
       - portainer-langflow-data:/app/langflow
-      - ../../packages/langflow/custom/:/app/custom_components/
+      - portainer-langflow-components:/app/custom_components/
     env_file:
 			-../../stack.env
 			-./stack.env
@@ -42,9 +42,7 @@ services:
     volumes:
       - portainer-librechat-images:/app/client/public/images
       - portainer-librechat-logs:/app/api/logs
-      - type: bind
-        source: ./config/librechat.yaml
-        target: /app/librechat.yaml
+      - portainer-librechat-config:/app/config/
     depends_on:
       - mongodb
 
@@ -65,11 +63,9 @@ services:
     depends_on:
       - postgres
     volumes:
-      - ../../packages/litellm/custom/:/app/langflowEP
-      - type: bind
-        source: ./config/litellm.yaml
-        target: /app/litellm.yaml
-    command: "--config /app/litellm.yaml"
+      - portainer-litellm-components:/app/langflowEP
+      - portainer-litellm-config:/app/config
+    command: "--config /app/config/litellm.yaml"
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
@@ -173,10 +169,14 @@ services:
 
 volumes:
   portainer-langflow-data:
+  portainer-langflow-components:
   portainer-postgres-data:
   portainer-librechat-images:
   portainer-librechat-logs:
+  portainer-librechat-config:
   portainer-mongodb-data:
+  portainer-litellm-components:
+  portainer-litellm-config:
   portainer-langfuse-clickhouse-data:
   portainer-langfuse-clickhouse-logs:
   portainer-langfuse-minio-data:
