@@ -157,7 +157,7 @@ services:
     restart: unless-stopped
     container_name: portainer-prometheus
     volumes:
-      - portainer-prometheus-config:/etc/prometheus/config/prometheus.yml
+      - portainer-prometheus-config:/etc/prometheus/config/
     command:
       - '--config.file=/etc/prometheus/config/prometheus.yml'
 
