@@ -104,3 +104,15 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=gateway
           cache-to: type=gha,mode=max,scope=gateway
+
+  deployment:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    needs: [docker]
+    steps:
+      - name: Push to Staging
+        uses: fjogeleit/http-request-action@v1
+        with:
+          method: "POST"
+          url: ${{ secrets.PORTAINER_WEBHOOK }}
+          preventFailureOnNoResponse: true
