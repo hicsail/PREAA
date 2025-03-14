@@ -2,7 +2,6 @@ import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
 
 @Schema()
 export class DeepchatProxy {
-
   /** The name the mapping should go by */
   @Prop({ required: true })
   model: string;

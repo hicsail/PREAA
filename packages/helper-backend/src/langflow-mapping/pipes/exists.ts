@@ -1,7 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface, ValidationOptions, registerDecorator } from 'class-validator';
+import {
+  ValidationArguments,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
+  ValidationOptions,
+  registerDecorator
+} from 'class-validator';
 import { LangflowMappingService } from '../langflow-mapping.service';
-
 
 @ValidatorConstraint({ async: true, name: 'DoesExistModel' })
 @Injectable()
@@ -14,7 +19,7 @@ export class DoesExistModelRule implements ValidatorConstraintInterface {
   }
 
   defaultMessage(validationArguments?: ValidationArguments): string {
-      return `Model ${validationArguments?.value} not found`;
+    return `Model ${validationArguments?.value} not found`;
   }
 }
 
@@ -25,8 +30,7 @@ export function DoesExistModel(validationOptions?: ValidationOptions) {
       target: object.constructor,
       propertyName: propertyName,
       options: validationOptions,
-      validator: DoesExistModelRule,
+      validator: DoesExistModelRule
     });
   };
 }
-

@@ -9,7 +9,7 @@ export class DeepchatProxyService {
   constructor(
     @InjectModel(DeepchatProxy.name)
     private readonly deepChatProxyModel: Model<DeepchatProxyDocument>,
-    private readonly liteLLMService: LiteLLMService,
+    private readonly liteLLMService: LiteLLMService
   ) {}
 
   async get(id: string): Promise<DeepchatProxy | null> {
@@ -25,24 +25,17 @@ export class DeepchatProxyService {
   }
 
   async update(id: string, mapping: DeepchatProxy): Promise<DeepchatProxy | null> {
-    return await this.deepChatProxyModel.findOneAndUpdate(
-      { _id: id },
-      mapping,
-      {
-        new: true,
-        upsert: true,
-      },
-    );
+    return await this.deepChatProxyModel.findOneAndUpdate({ _id: id }, mapping, {
+      new: true,
+      upsert: true
+    });
   }
 
   async delete(model: string): Promise<void> {
     await this.deepChatProxyModel.deleteOne({ model });
   }
 
-  async proxyRequest(
-    id: string,
-    body: any,
-  ): Promise<any> {
+  async proxyRequest(id: string, body: any): Promise<any> {
     const modelData = await this.get(id);
     if (!modelData) {
       throw new NotFoundException(`No model ${id} found`);

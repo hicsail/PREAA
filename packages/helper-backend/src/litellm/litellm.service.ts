@@ -1,9 +1,7 @@
-import { CompletionResponse } from "./dtos/litellm.dto";
+import { CompletionResponse } from './dtos/litellm.dto';
 
 export class LiteLLMService {
-
-  constructor() {
-  }
+  constructor() {}
 
   async completion(model: string, apiKey: string, url: string, body: any): Promise<CompletionResponse> {
     body.messages.forEach((message: any) => {
@@ -15,7 +13,7 @@ export class LiteLLMService {
       headers: {
         'x-goog-api-key': apiKey
       },
-      body: JSON.stringify(body),
+      body: JSON.stringify(body)
     });
 
     // reshape the response
@@ -23,5 +21,4 @@ export class LiteLLMService {
     responseJson.text = responseJson.choices[0].message.content;
     return responseJson;
   }
-
 }
