@@ -15,7 +15,6 @@ function App() {
       fetch(`${import.meta.env.VITE_BACKEND_BASE_URL}/deepchat-proxy/${modelId}`)
         .then(response => response.json())
         .then(data => {
-          console.log(data);
           if (data) {
             setModelId(modelId);
           }
