@@ -1,4 +1,5 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
+import { Exclude } from 'class-transformer';
 
 @Schema()
 export class DeepchatProxy {
@@ -11,6 +12,7 @@ export class DeepchatProxy {
   url: string;
 
   // API KEY to pass as header to LiteLLM
+  @Exclude()
   @Prop({ required: true })
   apiKey: string;
 }

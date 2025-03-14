@@ -3,6 +3,7 @@ import { DeepchatProxy, DeepchatProxyDocument } from './deepchat-proxy.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { LiteLLMService } from 'src/litellm/litellm.service';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class DeepchatProxyService {
@@ -13,22 +14,27 @@ export class DeepchatProxyService {
   ) {}
 
   async get(id: string): Promise<DeepchatProxy | null> {
-    return this.deepChatProxyModel.findOne({ _id: id });
+    let result = await this.deepChatProxyModel.findOne({ _id: id }).lean().exec();
+    return plainToInstance(DeepchatProxy, result);
   }
 
   async getAll(): Promise<DeepchatProxy[]> {
-    return this.deepChatProxyModel.find();
+    // model data without the apiKey
+    const results = await this.deepChatProxyModel.find().lean().exec();
+    return plainToInstance(DeepchatProxy, results);
   }
 
   async create(mapping: DeepchatProxy): Promise<DeepchatProxy> {
-    return await this.deepChatProxyModel.create(mapping);
+    const result = await this.deepChatProxyModel.create(mapping);
+    return plainToInstance(DeepchatProxy, result);
   }
 
   async update(id: string, mapping: DeepchatProxy): Promise<DeepchatProxy | null> {
-    return await this.deepChatProxyModel.findOneAndUpdate({ _id: id }, mapping, {
+    const result = await this.deepChatProxyModel.findOneAndUpdate({ _id: id }, mapping, {
       new: true,
       upsert: true
     });
+    return plainToInstance(DeepchatProxy, result);
   }
 
   async delete(model: string): Promise<void> {
