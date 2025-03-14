@@ -1,35 +1,50 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useEffect, useState } from 'react'
+import { DeepChat } from "deep-chat-react";
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+
+  const [modelId, setModelId] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  
+  // fetch modelId parameter from URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const modelId = urlParams.get('modelId');
+    if (modelId) {
+      fetch(`${import.meta.env.VITE_BACKEND_BASE_URL}/deepchat-proxy/${modelId}`)
+        .then(response => response.json())
+        .then(data => {
+          console.log(data);
+          if (data) {
+            setModelId(modelId);
+          }
+        })
+        .catch(error => {
+          setErrorMessage('Error while fetching modelId');
+        });
+    }
+  }, [modelId]);
+
+  // return error message if modelId is not provided
+  if (!modelId) {
+    return (
+      <div>
+        <h1>Error: modelId parameter is missing</h1>
+        {errorMessage && <p>{errorMessage}</p>}
+      </div>
+    )
+  }
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <DeepChat
+        requestBodyLimits={{ maxMessages: -1 }}
+        connect={{
+          url: `${import.meta.env.VITE_BACKEND_BASE_URL}/deepchat-proxy/proxy/${modelId}`,
+        }} />
     </>
   )
 }
 
-export default App
+export default App;
