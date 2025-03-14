@@ -18,8 +18,6 @@ services:
     image: postgres:16
     restart: unless-stopped
     container_name: portainer-PostgreSQL
-    ports:
-      - "5432:5432"
     volumes:
       - portainer-postgres-data:/var/lib/postgresql/data
     env_file:
@@ -182,16 +180,17 @@ services:
     container_name: portainer-grafana
     restart: unless-stopped
     ports:
-      - "3002:3000"
+      - "3007:3000"
     volumes:
       - portainer-grafana-data:/var/lib/grafana
 
   helper-backend:
-    image: hicsail/preaa-helper:latest
+    image: hicsail/preaa-helper:main
+    pull_policy: always
     container_name: portainer-helper-backend
     restart: unless-stopped
     ports:
-      - "3001:3001"
+      - "3008:3001"
     env_file:
       - ../../stack.env
       - stack.env
