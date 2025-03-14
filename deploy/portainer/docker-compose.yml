@@ -15,7 +15,7 @@ services:
       - stack.env
 
   postgres:
-    image: postgres:16
+    image: pgvector/pgvector:pg17
     restart: unless-stopped
     container_name: portainer-PostgreSQL
     volumes:
