@@ -13,11 +13,18 @@ export class DeepchatProxyService {
   ) {}
 
   async get(id: string): Promise<DeepchatProxy | null> {
-    return this.deepChatProxyModel.findOne({ _id: id });
+    let modelData = this.deepChatProxyModel.findOne({ _id: id });
+    // remove the apiKey from the response
+    modelData = modelData.select('-apiKey');
+    return modelData;
   }
 
   async getAll(): Promise<DeepchatProxy[]> {
-    return this.deepChatProxyModel.find();
+    // model data without the apiKey
+    let modelData = this.deepChatProxyModel.find();
+    // remove the apiKey from all
+    modelData = modelData.select('-apiKey');
+    return modelData;
   }
 
   async create(mapping: DeepchatProxy): Promise<DeepchatProxy> {
