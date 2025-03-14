@@ -7,9 +7,7 @@ import { IsUniqueModelRule } from './pipes/unique';
 import { DoesExistModelRule } from './pipes/exists';
 
 @Module({
-  imports: [
-    MongooseModule.forFeature([ { name: LangFlowMapping.name, schema: LangFlowMappingSchema } ])
-  ],
+  imports: [MongooseModule.forFeature([{ name: LangFlowMapping.name, schema: LangFlowMappingSchema }])],
   controllers: [LangflowMappingController],
   providers: [LangflowMappingService, IsUniqueModelRule, DoesExistModelRule],
   exports: [IsUniqueModelRule]
