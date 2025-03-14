@@ -195,6 +195,17 @@ services:
       - ../../stack.env
       - stack.env
 
+  chat-client:
+    image: hicsail/preaa-chat-client:main
+    pull_policy: always
+    container_name: portainer-chat-client
+    restart: unless-stopped
+    ports:
+      - "3009:80"
+    env_file:
+      - ../../stack.env
+      - stack.env
+
 volumes:
   portainer-langflow-data:
   portainer-langflow-components:

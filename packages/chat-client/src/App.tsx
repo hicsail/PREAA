@@ -19,7 +19,7 @@ function App() {
             setModelId(modelId);
           }
         })
-        .catch(error => {
+        .catch(_error => {
           setErrorMessage('Error while fetching modelId');
         });
     }
