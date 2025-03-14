@@ -46,7 +46,6 @@ export class DeepchatProxyService {
     if (!modelData) {
       throw new NotFoundException(`No model ${id} found`);
     }
-    console.log(modelData);
     const response = this.liteLLMService.completion(modelData.model, modelData.apiKey, modelData.url, body);
     return response;
   }
