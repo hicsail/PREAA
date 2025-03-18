@@ -21,7 +21,7 @@ then follow the instructions below to find each secret that needs to be added in
 
 #### config/.env.psql
 
-* `POSTRES_PASSWORD`: any generated string
+* `POSTGRES_PASSWORD`: any generated string
 
 #### config/.env.langfuse
 
@@ -40,7 +40,7 @@ then follow the instructions below to find each secret that needs to be added in
 * `CREDS_IV`: see [LibreChat provided generator](https://www.librechat.ai/toolkit/creds_generator)
 * `JWT_SECRET`: see [LibreChat provided generator](https://www.librechat.ai/toolkit/creds_generator)
 * `JWT_REFRESH_SECRET`: see [LibreChat provided generator](https://www.librechat.ai/toolkit/creds_generator)
-
+* `MEILI_MASTER_KEY`: see [LibreChat provided generator](https://www.librechat.ai/toolkit/creds_generator)
 #### config/.env.litellm 
 
 * `LITELLM_MASTER_KEY`: any generated string
