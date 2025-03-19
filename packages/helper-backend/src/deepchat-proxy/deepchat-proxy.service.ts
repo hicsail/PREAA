@@ -42,7 +42,7 @@ export class DeepchatProxyService {
   }
 
   async proxyRequest(id: string, body: any): Promise<any> {
-    const modelData = await this.get(id);
+    const modelData = await this.deepChatProxyModel.findOne({ _id: id }).lean().exec();
     if (!modelData) {
       throw new NotFoundException(`No model ${id} found`);
     }

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Box, Button, Typography, Paper } from '@mui/material';
-import CreateMappingForm, { MappingFormData } from './CreateMappingForm';
+import CreateMappingForm, { MappingFormData } from '../components/mappings/CreateMappingForm';
 
 const MappingsPage = () => {
   const [openForm, setOpenForm] = useState(false);
