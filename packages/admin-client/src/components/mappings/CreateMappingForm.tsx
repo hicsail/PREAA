@@ -1,9 +1,8 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { 
   Box, 
   TextField, 
   Button, 
-  Typography, 
   Dialog, 
   DialogTitle, 
   DialogContent, 
@@ -12,23 +11,17 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  SelectChangeEvent
 } from '@mui/material';
+import { MappingFormData } from '../../types/mapping-form';
+import { LangFlowMapping} from '../../types/langflow-mapping';
+import { createLangFlowMapping } from '../../services/endpoints';
 
 type CreateMappingFormProps = {
   open: boolean;
   onClose: () => void;
-  onSubmit: (formData: MappingFormData) => void;
 };
 
-export type MappingFormData = {
-  url: string;
-  modelName: string;
-  historyComponentID: string;
-  provider: string;
-};
-
-const CreateMappingForm = ({ open, onClose, onSubmit }: CreateMappingFormProps) => {
+const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
   const [formData, setFormData] = useState<MappingFormData>({
     url: '',
     modelName: '',
@@ -36,32 +29,31 @@ const CreateMappingForm = ({ open, onClose, onSubmit }: CreateMappingFormProps) 
     provider: 'Langflow'
   });
 
-  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
-  };
 
-  const handleSelectChange = (e: SelectChangeEvent) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name as string]: value
-    });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
-    // Reset form
+    try {
+      const langflowData: LangFlowMapping = {
+        model: formData.modelName,
+        url: formData.url,
+        historyComponentID: formData.historyComponentID
+      };
+  
+      const response = await createLangFlowMapping(langflowData);
+      console.log('API Response:', response);
+      
+    } catch (error) {
+      console.error('Error creating mapping:', error);
+    }
+
+    // Reset Form Data
     setFormData({
       url: '',
       modelName: '',
       historyComponentID: '',
       provider: 'Langflow'
     });
+
     onClose();
   };
 
@@ -71,11 +63,23 @@ const CreateMappingForm = ({ open, onClose, onSubmit }: CreateMappingFormProps) 
       <form onSubmit={handleSubmit}>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <FormControl fullWidth>
+              <InputLabel id="provider-label">Provider</InputLabel>
+              <Select
+                labelId="provider-label"
+                name="provider"
+                value={formData.provider}
+                label="Provider"
+                onChange={e => setFormData({ ...formData, provider: e.target.value })}
+              >
+                <MenuItem value="Langflow">Langflow</MenuItem>
+                </Select>
+            </FormControl>
             <TextField
               label="URL of Langflow Model"
               name="url"
               value={formData.url}
-              onChange={handleTextChange}
+              onChange={e => setFormData({ ...formData, url: e.target.value })}
               fullWidth
               required
             />
@@ -83,7 +87,7 @@ const CreateMappingForm = ({ open, onClose, onSubmit }: CreateMappingFormProps) 
               label="Model Name"
               name="modelName"
               value={formData.modelName}
-              onChange={handleTextChange}
+              onChange={e => setFormData({ ...formData, modelName: e.target.value })}
               fullWidth
               required
               helperText="Must be unique"
@@ -92,23 +96,11 @@ const CreateMappingForm = ({ open, onClose, onSubmit }: CreateMappingFormProps) 
               label="History Component ID"
               name="historyComponentID"
               value={formData.historyComponentID}
-              onChange={handleTextChange}
+              onChange={e => setFormData({ ...formData, historyComponentID: e.target.value })}
               fullWidth
               required
               helperText="Same as Completion ID"
             />
-            <FormControl fullWidth>
-              <InputLabel id="provider-label">Provider</InputLabel>
-              <Select
-                labelId="provider-label"
-                name="provider"
-                value={formData.provider}
-                label="Provider"
-                onChange={handleSelectChange}
-              >
-                <MenuItem value="Langflow">Langflow</MenuItem>
-              </Select>
-            </FormControl>
           </Box>
         </DialogContent>
         <DialogActions>
