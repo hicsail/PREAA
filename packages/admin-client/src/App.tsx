@@ -1,8 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import MainLayout from './components/layout/MainLayout';
 import DashboardPage from './pages/DashboardPage';
-import MappingsPage from './components/mappings/MappingsPage';
-import ProxyingPage from './components/proxying/ProxyingPage';
+import MappingsPage from './pages/MappingsPage';
+import ProxyingPage from './pages/ProxyingPage';
 import './App.css';
 
 function App() {
