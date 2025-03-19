@@ -4,6 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { LiteLLMService } from 'src/litellm/litellm.service';
 import { plainToInstance } from 'class-transformer';
+import { CreateProxyMappingDto } from './dtos/create.dto';
 
 @Injectable()
 export class DeepchatProxyService {
@@ -24,7 +25,7 @@ export class DeepchatProxyService {
     return plainToInstance(DeepchatProxy, results);
   }
 
-  async create(mapping: DeepchatProxy): Promise<DeepchatProxy> {
+  async create(mapping: CreateProxyMappingDto): Promise<DeepchatProxy> {
     const result = await this.deepChatProxyModel.create(mapping);
     return plainToInstance(DeepchatProxy, result);
   }
