@@ -15,12 +15,9 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  SelectChangeEvent
 } from '@mui/material';
+
+import CreateProxyMaps from '../components/CreateProxyMaps';
 
 // Mock data - would come from API in a real implementation
 const mockModels = [
@@ -37,6 +34,7 @@ type ProxyFormData = {
 
 const ProxyingPage = () => {
   const [openForm, setOpenForm] = useState(false);
+  const [openProxyForm, setOpenProxyForm] = useState(false);
   const [selectedModel, setSelectedModel] = useState<string>('');
   const [formData, setFormData] = useState<ProxyFormData>({
     modelName: '',
@@ -82,7 +80,15 @@ const ProxyingPage = () => {
 
   return (
     <Box>
+      
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', px: 12 }}>
       <Typography variant="h5" sx={{ mb: 3 }}>Model Proxying</Typography>
+      <Button variant="contained" color="primary" onClick={()=>{
+        setOpenProxyForm(!openProxyForm);
+      }}>Create Proxy Map</Button>
+      </Box>
+
+      <CreateProxyMaps open={openProxyForm} setOpen={setOpenProxyForm} />
       
       <TableContainer component={Paper}>
         <Table>
