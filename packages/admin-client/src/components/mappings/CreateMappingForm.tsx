@@ -24,7 +24,7 @@ type CreateMappingFormProps = {
 export type MappingFormData = {
   url: string;
   modelName: string;
-  completionId: string;
+  historyComponentID: string;
   provider: string;
 };
 
@@ -32,7 +32,7 @@ const CreateMappingForm = ({ open, onClose, onSubmit }: CreateMappingFormProps) 
   const [formData, setFormData] = useState<MappingFormData>({
     url: '',
     modelName: '',
-    completionId: '',
+    historyComponentID: '',
     provider: 'Langflow'
   });
 
@@ -59,7 +59,7 @@ const CreateMappingForm = ({ open, onClose, onSubmit }: CreateMappingFormProps) 
     setFormData({
       url: '',
       modelName: '',
-      completionId: '',
+      historyComponentID: '',
       provider: 'Langflow'
     });
     onClose();
@@ -89,12 +89,13 @@ const CreateMappingForm = ({ open, onClose, onSubmit }: CreateMappingFormProps) 
               helperText="Must be unique"
             />
             <TextField
-              label="Completion ID"
-              name="completionId"
-              value={formData.completionId}
+              label="History Component ID"
+              name="historyComponentID"
+              value={formData.historyComponentID}
               onChange={handleTextChange}
               fullWidth
               required
+              helperText="Same as Completion ID"
             />
             <FormControl fullWidth>
               <InputLabel id="provider-label">Provider</InputLabel>

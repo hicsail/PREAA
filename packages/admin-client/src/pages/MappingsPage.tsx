@@ -1,9 +1,20 @@
 import { useState } from 'react';
-import { Box, Button, Typography, Paper } from '@mui/material';
+import { Box, Button, Typography, Paper, Snackbar, Alert } from '@mui/material';
 import CreateMappingForm, { MappingFormData } from '../components/mappings/CreateMappingForm';
+import { createLangFlowMapping } from '../services/endpoints';
+import { LangFlowMapping } from '../types/langflow-mapping';
 
 const MappingsPage = () => {
   const [openForm, setOpenForm] = useState(false);
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: 'success' | 'error';
+  }>({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
 
   const handleOpenForm = () => {
     setOpenForm(true);
@@ -13,13 +24,39 @@ const MappingsPage = () => {
     setOpenForm(false);
   };
 
-  const handleSubmitMapping = (formData: MappingFormData) => {
-    // This would call an API to store the mapping and configure LiteLLM
-    console.log('Submitting mapping:', formData);
-    // Implementation would:
-    // 1. Store mapping in database
-    // 2. Call LiteLLM's API to add the model
-    // 3. Create mappings for both Langflow and Deep Chat proxies
+  const handleSnackbarClose = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
+  const handleSubmitMapping = async (formData: MappingFormData) => {
+    try {
+      // Convert MappingFormData to LangFlowMapping
+      const langflowData: LangFlowMapping = {
+        model: formData.modelName,
+        url: formData.url,
+        historyComponentID: formData.historyComponentID
+      };
+
+      // Call the API to create the mapping
+      const response = await createLangFlowMapping(langflowData);
+      console.log('API Response:', response);
+      
+      // Show success message
+      setSnackbar({
+        open: true,
+        message: 'Model mapping created successfully!',
+        severity: 'success'
+      });
+    } catch (error) {
+      console.error('Error creating mapping:', error);
+      
+      // Show error message
+      setSnackbar({
+        open: true,
+        message: 'Failed to create model mapping. Please try again.',
+        severity: 'error'
+      });
+    }
   };
 
   return (
@@ -58,6 +95,21 @@ const MappingsPage = () => {
         onClose={handleCloseForm} 
         onSubmit={handleSubmitMapping} 
       />
+
+      <Snackbar 
+        open={snackbar.open} 
+        autoHideDuration={6000} 
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={handleSnackbarClose} 
+          severity={snackbar.severity}
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
