@@ -1,4 +1,4 @@
-import { useState, ReactNode } from 'react';
+import { ReactNode } from 'react';
 import { Box, AppBar, Toolbar, Typography, CssBaseline } from '@mui/material';
 import Sidebar from './Sidebar';
 
@@ -7,15 +7,6 @@ type MainLayoutProps = {
 }
 
 const MainLayout = ({ children }: MainLayoutProps) => {
-  const [selectedPage, setSelectedPage] = useState<string>('mappings');
-
-  const handleNavigate = (page: string) => {
-    setSelectedPage(page);
-    // Pass the selected page to the parent component
-    // In a real implementation, we would use context or props to update the parent
-    window.dispatchEvent(new CustomEvent('page-change', { detail: { page } }));
-  };
-
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
@@ -25,11 +16,11 @@ const MainLayout = ({ children }: MainLayoutProps) => {
       >
         <Toolbar>
           <Typography variant="h6" noWrap component="div">
-            Admin Panel
+            PREAA Admin
           </Typography>
         </Toolbar>
       </AppBar>
-      <Sidebar onNavigate={handleNavigate} selectedPage={selectedPage} />
+      <Sidebar />
       <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 8 }}>
         {children}
       </Box>
