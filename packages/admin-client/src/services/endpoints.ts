@@ -14,4 +14,4 @@ export const createLangFlowMapping = async (data: LangFlowMapping) => {
   }
 
   return await response.json();
-};
+}; 
