@@ -6,7 +6,7 @@ import { Model } from 'mongoose';
 import { LiteLLMService } from '../litellm/litellm.service';
 import { NotFoundException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-
+//tests for the deepchat proxy service
 jest.mock('class-transformer', () => ({
   plainToInstance: jest.fn((cls, obj) => obj)
 }));

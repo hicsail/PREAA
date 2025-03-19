@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { DoesExistModelRule } from './exists';
 import { LangflowMappingService } from '../langflow-mapping.service';
 import { ValidationArguments } from 'class-validator';
-
+//checking if the model exists
 describe('DoesExistModelRule', () => {
   let validatorRule: DoesExistModelRule;
   let langflowMappingService: LangflowMappingService;
