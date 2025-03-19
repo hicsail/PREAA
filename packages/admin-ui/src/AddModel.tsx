@@ -1,19 +1,27 @@
 import React, { useState } from 'react';
 import { TextField, Button, Container, Typography } from '@mui/material';
+import { createLangFlowMapping } from './services/endpoints';
 
 const AddModel = () => {
   const [model, setModel] = useState('');
   const [url, setUrl] = useState('');
   const [historyComponentID, setHistoryComponentID] = useState('');
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     const data = {
       model,
       url,
       historyComponentID,
     };
-    console.log(data); // Replace with submission logic
+
+    try {
+      const response = await createLangFlowMapping(data);
+      console.log(response);
+    } catch (error) {
+      console.error('Error creating LangFlow model:', error); 
+    }
+
   };
 
   return (
