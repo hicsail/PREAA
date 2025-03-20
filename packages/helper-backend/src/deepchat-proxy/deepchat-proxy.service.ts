@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { DeepchatProxy, DeepchatProxyDocument } from './deepchat-proxy.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -31,7 +31,8 @@ export class DeepchatProxyService {
     const existingModel = await this.deepChatProxyModel.findOne({ model: mapping.model }).lean().exec();
 
     if (existingModel) {
-      throw new Error('Model already exists');
+      // throw bad request error
+      throw new BadRequestException(`Model with name ${mapping.model} already exists`);
     }
 
     const result = await this.deepChatProxyModel.create(mapping);
