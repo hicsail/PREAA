@@ -12,9 +12,9 @@ import {
   Select,
   MenuItem,
 } from '@mui/material';
-import { MappingFormData } from '../../types/mapping-form';
-import { LangFlowMapping} from '../../types/langflow-mapping';
-import { createLangFlowMapping } from '../../services/endpoints';
+import { LiteLLMMapping } from '../../types/litellm-mapping';
+import { LangFlowMapping } from '../../types/langflow-mapping';
+import { createLangFlowMapping, createNewModelLiteLLM } from '../../services/endpoints';
 
 type CreateMappingFormProps = {
   open: boolean;
@@ -22,25 +22,29 @@ type CreateMappingFormProps = {
 };
 
 const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
-  const [formData, setFormData] = useState<MappingFormData>({
+  const [formData, setFormData] = useState<LiteLLMMapping>({
+    provider: 'langflow',
     url: '',
     modelName: '',
     historyComponentID: '',
-    provider: 'Langflow'
+    apiKey: '',
   });
 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const langflowData: LangFlowMapping = {
+      const langflowData: LangFlowMapping= {
         model: formData.modelName,
         url: formData.url,
         historyComponentID: formData.historyComponentID
       };
   
-      const response = await createLangFlowMapping(langflowData);
-      console.log('API Response:', response);
+      const langFlowResponse = await createLangFlowMapping(langflowData);
+      console.log('API Response:', langFlowResponse);
+
+      const liteLLMResponse = await createNewModelLiteLLM(formData);
+      console.log('API Response:', liteLLMResponse);
       
     } catch (error) {
       console.error('Error creating mapping:', error);
@@ -51,7 +55,8 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
       url: '',
       modelName: '',
       historyComponentID: '',
-      provider: 'Langflow'
+      provider: 'langflow',
+      apiKey: '',
     });
 
     onClose();
@@ -72,8 +77,8 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
                 label="Provider"
                 onChange={e => setFormData({ ...formData, provider: e.target.value })}
               >
-                <MenuItem value="Langflow">Langflow</MenuItem>
-                </Select>
+                <MenuItem value="langflow">Langflow</MenuItem>
+              </Select>
             </FormControl>
             <TextField
               label="URL of Langflow Model"
@@ -91,6 +96,14 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
               fullWidth
               required
               helperText="Must be unique"
+            />
+            <TextField
+              label="API Key"
+              name="apiKey"
+              value={formData.apiKey}
+              onChange={e => setFormData({ ...formData, apiKey: e.target.value })}
+              fullWidth
+              required
             />
             <TextField
               label="History Component ID"

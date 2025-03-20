@@ -37,4 +37,5 @@ interface CreateNewModelParams {
   model: string;
   api_base: string;
   api_key: string;
+  custom_llm_provider: string;
 }
