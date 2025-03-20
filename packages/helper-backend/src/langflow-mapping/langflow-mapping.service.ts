@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { LangFlowMapping, LangFlowMappingDocument } from './langflow-mapping.schema';
 import { Model } from 'mongoose';
-import { CreateLangFlowMapping } from './dtos/create.dto';
+import { CreateLangFlowMapping } from './dtos/create-mapping.dto';
 import { UpdateLangFlowMapping } from './dtos/update.dto';
 
 @Injectable()
