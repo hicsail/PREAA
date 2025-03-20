@@ -26,6 +26,14 @@ export class DeepchatProxyService {
   }
 
   async create(mapping: CreateProxyMappingDto): Promise<DeepchatProxy> {
+
+    // check if model with name already exists
+    const existingModel = await this.deepChatProxyModel.findOne({ model: mapping.model }).lean().exec();
+
+    if (existingModel) {
+      throw new Error('Model already exists');
+    }
+
     const result = await this.deepChatProxyModel.create(mapping);
     return plainToInstance(DeepchatProxy, result);
   }

@@ -19,8 +19,6 @@ export default function CreateProxyMaps({ open, setOpen }: Props) {
     const baseUrl = form.querySelector('#base-url') as HTMLInputElement;
     const key = form.querySelector('#key') as HTMLInputElement;
 
-    console.log(model.value, baseUrl.value, key.value);
-
     axios.post(`${import.meta.env.VITE_BACKEND_BASE_URL}/deepchat-proxy`, {
       model: model.value,
       url: baseUrl.value,
