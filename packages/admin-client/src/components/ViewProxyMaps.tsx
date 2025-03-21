@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 
-export default function DeepchatProxyGrid() {
+export default function ViewProxyMaps() {
   const [rows, setRows] = useState([]);
 
   useEffect(() => {
