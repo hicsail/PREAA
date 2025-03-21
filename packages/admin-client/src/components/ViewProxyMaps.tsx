@@ -1,8 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
 
 export default function DeepchatProxyGrid() {
-  const [rows, setRows] = React.useState([]);
+  const [rows, setRows] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -14,6 +14,7 @@ export default function DeepchatProxyGrid() {
           throw new Error('Failed to fetch deepchat proxies');
         }
         const data = await response.json();
+        console.log(data);
         setRows(data);
       } catch (error) {
         console.error(error);
@@ -24,6 +25,7 @@ export default function DeepchatProxyGrid() {
   }, []);
 
   const columns: GridColDef[] = [
+    { field: '_id', headerName: 'ID', flex: 1 },
     { field: 'model', headerName: 'Model', flex: 1 },
     { field: 'url', headerName: 'URL', flex: 2 },
   ];
