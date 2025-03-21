@@ -14,6 +14,7 @@ import { DeepchatProxyService } from './deepchat-proxy.service';
 import { DeepchatProxy } from './deepchat-proxy.schema';
 import { ProxyCompletion } from './dtos/proxy-completion.dto';
 import { CompletionResponse } from 'src/litellm/dtos/litellm.dto';
+import { CreateProxyMappingDto } from './dtos/create.dto';
 
 @Controller('deepchat-proxy')
 @UseInterceptors(ClassSerializerInterceptor)
@@ -45,7 +46,7 @@ export class DeepchatProxyController {
   }
 
   @Post()
-  async create(@Body() mapping: DeepchatProxy): Promise<DeepchatProxy> {
+  async create(@Body() mapping: CreateProxyMappingDto): Promise<DeepchatProxy> {
     return this.deepchatProxyService.create(mapping);
   }
 
