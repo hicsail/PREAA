@@ -80,101 +80,13 @@ const ProxyingPage = () => {
 
   return (
     <Box>
-      
       <Box sx={{ display: 'flex', justifyContent: 'space-between', px: 12 }}>
       <Typography variant="h5" sx={{ mb: 3 }}>Model Proxying</Typography>
       <Button variant="contained" color="primary" onClick={()=>{
         setOpenProxyForm(!openProxyForm);
       }}>Create Proxy Map</Button>
       </Box>
-
       <CreateProxyMaps open={openProxyForm} setOpen={setOpenProxyForm} />
-      
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Model Name</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>UID for Chat Completions</TableCell>
-              <TableCell>Proxy ID Key</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {mockModels.map((model) => (
-              <TableRow key={model.id}>
-                <TableCell>{model.name}</TableCell>
-                <TableCell>
-                  {model.hasProxy ? (
-                    <Typography color="success.main">Proxy Active</Typography>
-                  ) : (
-                    <Typography color="text.secondary">No Proxy</Typography>
-                  )}
-                </TableCell>
-                <TableCell>
-                  {model.hasProxy ? model.uid : '-'}
-                </TableCell>
-                <TableCell>
-                  {model.hasProxy ? model.proxyIdKey : '-'}
-                </TableCell>
-                <TableCell>
-                  {model.hasProxy ? (
-                    <Button 
-                      variant="outlined" 
-                      size="small"
-                      onClick={() => handleGenerateUID(model.id)}
-                    >
-                      Generate New UID
-                    </Button>
-                  ) : (
-                    <Button 
-                      variant="contained" 
-                      size="small"
-                      onClick={() => handleOpenForm(model.name)}
-                    >
-                      Create Proxy
-                    </Button>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-
-      <Dialog open={openForm} onClose={handleCloseForm} maxWidth="sm" fullWidth>
-        <DialogTitle>Create Proxy for {selectedModel}</DialogTitle>
-        <DialogContent>
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
-            <TextField
-              label="Model Name"
-              name="modelName"
-              value={formData.modelName}
-              disabled
-              fullWidth
-            />
-            <TextField
-              label="Secret Key"
-              name="secretKey"
-              value={formData.secretKey}
-              onChange={handleTextChange}
-              fullWidth
-              required
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseForm}>Cancel</Button>
-          <Button 
-            onClick={handleCreateProxy} 
-            variant="contained"
-            disabled={!formData.secretKey}
-          >
-            Create Proxy
-          </Button>
-        </DialogActions>
-      </Dialog>
     </Box>
   );
 };
