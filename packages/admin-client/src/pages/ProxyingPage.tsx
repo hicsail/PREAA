@@ -20,6 +20,7 @@ const ProxyingPage = () => {
         setOpenProxyForm(!openProxyForm);
       }}>Create Proxy Map</Button>
       </Box>
+      <br/>
       <CreateProxyMaps open={openProxyForm} setOpen={setOpenProxyForm} />
       <ViewProxyMaps />
     </Box>
