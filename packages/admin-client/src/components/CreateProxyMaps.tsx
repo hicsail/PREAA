@@ -25,7 +25,6 @@ export default function CreateProxyMaps({ open, setOpen }: Props) {
       apiKey: key.value
     })
     .then(() => {
-      console.log('Proxy mapping created');
       setOpen(false);
     })
     .catch((err) => {
