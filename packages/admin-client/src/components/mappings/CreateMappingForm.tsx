@@ -41,10 +41,7 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
       };
   
       const langFlowResponse = await createLangFlowMapping(langflowData);
-      console.log('API Response:', langFlowResponse);
-
       const liteLLMResponse = await createNewModelLiteLLM(formData);
-      console.log('API Response:', liteLLMResponse);
       
     } catch (error) {
       console.error('Error creating mapping:', error);

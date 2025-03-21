@@ -14,7 +14,6 @@ export default function DeepchatProxyGrid() {
           throw new Error('Failed to fetch deepchat proxies');
         }
         const data = await response.json();
-        console.log(data);
         setRows(data);
       } catch (error) {
         console.error(error);
