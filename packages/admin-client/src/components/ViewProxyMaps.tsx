@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { Paper } from '@mui/material';
 
 export default function ViewProxyMaps() {
   const [rows, setRows] = useState([]);
@@ -30,14 +31,16 @@ export default function ViewProxyMaps() {
   ];
 
   return (
-    <div style={{ height: 400, width: '100%' }}>
-      <DataGrid
-        rows={rows}
-        columns={columns}
-        // If Mongoose documents contain `_id` instead of `id`, you can map it like this:
-        getRowId={(row) => row._id}
+    <Paper sx={{ p: 2, mb: 4 }}>
+      <div style={{ height: 400, width: '100%' }}>
+        <DataGrid
+          rows={rows}
+          columns={columns}
+          // If Mongoose documents contain `_id` instead of `id`, you can map it like this:
+          getRowId={(row) => row._id}
         // Alternatively, if your backend returns 'id' already, just omit getRowId prop.
-      />
-    </div>
+        />
+      </div>
+    </Paper>
   );
 }
