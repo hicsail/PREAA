@@ -14,13 +14,12 @@ const ProxyingPage = () => {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', px: 12 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
       <Typography variant="h5" sx={{ mb: 3 }}>Model Proxying</Typography>
       <Button variant="contained" color="primary" onClick={()=>{
         setOpenProxyForm(!openProxyForm);
       }}>Create Proxy Map</Button>
       </Box>
-      <br/>
       <CreateProxyMaps open={openProxyForm} setOpen={setOpenProxyForm} />
       <ViewProxyMaps />
     </Box>
