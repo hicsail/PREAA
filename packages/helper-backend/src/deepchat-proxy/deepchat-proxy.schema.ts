@@ -4,7 +4,6 @@ import { Types } from 'mongoose';
 
 @Schema()
 export class DeepchatProxy {
-
   @Expose()
   @Transform(({ value }) => value?.toString())
   _id: Types.ObjectId;
