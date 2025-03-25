@@ -1,9 +1,5 @@
 import { LangFlowMapping } from '../types/langflow-mapping';
-<<<<<<< HEAD
-
-=======
 import { LiteLLMMapping } from '../types/litellm-mapping';
->>>>>>> f26343756422e509f3c16b3bdbb0825e51f94a81
 export const createLangFlowMapping = async (data: LangFlowMapping) => {
   const response = await fetch(`${import.meta.env.VITE_BACKEND_BASE_URL}/mapping/`, { 
     method: 'POST',
@@ -18,9 +14,6 @@ export const createLangFlowMapping = async (data: LangFlowMapping) => {
   }
 
   return await response.json();
-<<<<<<< HEAD
-}; 
-=======
 }; 
 
 export const createNewModelLiteLLM = async (data: LiteLLMMapping) => {
@@ -47,4 +40,3 @@ export const createNewModelLiteLLM = async (data: LiteLLMMapping) => {
 
   return await response.json();
 }
->>>>>>> f26343756422e509f3c16b3bdbb0825e51f94a81
