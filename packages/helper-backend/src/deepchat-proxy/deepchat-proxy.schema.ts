@@ -1,8 +1,13 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
-import { Exclude } from 'class-transformer';
+import { Exclude, Expose, Transform } from 'class-transformer';
+import { Types } from 'mongoose';
 
 @Schema()
 export class DeepchatProxy {
+
+  @Expose()
+  @Transform(({ value }) => value?.toString())
+  _id: Types.ObjectId;
   /** The name the mapping should go by */
   @Prop({ required: true })
   model: string;
