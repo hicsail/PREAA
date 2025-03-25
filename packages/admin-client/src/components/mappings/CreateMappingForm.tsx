@@ -1,9 +1,8 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { 
   Box, 
   TextField, 
   Button, 
-  Typography, 
   Dialog, 
   DialogTitle, 
   DialogContent, 
@@ -12,15 +11,17 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  SelectChangeEvent
 } from '@mui/material';
+import { LiteLLMMapping } from '../../types/litellm-mapping';
+import { LangFlowMapping } from '../../types/langflow-mapping';
+import { createLangFlowMapping, createNewModelLiteLLM } from '../../services/endpoints';
 
 type CreateMappingFormProps = {
   open: boolean;
   onClose: () => void;
-  onSubmit: (formData: MappingFormData) => void;
 };
 
+<<<<<<< HEAD
 export type MappingFormData = {
   url: string;
   modelName: string;
@@ -34,34 +35,50 @@ const CreateMappingForm = ({ open, onClose, onSubmit }: CreateMappingFormProps) 
     modelName: '',
     historyComponentID: '',
     provider: 'Langflow'
+=======
+const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
+  const [formData, setFormData] = useState<LiteLLMMapping>({
+    provider: 'langflow',
+    url: '',
+    modelName: '',
+    historyComponentID: '',
+    apiKey: '',
+>>>>>>> f26343756422e509f3c16b3bdbb0825e51f94a81
   });
 
-  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value
-    });
-  };
 
-  const handleSelectChange = (e: SelectChangeEvent) => {
-    const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name as string]: value
-    });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
-    // Reset form
+    try {
+      const langflowData: LangFlowMapping= {
+        model: formData.modelName,
+        url: formData.url,
+        historyComponentID: formData.historyComponentID
+      };
+  
+      const langFlowResponse = await createLangFlowMapping(langflowData);
+      console.log('API Response:', langFlowResponse);
+
+      const liteLLMResponse = await createNewModelLiteLLM(formData);
+      console.log('API Response:', liteLLMResponse);
+      
+    } catch (error) {
+      console.error('Error creating mapping:', error);
+    }
+
+    // Reset Form Data
     setFormData({
       url: '',
       modelName: '',
       historyComponentID: '',
+<<<<<<< HEAD
       provider: 'Langflow'
+=======
+      provider: 'langflow',
+      apiKey: '',
+>>>>>>> f26343756422e509f3c16b3bdbb0825e51f94a81
     });
+
     onClose();
   };
 
@@ -71,6 +88,7 @@ const CreateMappingForm = ({ open, onClose, onSubmit }: CreateMappingFormProps) 
       <form onSubmit={handleSubmit}>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+<<<<<<< HEAD
             <TextField
               label="URL of Langflow Model"
               name="url"
@@ -97,6 +115,8 @@ const CreateMappingForm = ({ open, onClose, onSubmit }: CreateMappingFormProps) 
               required
               helperText="Same as Completion ID"
             />
+=======
+>>>>>>> f26343756422e509f3c16b3bdbb0825e51f94a81
             <FormControl fullWidth>
               <InputLabel id="provider-label">Provider</InputLabel>
               <Select
@@ -104,11 +124,45 @@ const CreateMappingForm = ({ open, onClose, onSubmit }: CreateMappingFormProps) 
                 name="provider"
                 value={formData.provider}
                 label="Provider"
-                onChange={handleSelectChange}
+                onChange={e => setFormData({ ...formData, provider: e.target.value })}
               >
-                <MenuItem value="Langflow">Langflow</MenuItem>
+                <MenuItem value="langflow">Langflow</MenuItem>
               </Select>
             </FormControl>
+            <TextField
+              label="URL of Langflow Model"
+              name="url"
+              value={formData.url}
+              onChange={e => setFormData({ ...formData, url: e.target.value })}
+              fullWidth
+              required
+            />
+            <TextField
+              label="Model Name"
+              name="modelName"
+              value={formData.modelName}
+              onChange={e => setFormData({ ...formData, modelName: e.target.value })}
+              fullWidth
+              required
+              helperText="Must be unique"
+            />
+            <TextField
+              label="API Key"
+              name="apiKey"
+              value={formData.apiKey}
+              onChange={e => setFormData({ ...formData, apiKey: e.target.value })}
+              fullWidth
+              required
+            />
+            <TextField
+              label="History Component ID"
+              name="historyComponentID"
+              value={formData.historyComponentID}
+              onChange={e => setFormData({ ...formData, historyComponentID: e.target.value })}
+              fullWidth
+              required
+              helperText="Same as Completion ID"
+            />
           </Box>
         </DialogContent>
         <DialogActions>

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+<<<<<<< HEAD
 import { Box, Button, Typography, Paper, Snackbar, Alert } from '@mui/material';
 import CreateMappingForm, { MappingFormData } from '../components/mappings/CreateMappingForm';
 import { createLangFlowMapping } from '../services/endpoints';
@@ -16,6 +17,16 @@ const MappingsPage = () => {
     severity: 'success'
   });
 
+=======
+import { Box } from '@mui/material';
+import CreateMappingForm from '../components/mappings/CreateMappingForm';
+import MappingHeader from '../components/mappings/MappingHeader';
+import MappingList from '../components/mappings/MappingList';
+
+const MappingsPage = () => {
+  const [openForm, setOpenForm] = useState(false);
+  
+>>>>>>> f26343756422e509f3c16b3bdbb0825e51f94a81
   const handleOpenForm = () => {
     setOpenForm(true);
   };
@@ -24,6 +35,7 @@ const MappingsPage = () => {
     setOpenForm(false);
   };
 
+<<<<<<< HEAD
   const handleSnackbarClose = () => {
     setSnackbar({ ...snackbar, open: false });
   };
@@ -110,8 +122,22 @@ const MappingsPage = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
+=======
+  return (
+    <Box>
+      <MappingHeader onOpen={handleOpenForm} />
+      <MappingList />
+      <CreateMappingForm 
+        open={openForm} 
+        onClose={handleCloseForm} 
+      />
+>>>>>>> f26343756422e509f3c16b3bdbb0825e51f94a81
     </Box>
   );
 };
 
+<<<<<<< HEAD
 export default MappingsPage; 
+=======
+export default MappingsPage;
+>>>>>>> f26343756422e509f3c16b3bdbb0825e51f94a81

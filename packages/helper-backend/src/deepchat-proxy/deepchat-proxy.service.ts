@@ -1,9 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { DeepchatProxy, DeepchatProxyDocument } from './deepchat-proxy.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { LiteLLMService } from 'src/litellm/litellm.service';
 import { plainToInstance } from 'class-transformer';
+import { CreateProxyMappingDto } from './dtos/create.dto';
 
 @Injectable()
 export class DeepchatProxyService {
@@ -24,7 +25,16 @@ export class DeepchatProxyService {
     return plainToInstance(DeepchatProxy, results);
   }
 
-  async create(mapping: DeepchatProxy): Promise<DeepchatProxy> {
+  async create(mapping: CreateProxyMappingDto): Promise<DeepchatProxy> {
+
+    // check if model with name already exists
+    const existingModel = await this.deepChatProxyModel.findOne({ model: mapping.model }).lean().exec();
+
+    if (existingModel) {
+      // throw bad request error
+      throw new BadRequestException(`Model with name ${mapping.model} already exists`);
+    }
+
     const result = await this.deepChatProxyModel.create(mapping);
     return plainToInstance(DeepchatProxy, result);
   }

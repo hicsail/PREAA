@@ -27,3 +27,15 @@ interface Usage {
   completion_tokens_details: any;
   prompt_tokens_details: any;
 }
+
+export class CreateNewModel {
+  model_name: string;
+  litellm_params: CreateNewModelParams;
+}
+
+interface CreateNewModelParams {
+  model: string;
+  api_base: string;
+  api_key: string;
+  custom_llm_provider: string;
+}
