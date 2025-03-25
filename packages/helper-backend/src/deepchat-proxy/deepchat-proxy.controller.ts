@@ -14,7 +14,7 @@ import { DeepchatProxyService } from './deepchat-proxy.service';
 import { DeepchatProxy } from './deepchat-proxy.schema';
 import { ProxyCompletion } from './dtos/proxy-completion.dto';
 import { CompletionResponse } from 'src/litellm/dtos/litellm.dto';
-import { ApiOperation, ApiTags, ApiResponse, ApiParam, ApiBody, ApiExtraModels, getSchemaPath } from '@nestjs/swagger';
+import { ApiOperation, ApiTags, ApiResponse, ApiParam, ApiBody, ApiExtraModels } from '@nestjs/swagger';
 import { CreateProxyMappingDto } from './dtos/create.dto';
 
 @ApiTags('Deepchat Proxy')
@@ -38,14 +38,7 @@ export class DeepchatProxyController {
   @ApiResponse({
     status: 200,
     description: 'The proxy has been found',
-    type: DeepchatProxy,
-    schema: {
-      properties: {
-        _id: { type: 'string', example: '6401234567890abcdef12345' },
-        model: { type: 'string', example: 'gpt-4' },
-        url: { type: 'string', example: 'https://api.openai.com/v1' }
-      }
-    }
+    type: DeepchatProxy
   })
   @ApiResponse({ status: 404, description: 'Proxy not found' })
   async get(@Param('id') id: string): Promise<DeepchatProxy> {
@@ -65,19 +58,7 @@ export class DeepchatProxyController {
   @ApiResponse({
     status: 200,
     description: 'List of all proxies',
-    type: [DeepchatProxy],
-    schema: {
-      type: 'array',
-      items: {
-        properties: {
-          _id: { type: 'string', example: '6401234567890abcdef12345' },
-          model: { type: 'string', example: 'gpt-4' },
-          url: { type: 'string', example: 'https://api.openai.com/v1' },
-          createdAt: { type: 'string', format: 'date-time' },
-          updatedAt: { type: 'string', format: 'date-time' }
-        }
-      }
-    }
+    type: [DeepchatProxy]
   })
   async getAll(): Promise<DeepchatProxy[]> {
     return this.deepchatProxyService.getAll();
@@ -94,15 +75,7 @@ export class DeepchatProxyController {
     example: '6401234567890abcdef12345'
   })
   @ApiBody({
-    type: CreateProxyMappingDto,
-    description: 'Updated proxy configuration',
-    schema: {
-      properties: {
-        model: { type: 'string', example: 'gpt-4-turbo' },
-        url: { type: 'string', example: 'https://api.openai.com/v1' },
-        apiKey: { type: 'string', example: 'sk-....' }
-      }
-    }
+    type: CreateProxyMappingDto
   })
   @ApiResponse({
     status: 200,
@@ -124,27 +97,12 @@ export class DeepchatProxyController {
     description: 'Creates a new Deepchat proxy with the provided configuration details'
   })
   @ApiBody({
-    type: CreateProxyMappingDto,
-    description: 'Deepchat proxy configuration',
-    schema: {
-      example: {
-        model: 'gpt-4',
-        url: 'https://api.openai.com/v1',
-        apiKey: 'sk-...'
-      }
-    }
+    type: CreateProxyMappingDto
   })
   @ApiResponse({
     status: 201,
     description: 'The proxy has been successfully created',
-    type: DeepchatProxy,
-    schema: {
-      properties: {
-        _id: { type: 'string', example: '6401234567890abcdef12345' },
-        model: { type: 'string', example: 'claude-3-opus' },
-        url: { type: 'string', example: 'https://api.anthropic.com/v1' }
-      }
-    }
+    type: DeepchatProxy
   })
   @ApiResponse({ status: 400, description: 'Invalid input data or model already exists' })
   async create(@Body() mapping: CreateProxyMappingDto): Promise<DeepchatProxy> {
@@ -178,65 +136,12 @@ export class DeepchatProxyController {
     example: '6401234567890abcdef12345'
   })
   @ApiBody({
-    type: ProxyCompletion,
-    description: 'Completion request data',
-    schema: {
-      properties: {
-        messages: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              role: { type: 'string', enum: ['system', 'user', 'assistant'], example: 'user' },
-              content: { type: 'string', example: 'Hello, how can you help me today?' }
-            }
-          }
-        },
-        max_tokens: { type: 'number', example: 1000 },
-        temperature: { type: 'number', example: 0.7 }
-      }
-    }
+    type: ProxyCompletion
   })
   @ApiResponse({
     status: 200,
     description: 'Successful completion response',
-    type: CompletionResponse,
-    schema: {
-      properties: {
-        id: { type: 'string', example: 'chatcmpl-123456789' },
-        object: { type: 'string', example: 'chat.completion' },
-        created: { type: 'number', example: 1677858242 },
-        model: { type: 'string', example: 'gpt-4' },
-        choices: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              message: {
-                type: 'object',
-                properties: {
-                  role: { type: 'string', example: 'assistant' },
-                  content: {
-                    type: 'string',
-                    example:
-                      'I can help you with information, answer questions, or assist with various tasks. How can I help you today?'
-                  }
-                }
-              },
-              finish_reason: { type: 'string', example: 'stop' }
-            }
-          }
-        },
-        usage: {
-          type: 'object',
-          properties: {
-            prompt_tokens: { type: 'number', example: 12 },
-            completion_tokens: { type: 'number', example: 42 },
-            total_tokens: { type: 'number', example: 54 }
-          }
-        }
-      }
-    }
+    type: CompletionResponse
   })
   @ApiResponse({ status: 404, description: 'Proxy not found' })
   @ApiResponse({ status: 500, description: 'Error communicating with the LLM provider' })

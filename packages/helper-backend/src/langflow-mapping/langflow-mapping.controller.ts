@@ -4,7 +4,6 @@ import { CreateLangFlowMapping } from './dtos/create.dto';
 import { LangFlowMapping } from './langflow-mapping.schema';
 import { UpdateLangFlowMapping } from './dtos/update.dto';
 import { ApiOperation, ApiTags, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
-import { CreateLangFlowMappingDto } from './dtos/create.dto';
 
 @ApiTags('Langflow Mapping')
 @Controller('mapping')
@@ -16,7 +15,6 @@ export class LangflowMappingController {
     summary: 'Create a new mapping',
     description: 'Creates a new Langflow mapping with the provided data'
   })
-  @ApiBody({ type: CreateLangFlowMappingDto, description: 'Langflow mapping data' })
   @ApiResponse({ status: 201, description: 'The mapping has been successfully created', type: LangFlowMapping })
   @ApiResponse({ status: 400, description: 'Invalid input data' })
   async create(@Body() mapping: CreateLangFlowMapping): Promise<LangFlowMapping> {

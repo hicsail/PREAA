@@ -57,9 +57,3 @@ export class ProxyCompletion {
   @IsOptional()
   temperature?: number;
 }
-
-// We can remove this since ProxyCompletion now has proper decorators
-// export class ProxyCompletionDto {
-//   @ApiProperty({ description: 'The messages to send to the proxy' })
-//   messages: Message[];
-// }
