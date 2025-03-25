@@ -37,7 +37,7 @@ export default function ViewProxyMaps() {
           rows={rows}
           columns={columns}
           // If Mongoose documents contain `_id` instead of `id`, you can map it like this:
-          getRowId={(row) => row._id}
+          getRowId={(row: { _id: string }) => row._id}
         // Alternatively, if your backend returns 'id' already, just omit getRowId prop.
         />
       </div>
