@@ -14,15 +14,7 @@ import { DeepchatProxyService } from './deepchat-proxy.service';
 import { DeepchatProxy } from './deepchat-proxy.schema';
 import { ProxyCompletion } from './dtos/proxy-completion.dto';
 import { CompletionResponse } from 'src/litellm/dtos/litellm.dto';
-import { 
-  ApiOperation, 
-  ApiTags, 
-  ApiResponse, 
-  ApiParam, 
-  ApiBody,
-  ApiExtraModels,
-  getSchemaPath
-} from '@nestjs/swagger';
+import { ApiOperation, ApiTags, ApiResponse, ApiParam, ApiBody, ApiExtraModels, getSchemaPath } from '@nestjs/swagger';
 import { CreateProxyMappingDto } from './dtos/create.dto';
 
 @ApiTags('Deepchat Proxy')
@@ -33,18 +25,19 @@ export class DeepchatProxyController {
   constructor(private readonly deepchatProxyService: DeepchatProxyService) {}
 
   @Get('/:id')
-  @ApiOperation({ 
-    summary: 'Get proxy by ID', 
-    description: 'Retrieves a specific Deepchat proxy by ID. The API key is excluded from the response for security reasons.'
+  @ApiOperation({
+    summary: 'Get proxy by ID',
+    description:
+      'Retrieves a specific Deepchat proxy by ID. The API key is excluded from the response for security reasons.'
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'MongoDB ObjectId of the proxy record',
     example: '6401234567890abcdef12345'
   })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'The proxy has been found', 
+  @ApiResponse({
+    status: 200,
+    description: 'The proxy has been found',
     type: DeepchatProxy,
     schema: {
       properties: {
@@ -64,13 +57,14 @@ export class DeepchatProxyController {
   }
 
   @Get()
-  @ApiOperation({ 
-    summary: 'Get all proxies', 
-    description: 'Retrieves all available Deepchat proxies. The API keys are excluded from the response for security reasons.'
+  @ApiOperation({
+    summary: 'Get all proxies',
+    description:
+      'Retrieves all available Deepchat proxies. The API keys are excluded from the response for security reasons.'
   })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'List of all proxies', 
+  @ApiResponse({
+    status: 200,
+    description: 'List of all proxies',
     type: [DeepchatProxy],
     schema: {
       type: 'array',
@@ -90,17 +84,17 @@ export class DeepchatProxyController {
   }
 
   @Put('/:id')
-  @ApiOperation({ 
-    summary: 'Update a proxy', 
+  @ApiOperation({
+    summary: 'Update a proxy',
     description: 'Updates an existing Deepchat proxy configuration by ID'
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'MongoDB ObjectId of the proxy to update',
     example: '6401234567890abcdef12345'
   })
-  @ApiBody({ 
-    type: CreateProxyMappingDto, 
+  @ApiBody({
+    type: CreateProxyMappingDto,
     description: 'Updated proxy configuration',
     schema: {
       properties: {
@@ -110,9 +104,9 @@ export class DeepchatProxyController {
       }
     }
   })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'The proxy has been successfully updated', 
+  @ApiResponse({
+    status: 200,
+    description: 'The proxy has been successfully updated',
     type: DeepchatProxy
   })
   @ApiResponse({ status: 404, description: 'Proxy not found' })
@@ -125,12 +119,12 @@ export class DeepchatProxyController {
   }
 
   @Post()
-  @ApiOperation({ 
-    summary: 'Create a new proxy', 
+  @ApiOperation({
+    summary: 'Create a new proxy',
     description: 'Creates a new Deepchat proxy with the provided configuration details'
   })
-  @ApiBody({ 
-    type: CreateProxyMappingDto, 
+  @ApiBody({
+    type: CreateProxyMappingDto,
     description: 'Deepchat proxy configuration',
     schema: {
       example: {
@@ -140,9 +134,9 @@ export class DeepchatProxyController {
       }
     }
   })
-  @ApiResponse({ 
-    status: 201, 
-    description: 'The proxy has been successfully created', 
+  @ApiResponse({
+    status: 201,
+    description: 'The proxy has been successfully created',
     type: DeepchatProxy,
     schema: {
       properties: {
@@ -158,12 +152,12 @@ export class DeepchatProxyController {
   }
 
   @Delete('/:model')
-  @ApiOperation({ 
-    summary: 'Delete a proxy', 
+  @ApiOperation({
+    summary: 'Delete a proxy',
     description: 'Deletes a Deepchat proxy by model name'
   })
-  @ApiParam({ 
-    name: 'model', 
+  @ApiParam({
+    name: 'model',
     description: 'Model name to delete',
     example: 'gpt-4'
   })
@@ -174,17 +168,17 @@ export class DeepchatProxyController {
   }
 
   @Post('proxy/:id')
-  @ApiOperation({ 
-    summary: 'Proxy a request', 
+  @ApiOperation({
+    summary: 'Proxy a request',
     description: 'Proxies a completion request to the specified LLM provider using the stored configuration'
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'Proxy identifier (MongoDB ObjectId)',
     example: '6401234567890abcdef12345'
   })
-  @ApiBody({ 
-    type: ProxyCompletion, 
+  @ApiBody({
+    type: ProxyCompletion,
     description: 'Completion request data',
     schema: {
       properties: {
@@ -203,9 +197,9 @@ export class DeepchatProxyController {
       }
     }
   })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Successful completion response', 
+  @ApiResponse({
+    status: 200,
+    description: 'Successful completion response',
     type: CompletionResponse,
     schema: {
       properties: {
@@ -222,7 +216,11 @@ export class DeepchatProxyController {
                 type: 'object',
                 properties: {
                   role: { type: 'string', example: 'assistant' },
-                  content: { type: 'string', example: 'I can help you with information, answer questions, or assist with various tasks. How can I help you today?' }
+                  content: {
+                    type: 'string',
+                    example:
+                      'I can help you with information, answer questions, or assist with various tasks. How can I help you today?'
+                  }
                 }
               },
               finish_reason: { type: 'string', example: 'stop' }

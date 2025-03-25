@@ -9,7 +9,7 @@ async function bootstrap() {
   app.enableCors();
 
   useContainer(app.select(AppModule), { fallbackOnErrors: true });
-  
+
   // Configure Swagger
   const config = new DocumentBuilder()
     .setTitle('LiteLLM-Langflow Proxy API')
@@ -22,7 +22,7 @@ async function bootstrap() {
     deepScanRoutes: true,
     extraModels: []
   });
-  
+
   SwaggerModule.setup('api', app, document, {
     swaggerOptions: {
       docExpansion: 'list',
@@ -31,7 +31,7 @@ async function bootstrap() {
       persistAuthorization: true
     }
   });
-  
+
   // Apply validation pipe globally
   app.useGlobalPipes(
     new ValidationPipe({

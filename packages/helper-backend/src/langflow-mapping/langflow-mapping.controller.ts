@@ -12,7 +12,10 @@ export class LangflowMappingController {
   constructor(private readonly langFlowMappingService: LangflowMappingService) {}
 
   @Post()
-  @ApiOperation({ summary: 'Create a new mapping', description: 'Creates a new Langflow mapping with the provided data' })
+  @ApiOperation({
+    summary: 'Create a new mapping',
+    description: 'Creates a new Langflow mapping with the provided data'
+  })
   @ApiBody({ type: CreateLangFlowMappingDto, description: 'Langflow mapping data' })
   @ApiResponse({ status: 201, description: 'The mapping has been successfully created', type: LangFlowMapping })
   @ApiResponse({ status: 400, description: 'Invalid input data' })
@@ -21,7 +24,10 @@ export class LangflowMappingController {
   }
 
   @Get('/:model')
-  @ApiOperation({ summary: 'Get mapping by model name', description: 'Retrieves a specific Langflow mapping by model name' })
+  @ApiOperation({
+    summary: 'Get mapping by model name',
+    description: 'Retrieves a specific Langflow mapping by model name'
+  })
   @ApiParam({ name: 'model', description: 'Model identifier' })
   @ApiResponse({ status: 200, description: 'The mapping has been found', type: LangFlowMapping })
   @ApiResponse({ status: 404, description: 'Mapping not found' })
@@ -34,13 +40,13 @@ export class LangflowMappingController {
   }
 
   @Get()
-  @ApiOperation({ 
-    summary: 'Get all mappings', 
+  @ApiOperation({
+    summary: 'Get all mappings',
     description: 'Retrieves all available Langflow mappings with complete configuration details'
   })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'List of all mappings with their configurations', 
+  @ApiResponse({
+    status: 200,
+    description: 'List of all mappings with their configurations',
     type: [LangFlowMapping],
     schema: {
       type: 'array',
