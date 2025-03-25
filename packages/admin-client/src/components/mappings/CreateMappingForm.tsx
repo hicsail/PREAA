@@ -21,21 +21,6 @@ type CreateMappingFormProps = {
   onClose: () => void;
 };
 
-<<<<<<< HEAD
-export type MappingFormData = {
-  url: string;
-  modelName: string;
-  historyComponentID: string;
-  provider: string;
-};
-
-const CreateMappingForm = ({ open, onClose, onSubmit }: CreateMappingFormProps) => {
-  const [formData, setFormData] = useState<MappingFormData>({
-    url: '',
-    modelName: '',
-    historyComponentID: '',
-    provider: 'Langflow'
-=======
 const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
   const [formData, setFormData] = useState<LiteLLMMapping>({
     provider: 'langflow',
@@ -43,7 +28,6 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
     modelName: '',
     historyComponentID: '',
     apiKey: '',
->>>>>>> f26343756422e509f3c16b3bdbb0825e51f94a81
   });
 
 
@@ -71,12 +55,8 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
       url: '',
       modelName: '',
       historyComponentID: '',
-<<<<<<< HEAD
-      provider: 'Langflow'
-=======
       provider: 'langflow',
       apiKey: '',
->>>>>>> f26343756422e509f3c16b3bdbb0825e51f94a81
     });
 
     onClose();
@@ -88,35 +68,6 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
       <form onSubmit={handleSubmit}>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-<<<<<<< HEAD
-            <TextField
-              label="URL of Langflow Model"
-              name="url"
-              value={formData.url}
-              onChange={handleTextChange}
-              fullWidth
-              required
-            />
-            <TextField
-              label="Model Name"
-              name="modelName"
-              value={formData.modelName}
-              onChange={handleTextChange}
-              fullWidth
-              required
-              helperText="Must be unique"
-            />
-            <TextField
-              label="History Component ID"
-              name="historyComponentID"
-              value={formData.historyComponentID}
-              onChange={handleTextChange}
-              fullWidth
-              required
-              helperText="Same as Completion ID"
-            />
-=======
->>>>>>> f26343756422e509f3c16b3bdbb0825e51f94a81
             <FormControl fullWidth>
               <InputLabel id="provider-label">Provider</InputLabel>
               <Select
