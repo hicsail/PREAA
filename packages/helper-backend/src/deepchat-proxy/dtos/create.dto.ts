@@ -1,7 +1,6 @@
 import { IsString, IsArray, ValidateNested } from 'class-validator';
 
 export class CreateProxyMappingDto {
-
   @IsString()
   model: string;
 
@@ -10,5 +9,4 @@ export class CreateProxyMappingDto {
 
   @IsString()
   apiKey: string;
-
 }

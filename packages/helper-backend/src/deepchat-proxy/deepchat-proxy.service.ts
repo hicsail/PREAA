@@ -22,13 +22,12 @@ export class DeepchatProxyService {
   async getAll(): Promise<DeepchatProxy[]> {
     // model data without the apiKey
     const results = await this.deepChatProxyModel.find().lean().exec();
-    return plainToInstance(DeepchatProxy, results, { 
+    return plainToInstance(DeepchatProxy, results, {
       excludeExtraneousValues: false // This is important to keep MongoDB fields
     });
   }
 
   async create(mapping: CreateProxyMappingDto): Promise<DeepchatProxy> {
-
     // check if model with name already exists
     const existingModel = await this.deepChatProxyModel.findOne({ model: mapping.model }).lean().exec();
 
