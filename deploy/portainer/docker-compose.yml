@@ -61,6 +61,8 @@ services:
     container_name: portainer-litellm
     ports:
       - "4000:4000"
+    environment:
+      - DATABASE_URL=${LITELLM_DATABASE_URL}
     env_file:
       - ../../stack.env
       - stack.env
@@ -98,6 +100,8 @@ services:
     depends_on: *langfuse-depends-on
     ports:
       - "3000:3000"
+    environment:
+      - DATABASE_URL=${LANGFUSE_DATABASE_URL}
     env_file:
       - ../../stack.env
       - stack.env
