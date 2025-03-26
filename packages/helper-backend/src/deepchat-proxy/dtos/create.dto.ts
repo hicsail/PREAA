@@ -23,8 +23,6 @@ export class CreateProxyMappingDto {
     example: 'sk-...',
     required: true
   })
-  
   @IsString()
   apiKey: string;
 }
-
