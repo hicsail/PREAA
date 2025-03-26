@@ -5,12 +5,19 @@ import { DeepchatProxyService } from './deepchat-proxy.service';
 import { NotFoundException } from '@nestjs/common';
 import { DeepchatProxy } from './deepchat-proxy.schema';
 import mongoose from 'mongoose';
+import { ProxyCompletion } from './dtos/proxy-completion.dto';
 
 const sampleProxy: DeepchatProxy = {
   _id: new mongoose.Types.ObjectId('6401234567890abcdef12345'),
   model: 'chatGPT',
   url: 'http://example.com',
   apiKey: 'test key'
+};
+
+const sampleCompletionRequest: ProxyCompletion = {
+  messages: [
+    { role: 'user', content: 'Hello!' }
+  ]
 };
 
 describe('DeepchatProxyController', () => {
@@ -72,7 +79,7 @@ describe('DeepchatProxyController', () => {
   it('should throw not found on proxy request on non-existing model', async () => {
     service.proxyRequest.mockRejectedValue(new NotFoundException());
 
-    await expect(controller.proxyRequest())
+    await expect(controller.proxyRequest(sampleCompletionRequest, 'test')).rejects.toThrow(NotFoundException);
   });
 
   it('should be able to make completion responses', async () => {
