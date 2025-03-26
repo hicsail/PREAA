@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { DeepchatProxy, DeepchatProxyDocument } from './deepchat-proxy.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { LiteLLMService } from 'src/litellm/litellm.service';
+import { LiteLLMService } from '../litellm/litellm.service';
 import { plainToInstance } from 'class-transformer';
 import { CreateProxyMappingDto } from './dtos/create.dto';
 
