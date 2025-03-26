@@ -1,9 +1,10 @@
 import { IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { IsUniqueModel } from '../pipes/unique';
 
 export class CreateLangFlowMapping {
   @ApiProperty({ description: 'The model name' })
-  @IsString()
+  @IsUniqueModel()
   model: string;
 
   @ApiProperty({ description: 'The URL of the Langflow mapping' })

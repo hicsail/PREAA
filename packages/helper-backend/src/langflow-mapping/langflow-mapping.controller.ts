@@ -45,21 +45,7 @@ export class LangflowMappingController {
   @ApiResponse({
     status: 200,
     description: 'List of all mappings with their configurations',
-    type: [LangFlowMapping],
-    schema: {
-      type: 'array',
-      items: {
-        type: 'object',
-        properties: {
-          _id: { type: 'string', description: 'Unique identifier' },
-          model: { type: 'string', description: 'Model name' },
-          langflowId: { type: 'string', description: 'Langflow flow identifier' },
-          langflowUrl: { type: 'string', description: 'URL to the Langflow instance' },
-          createdAt: { type: 'string', format: 'date-time', description: 'Creation timestamp' },
-          updatedAt: { type: 'string', format: 'date-time', description: 'Last update timestamp' }
-        }
-      }
-    }
+    type: [LangFlowMapping]
   })
   @ApiResponse({ status: 500, description: 'Server error' })
   async getAll(): Promise<LangFlowMapping[]> {
