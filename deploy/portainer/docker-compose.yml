@@ -89,6 +89,8 @@ services:
         condition: service_healthy
     ports:
       - "3030:3030"
+    environment:
+      - DATABASE_URL=${LANGFUSE_DATABASE_URL}
     env_file:
       - ../../stack.env
       - stack.env
