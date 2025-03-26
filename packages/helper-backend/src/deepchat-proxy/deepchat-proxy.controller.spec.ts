@@ -71,6 +71,8 @@ describe('DeepchatProxyController', () => {
 
   it('should throw not found on proxy request on non-existing model', async () => {
     service.proxyRequest.mockRejectedValue(new NotFoundException());
+
+    await expect(controller.proxyRequest())
   });
 
   it('should be able to make completion responses', async () => {
