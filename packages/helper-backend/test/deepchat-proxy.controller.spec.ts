@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { DeepchatProxyController } from './deepchat-proxy.controller';
+import { DeepchatProxyController } from '../src/deepchat-proxy/deepchat-proxy.controller';
 
 describe('DeepchatProxyController', () => {
   let controller: DeepchatProxyController;
