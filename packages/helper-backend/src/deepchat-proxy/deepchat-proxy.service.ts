@@ -59,7 +59,7 @@ export class DeepchatProxyService {
     if (model !== mapping.model) {
       updateData.model = model;
     }
-    
+
     const result = await this.deepChatProxyModel.findOneAndUpdate({ model }, updateData, {
       new: true
     });

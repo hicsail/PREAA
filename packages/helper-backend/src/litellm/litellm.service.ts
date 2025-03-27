@@ -7,13 +7,13 @@ export class LiteLLMService {
     try {
       body.model = model;
       console.log(`Sending request to ${url} for model ${model}`);
-      
+
       const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
+          Accept: 'application/json',
+          Authorization: `Bearer ${apiKey}`
         },
         body: JSON.stringify(body)
       });
@@ -36,7 +36,7 @@ export class LiteLLMService {
       // Parse response
       const responseJson = await response.json();
       console.log('Received response:', JSON.stringify(responseJson).substring(0, 200) + '...');
-      
+
       // Reshape the response
       responseJson.text = responseJson.choices[0].message.content;
       return responseJson;
@@ -50,9 +50,9 @@ export class LiteLLMService {
     const response = await fetch(`${process.env.LITE_LLM_BASE_URL}/model/new`, {
       method: 'POST',
       headers: {
-        'Accept': 'application/json',
+        Accept: 'application/json',
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${newModel.litellm_params.api_key}`
+        Authorization: `Bearer ${newModel.litellm_params.api_key}`
       },
       body: JSON.stringify({
         model_name: newModel.model_name,
@@ -60,7 +60,7 @@ export class LiteLLMService {
       })
     });
     if (!response.ok) {
-      const errorText = await response.text(); 
+      const errorText = await response.text();
       console.error(`Failed to create model: ${errorText}`);
       throw new Error(`Failed to create model: ${response.status} ${response.statusText}`);
     }

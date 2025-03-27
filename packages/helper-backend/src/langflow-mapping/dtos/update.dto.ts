@@ -3,28 +3,28 @@ import { ApiProperty } from '@nestjs/swagger';
 import { DoesExistModel } from '../pipes/exists';
 
 export class UpdateLangFlowMapping {
-  @ApiProperty({ 
-    description: 'The model name to update', 
+  @ApiProperty({
+    description: 'The model name to update',
     example: 'gpt-4',
-    required: true 
+    required: true
   })
   @IsString()
   @DoesExistModel()
   model: string;
 
-  @ApiProperty({ 
-    description: 'The updated URL of the Langflow mapping', 
+  @ApiProperty({
+    description: 'The updated URL of the Langflow mapping',
     example: 'http://langflow.ai/api/v1/run/8e785198-f630-4d9f-94fa-26c8e945da80',
-    required: false 
+    required: false
   })
   @IsString()
   @IsOptional()
   url?: string;
 
-  @ApiProperty({ 
-    description: 'The updated history component ID', 
+  @ApiProperty({
+    description: 'The updated history component ID',
     example: 'CompletionInterface-qNlsX',
-    required: false 
+    required: false
   })
   @IsString()
   @IsOptional()

@@ -53,15 +53,16 @@ export class LangflowMappingController {
   }
 
   @Put()
-  @ApiOperation({ 
-    summary: 'Update a mapping', 
-    description: 'Updates an existing Langflow mapping by model name. You must specify the model name in the request body, and can optionally update the URL and/or history component ID.' 
+  @ApiOperation({
+    summary: 'Update a mapping',
+    description:
+      'Updates an existing Langflow mapping by model name. You must specify the model name in the request body, and can optionally update the URL and/or history component ID.'
   })
   @ApiBody({ type: UpdateLangFlowMapping })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'The mapping has been successfully updated', 
-    type: LangFlowMapping 
+  @ApiResponse({
+    status: 200,
+    description: 'The mapping has been successfully updated',
+    type: LangFlowMapping
   })
   @ApiResponse({ status: 404, description: 'Mapping not found' })
   @ApiResponse({ status: 400, description: 'Invalid input data' })

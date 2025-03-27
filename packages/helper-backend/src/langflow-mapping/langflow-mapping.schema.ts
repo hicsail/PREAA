@@ -12,7 +12,7 @@ export type LangFlowMappingDocument = LangFlowMapping & Document;
       ret.model = ret.modelName;
       delete ret.__v;
       return ret;
-    },
+    }
   }
 })
 export class LangFlowMapping extends Document {

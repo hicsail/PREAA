@@ -33,23 +33,19 @@ export class LangflowMappingService {
     const mappedData: any = {
       modelName: mapping.model
     };
-    
+
     if (mapping.url) {
       mappedData.langflowUrl = mapping.url;
     }
-    
+
     if (mapping.historyComponentID) {
       mappedData.historyComponentID = mapping.historyComponentID;
     }
-    
-    return await this.langFlowMappingModel.findOneAndUpdate(
-      { modelName: mapping.model }, 
-      mappedData, 
-      {
-        new: true,
-        upsert: true
-      }
-    );
+
+    return await this.langFlowMappingModel.findOneAndUpdate({ modelName: mapping.model }, mappedData, {
+      new: true,
+      upsert: true
+    });
   }
 
   async delete(model: string): Promise<void> {
