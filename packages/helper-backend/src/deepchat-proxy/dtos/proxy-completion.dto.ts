@@ -16,7 +16,7 @@ export class Message {
     example: 'Hello, how can you help me today?'
   })
   @IsString()
-  text: string;
+  content: string;
 }
 
 export class ProxyCompletion {
