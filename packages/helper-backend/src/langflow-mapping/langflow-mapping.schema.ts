@@ -1,15 +1,28 @@
-import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document, Schema as MongooseSchema } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
+export type LangFlowMappingDocument = LangFlowMapping & Document;
 
-@Schema()
-export class LangFlowMapping {
+@Schema({
+  timestamps: true,
+  toJSON: {
+    virtuals: true,
+    transform: (_, ret) => {
+      ret.id = ret._id;
+      ret.model = ret.modelName;
+      delete ret.__v;
+      return ret;
+    },
+  }
+})
+export class LangFlowMapping extends Document {
   @ApiProperty({ description: 'Unique identifier' })
-  @Prop({ required: true })
-  _id: string;
+  @Prop({ type: MongooseSchema.Types.ObjectId, auto: true })
+  declare _id: string;
 
   @ApiProperty({ description: 'Model name' })
   @Prop({ required: true })
-  model: string;
+  modelName: string;
 
   /**
    * The request URL to request against including the flow ID
@@ -18,24 +31,24 @@ export class LangFlowMapping {
    */
   @ApiProperty({ description: 'URL to the Langflow instance' })
   @Prop({ required: true })
-  url: string;
+  langflowUrl: string;
 
   /**
    * The ID of the history component where messages history should be passed in
    *
    * ex) CompletionInterface-qNlsX
    */
+  @ApiProperty({ description: 'The history component ID for message history' })
   @Prop({ requied: true })
   historyComponentID: string;
 
   @ApiProperty({ description: 'Creation timestamp', format: 'date-time' })
-  @Prop({ default: Date.now })
+  @Prop()
   createdAt: Date;
 
   @ApiProperty({ description: 'Last update timestamp', format: 'date-time' })
-  @Prop({ default: Date.now })
+  @Prop()
   updatedAt: Date;
 }
 
-export type LangFlowMappingDocument = LangFlowMapping & Document;
 export const LangFlowMappingSchema = SchemaFactory.createForClass(LangFlowMapping);

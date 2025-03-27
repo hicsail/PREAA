@@ -18,9 +18,9 @@ export const createLangFlowMapping = async (data: LangFlowMapping) => {
 
 export const createNewModelLiteLLM = async (data: LiteLLMMapping) => {
   const formattedData = {
-    model_name: data.modelName,
+    model_name: data.model,
     litellm_params: {
-      model:`${data.provider}/${data.modelName}`,
+      model:`${data.provider}/${data.model}`,
       api_base: data.url,
       api_key: data.apiKey,
       custom_llm_provider: data.provider,

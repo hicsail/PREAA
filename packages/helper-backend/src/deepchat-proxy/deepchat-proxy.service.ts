@@ -19,6 +19,11 @@ export class DeepchatProxyService {
     return plainToInstance(DeepchatProxy, result);
   }
 
+  async getByModel(model: string): Promise<DeepchatProxy | null> {
+    let result = await this.deepChatProxyModel.findOne({ model }).lean().exec();
+    return plainToInstance(DeepchatProxy, result);
+  }
+
   async getAll(): Promise<DeepchatProxy[]> {
     // model data without the apiKey
     const results = await this.deepChatProxyModel.find().lean().exec();
@@ -40,10 +45,23 @@ export class DeepchatProxyService {
     return plainToInstance(DeepchatProxy, result);
   }
 
-  async update(id: string, mapping: DeepchatProxy): Promise<DeepchatProxy | null> {
+  async update(id: string, mapping: CreateProxyMappingDto): Promise<DeepchatProxy | null> {
     const result = await this.deepChatProxyModel.findOneAndUpdate({ _id: id }, mapping, {
-      new: true,
-      upsert: true
+      new: true
+    });
+    return plainToInstance(DeepchatProxy, result);
+  }
+
+  async updateByModel(model: string, mapping: CreateProxyMappingDto): Promise<DeepchatProxy | null> {
+    // We don't want to update the model name if it's different from the URL parameter
+    // This prevents accidentally renaming a model
+    const updateData = { ...mapping };
+    if (model !== mapping.model) {
+      updateData.model = model;
+    }
+    
+    const result = await this.deepChatProxyModel.findOneAndUpdate({ model }, updateData, {
+      new: true
     });
     return plainToInstance(DeepchatProxy, result);
   }
@@ -55,7 +73,16 @@ export class DeepchatProxyService {
   async proxyRequest(id: string, body: any): Promise<any> {
     const modelData = await this.deepChatProxyModel.findOne({ _id: id }).lean().exec();
     if (!modelData) {
-      throw new NotFoundException(`No model ${id} found`);
+      throw new NotFoundException(`No model with id ${id} found`);
+    }
+    const response = this.liteLLMService.completion(modelData.model, modelData.apiKey, modelData.url, body);
+    return response;
+  }
+
+  async proxyRequestByModel(model: string, body: any): Promise<any> {
+    const modelData = await this.deepChatProxyModel.findOne({ model }).lean().exec();
+    if (!modelData) {
+      throw new NotFoundException(`No model with name ${model} found`);
     }
     const response = this.liteLLMService.completion(modelData.model, modelData.apiKey, modelData.url, body);
     return response;

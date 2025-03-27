@@ -25,7 +25,7 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
   const [formData, setFormData] = useState<LiteLLMMapping>({
     provider: 'langflow',
     url: '',
-    modelName: '',
+    model: '',
     historyComponentID: '',
     apiKey: '',
   });
@@ -35,7 +35,7 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
     e.preventDefault();
     try {
       const langflowData: LangFlowMapping= {
-        model: formData.modelName,
+        model: formData.model,
         url: formData.url,
         historyComponentID: formData.historyComponentID
       };
@@ -50,7 +50,7 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
     // Reset Form Data
     setFormData({
       url: '',
-      modelName: '',
+      model: '',
       historyComponentID: '',
       provider: 'langflow',
       apiKey: '',
@@ -87,9 +87,9 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
             />
             <TextField
               label="Model Name"
-              name="modelName"
-              value={formData.modelName}
-              onChange={e => setFormData({ ...formData, modelName: e.target.value })}
+              name="model"
+              value={formData.model}
+              onChange={e => setFormData({ ...formData, model: e.target.value })}
               fullWidth
               required
               helperText="Must be unique"
