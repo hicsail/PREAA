@@ -18,12 +18,10 @@ describe('LangFlowMappingController', () => {
   let controller: LangflowMappingController;
   let service: DeepMocked<LangflowMappingService>;
 
-    beforeEach(async () => {
+  beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [LangflowMappingController],
-      providers: [
-        { provide: LangflowMappingService, useValue: createMock<LangflowMappingService>() }
-      ]
+      providers: [{ provide: LangflowMappingService, useValue: createMock<LangflowMappingService>() }]
     }).compile();
 
     controller = module.get<LangflowMappingController>(LangflowMappingController);
