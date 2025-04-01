@@ -20,9 +20,7 @@ describe('DeepchatProxyController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [DeepchatProxyController],
-      providers: [
-        { provide: DeepchatProxyService, useValue: createMock<DeepchatProxyService>() }
-      ]
+      providers: [{ provide: DeepchatProxyService, useValue: createMock<DeepchatProxyService>() }]
     }).compile();
 
     controller = module.get<DeepchatProxyController>(DeepchatProxyController);
@@ -73,7 +71,5 @@ describe('DeepchatProxyController', () => {
     service.proxyRequest.mockRejectedValue(new NotFoundException());
   });
 
-  it('should be able to make completion responses', async () => {
-
-  });
+  it('should be able to make completion responses', async () => {});
 });

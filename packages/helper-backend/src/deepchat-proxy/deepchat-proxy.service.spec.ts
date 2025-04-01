@@ -9,16 +9,16 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 const sampleModel = {
   _id: new mongoose.Types.ObjectId('6401234567890abcdef12345'),
- model: 'gpt-4o',
- url: 'temp',
- apiKey: 'temp'
+  model: 'gpt-4o',
+  url: 'temp',
+  apiKey: 'temp'
 };
 
 const sampleModel2 = {
   _id: new mongoose.Types.ObjectId('6401234567890abcdef12345'),
- model: 'gpt-4o',
- url: 'temp',
- apiKey: 'temp'
+  model: 'gpt-4o',
+  url: 'temp',
+  apiKey: 'temp'
 };
 
 describe('DeepchatService', () => {

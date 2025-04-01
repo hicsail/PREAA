@@ -16,9 +16,7 @@ const sampleProxy: DeepchatProxy = {
 };
 
 const sampleCompletionRequest: ProxyCompletion = {
-  messages: [
-    { role: 'user', text: 'Hello!' }
-  ]
+  messages: [{ role: 'user', text: 'Hello!' }]
 };
 
 const sampleCompletionResponse: CompletionResponse = {
@@ -26,13 +24,11 @@ const sampleCompletionResponse: CompletionResponse = {
   created: 1,
   model: 'chatGPT',
   object: 'hi',
-  choices: [
-    { finish_reason: 'stop', index: 0, message: { role: 'user', text: 'hi', content: 'hi' } }
-  ],
+  choices: [{ finish_reason: 'stop', index: 0, message: { role: 'user', text: 'hi', content: 'hi' } }],
   usage: {
     completion_tokens: 1,
     prompt_tokens: 1,
-    total_tokens: 2 ,
+    total_tokens: 2,
     completion_tokens_details: {},
     prompt_tokens_details: {}
   },
@@ -46,9 +42,7 @@ describe('DeepchatProxyController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [DeepchatProxyController],
-      providers: [
-        { provide: DeepchatProxyService, useValue: createMock<DeepchatProxyService>() }
-      ]
+      providers: [{ provide: DeepchatProxyService, useValue: createMock<DeepchatProxyService>() }]
     }).compile();
 
     controller = module.get<DeepchatProxyController>(DeepchatProxyController);
@@ -104,6 +98,8 @@ describe('DeepchatProxyController', () => {
   it('should be able to make completion responses', async () => {
     service.proxyRequest.mockResolvedValue(sampleCompletionResponse);
 
-    await expect(controller.proxyRequest(sampleCompletionRequest, 'text')).resolves.toStrictEqual(sampleCompletionResponse);
+    await expect(controller.proxyRequest(sampleCompletionRequest, 'text')).resolves.toStrictEqual(
+      sampleCompletionResponse
+    );
   });
 });
