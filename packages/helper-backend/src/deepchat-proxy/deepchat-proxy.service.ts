@@ -41,6 +41,13 @@ export class DeepchatProxyService {
   }
 
   async update(id: string, mapping: DeepchatProxy): Promise<DeepchatProxy | null> {
+    // check if model with name already exists
+    const existingModel = await this.deepChatProxyModel.findOne({ model: mapping.model }).lean().exec();
+
+    if (existingModel) {
+      // throw bad request error
+      throw new BadRequestException(`Model with name ${mapping.model} already exists`);
+    }
     const result = await this.deepChatProxyModel.findOneAndUpdate({ _id: id }, mapping, {
       new: true,
       upsert: true
