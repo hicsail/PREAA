@@ -17,7 +17,7 @@ const sampleProxy: DeepchatProxy = {
 
 const sampleCompletionRequest: ProxyCompletion = {
   messages: [
-    { role: 'user', content: 'Hello!' }
+    { role: 'user', text: 'Hello!' }
   ]
 };
 
