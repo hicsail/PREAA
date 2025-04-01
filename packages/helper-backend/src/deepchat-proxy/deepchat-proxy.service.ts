@@ -41,6 +41,8 @@ export class DeepchatProxyService {
   }
 
   async update(id: string, mapping: DeepchatProxy): Promise<DeepchatProxy | null> {
+    // TODO: The update mapping should take in an object with a series of optional
+    //       fields which represent the fields to be updated
     // check if model with name already exists
     const existingModel = await this.deepChatProxyModel.findOne({ model: mapping.model }).lean().exec();
 

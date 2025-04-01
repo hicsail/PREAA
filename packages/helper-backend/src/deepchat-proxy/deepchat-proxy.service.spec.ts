@@ -5,7 +5,7 @@ import { DeepchatProxy } from './deepchat-proxy.schema';
 import { createMock, DeepMocked } from '@golevelup/ts-jest';
 import mongoose, { model } from 'mongoose';
 import { LiteLLMService } from '../litellm/litellm.service';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
 
 const sampleModel = {
   _id: new mongoose.Types.ObjectId('6401234567890abcdef12345'),
@@ -105,5 +105,30 @@ describe('DeepchatService', () => {
     await expect(service.update(sampleModel._id.toString(), sampleModel)).rejects.toThrow(BadRequestException);
   });
 
+  it('should return back the update model', async () => {
+    model.exec.mockResolvedValue(null);
+    model.findOneAndUpdate.mockResolvedValue(sampleModel);
 
+    const result = await service.update('anything', sampleModel);
+    expect(result).toMatchObject({
+      ...sampleModel,
+      _id: sampleModel._id.toString(),
+      apiKey: undefined
+    });
+  });
+
+  it('should throw an error on an invalid proxy request', async () => {
+    model.exec.mockResolvedValue(null);
+
+    await expect(service.proxyRequest('anything', null)).rejects.toThrow(NotFoundException);
+  });
+
+  it('should pass on valid proxy request', async () => {
+    model.exec.mockResolvedValue(sampleModel);
+    litellm.completion = jest.fn();
+
+    await service.proxyRequest('anything', null);
+
+    expect(litellm.completion).toHaveBeenCalled();
+  });
 });
