@@ -34,7 +34,7 @@ describe('LangFlowMappingController', () => {
     expect(controller).toBeDefined();
   });
 
-  it('throw an error trying to get a non-existant model', async () => {
+  it('should throw an error trying to get a non-existant model', async () => {
     service.get.mockResolvedValue(null);
 
     await expect(controller.get('temp')).rejects.toThrow(NotFoundException);
