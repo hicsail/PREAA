@@ -1,29 +1,24 @@
 import { Paper } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { LangFlowMapping, langflowMappingControllerGetAll } from '../../client';
 
 const MappingList = () => {
-  const [mappings, setMappings] = useState([]);
+  const [mappings, setMappings] = useState<LangFlowMapping[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchMappings = async () => {
-      try {
-        const response = await fetch(
-          `${import.meta.env.VITE_BACKEND_BASE_URL}/mapping`
-        );
-        if (!response.ok) {
-          throw new Error('Failed to fetch langflow mappings');
-        }
-        const data = await response.json();
-        setMappings(data);
-      } catch (error) {
-        console.error('Error fetching mappings:', error);
-      } finally {
-        setLoading(false);
+  const fetchMappings = async () => {
+      const response = await langflowMappingControllerGetAll();
+      if (response.error) {
+        console.log(response.error);
+        return;
       }
-    };
 
+      setMappings(response.data!);
+      setLoading(false);
+  };
+
+  useEffect(() => {
     fetchMappings();
   }, []);
 

@@ -13,12 +13,11 @@ import {
 import { DeepchatProxyService } from './deepchat-proxy.service';
 import { DeepchatProxy } from './deepchat-proxy.schema';
 import { ProxyCompletion } from './dtos/proxy-completion.dto';
-import { CompletionResponse } from 'src/litellm/dtos/litellm.dto';
-import { ApiOperation, ApiTags, ApiResponse, ApiParam, ApiBody, ApiExtraModels } from '@nestjs/swagger';
+import { CompletionResponse } from '../litellm/dtos/completion.dto';
+import { ApiOperation, ApiTags, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
 import { CreateProxyMappingDto } from './dtos/create.dto';
 
 @ApiTags('Deepchat Proxy')
-@ApiExtraModels(CreateProxyMappingDto, DeepchatProxy, ProxyCompletion, CompletionResponse)
 @Controller('deepchat-proxy')
 @UseInterceptors(ClassSerializerInterceptor)
 export class DeepchatProxyController {

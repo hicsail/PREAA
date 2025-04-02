@@ -1,21 +1,32 @@
 import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
+import { ApiProperty } from '@nestjs/swagger';
 import { Exclude, Expose, Transform } from 'class-transformer';
 import { Types } from 'mongoose';
 
 @Schema()
 export class DeepchatProxy {
+  @ApiProperty({
+    description: 'MongoDB generated id',
+    example: '6401234567890abcdef12345'
+  })
   @Expose()
   @Transform(({ value }) => value?.toString())
   _id: Types.ObjectId;
-  /** The name the mapping should go by */
+
+  @ApiProperty({
+    description: 'The model the deepchat proxy should talk to',
+    example: 'chatgpt-4o'
+  })
   @Prop({ required: true })
   model: string;
 
-  // url for the proxy
+  @ApiProperty({
+    description: 'The LiteLLM url to communicate against',
+    example: 'http://localhost:4000'
+  })
   @Prop({ required: true })
   url: string;
 
-  // API KEY to pass as header to LiteLLM
   @Exclude()
   @Prop({ required: true })
   apiKey: string;
