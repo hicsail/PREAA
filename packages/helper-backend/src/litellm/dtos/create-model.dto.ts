@@ -1,6 +1,5 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsString, ValidateNested } from "class-validator";
-
+import { ApiProperty } from '@nestjs/swagger';
+import { IsString, ValidateNested } from 'class-validator';
 
 export class CreateNewModelParams {
   @ApiProperty({
@@ -47,5 +46,3 @@ export class CreateNewModel {
   @ValidateNested()
   litellm_params: CreateNewModelParams;
 }
-
-
