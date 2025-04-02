@@ -1,7 +1,15 @@
-import { CompletionResponse, CreateNewModel } from './dtos/litellm.dto';
+import { CompletionResponse } from './dtos/completion.dto';
+import { CreateNewModel } from './dtos/create-model.dto';
+import { ConfigService } from '@nestjs/config';
+import { Injectable } from '@nestjs/common';
 
+@Injectable()
 export class LiteLLMService {
-  constructor() {}
+  private readonly liteLLMBaseURL: string;
+
+  constructor(configService: ConfigService) {
+    this.liteLLMBaseURL = configService.getOrThrow<string>('litellm.uri');
+  }
 
   async completion(model: string, apiKey: string, url: string, body: any): Promise<CompletionResponse> {
     try {
@@ -47,7 +55,7 @@ export class LiteLLMService {
   }
 
   async create(newModel: CreateNewModel): Promise<void> {
-    const response = await fetch(`${process.env.LITE_LLM_BASE_URL}/model/new`, {
+    const response = await fetch(`${this.liteLLMBaseURL}/model/new`, {
       method: 'POST',
       headers: {
         Accept: 'application/json',

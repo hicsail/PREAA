@@ -1,6 +1,6 @@
 import { IsOptional, IsString } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
 import { DoesExistModel } from '../pipes/exists';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class UpdateLangFlowMapping {
   @ApiProperty({

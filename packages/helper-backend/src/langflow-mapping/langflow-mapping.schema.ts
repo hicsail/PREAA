@@ -1,28 +1,27 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Schema as MongooseSchema } from 'mongoose';
+import { Document } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
+
 export type LangFlowMappingDocument = LangFlowMapping & Document;
 
 @Schema({
   timestamps: true,
   toJSON: {
     virtuals: true,
+    versionKey: false,
     transform: (_, ret) => {
-      ret.id = ret._id;
-      ret.model = ret.modelName;
       delete ret.__v;
       return ret;
     }
   }
 })
-export class LangFlowMapping extends Document {
+export class LangFlowMapping {
   @ApiProperty({ description: 'Unique identifier' })
-  @Prop({ type: MongooseSchema.Types.ObjectId, auto: true })
-  declare _id: string;
+  _id: string;
 
   @ApiProperty({ description: 'Model name' })
   @Prop({ required: true })
-  modelName: string;
+  model: string;
 
   /**
    * The request URL to request against including the flow ID
@@ -43,11 +42,11 @@ export class LangFlowMapping extends Document {
   historyComponentID: string;
 
   @ApiProperty({ description: 'Creation timestamp', format: 'date-time' })
-  @Prop()
+  @Prop({ default: Date.now })
   createdAt: Date;
 
   @ApiProperty({ description: 'Last update timestamp', format: 'date-time' })
-  @Prop()
+  @Prop({ default: Date.now })
   updatedAt: Date;
 }
 

@@ -12,11 +12,11 @@ export class Message {
   role: string;
 
   @ApiProperty({
-    description: 'Content of the message',
+    description: 'text of the message',
     example: 'Hello, how can you help me today?'
   })
   @IsString()
-  content: string;
+  text: string;
 }
 
 export class ProxyCompletion {
@@ -26,11 +26,11 @@ export class ProxyCompletion {
     example: [
       {
         role: 'system',
-        content: 'You are a helpful assistant.'
+        text: 'You are a helpful assistant.'
       },
       {
         role: 'user',
-        content: 'What can you help me with?'
+        text: 'What can you help me with?'
       }
     ]
   })

@@ -1,28 +1,34 @@
 import React, { useState } from 'react';
-import { 
-  Box, 
-  TextField, 
-  Button, 
-  Dialog, 
-  DialogTitle, 
-  DialogContent, 
+import {
+  Box,
+  TextField,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
   DialogActions,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
 } from '@mui/material';
-import { LiteLLMMapping } from '../../types/litellm-mapping';
-import { LangFlowMapping } from '../../types/langflow-mapping';
-import { createLangFlowMapping, createNewModelLiteLLM } from '../../services/endpoints';
+import { langflowMappingControllerCreate, liteLlmControllerCreate } from '../../client';
 
 type CreateMappingFormProps = {
   open: boolean;
   onClose: () => void;
 };
 
+interface FormProps {
+  provider: string;
+  url: string;
+  modelName: string;
+  historyComponentID: string;
+  apiKey: string;
+}
+
 const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
-  const [formData, setFormData] = useState<LiteLLMMapping>({
+  const [formData, setFormData] = useState<FormProps>({
     provider: 'langflow',
     url: '',
     modelName: '',
@@ -33,19 +39,37 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    try {
-      const langflowData: LangFlowMapping= {
+
+    const langFlowResponse = await langflowMappingControllerCreate({
+      body: {
         model: formData.modelName,
         url: formData.url,
         historyComponentID: formData.historyComponentID
-      };
-  
-      const langFlowResponse = await createLangFlowMapping(langflowData);
-      const liteLLMResponse = await createNewModelLiteLLM(formData);
-      
-    } catch (error) {
-      console.error('Error creating mapping:', error);
+      }
+    });
+    if (langFlowResponse.error) {
+      console.error('Failed to create a new langflow mapping');
+      console.error(langFlowResponse.error);
+      return;
     }
+
+    const liteLLMResponse = await liteLlmControllerCreate({
+      body: {
+        model_name: formData.modelName,
+        litellm_params: {
+          model: formData.modelName,
+          api_base: formData.url,
+          api_key: formData.apiKey,
+          custom_llm_provider: formData.provider
+        }
+      }
+    })
+    if (liteLLMResponse.error) {
+      console.error('Failed to create a new LiteLLM model');
+      console.error(liteLLMResponse.error);
+      return;
+    }
+
 
     // Reset Form Data
     setFormData({
@@ -122,4 +146,4 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
   );
 };
 
-export default CreateMappingForm; 
+export default CreateMappingForm;

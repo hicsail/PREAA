@@ -13,38 +13,43 @@ import {
 import { DeepchatProxyService } from './deepchat-proxy.service';
 import { DeepchatProxy } from './deepchat-proxy.schema';
 import { ProxyCompletion } from './dtos/proxy-completion.dto';
-import { CompletionResponse } from 'src/litellm/dtos/litellm.dto';
-import { ApiOperation, ApiTags, ApiResponse, ApiParam, ApiBody, ApiExtraModels } from '@nestjs/swagger';
+import { CompletionResponse } from '../litellm/dtos/completion.dto';
+import { ApiOperation, ApiTags, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
 import { CreateProxyMappingDto } from './dtos/create.dto';
 
 @ApiTags('Deepchat Proxy')
-@ApiExtraModels(CreateProxyMappingDto, DeepchatProxy, ProxyCompletion, CompletionResponse)
 @Controller('deepchat-proxy')
 @UseInterceptors(ClassSerializerInterceptor)
 export class DeepchatProxyController {
   constructor(private readonly deepchatProxyService: DeepchatProxyService) {}
 
-  @Get('/:model')
-  @ApiOperation({
-    summary: 'Get proxy by model name',
-    description:
-      'Retrieves a specific Deepchat proxy by model name. The API key is excluded from the response for security reasons.'
+  @Get('/:id')
+  @ApiOperation({ 
+    summary: 'Get proxy by ID', 
+    description: 'Retrieves a specific Deepchat proxy by ID. The API key is excluded from the response for security reasons.'
   })
-  @ApiParam({
-    name: 'model',
-    description: 'Model name',
-    example: 'gpt-4'
+  @ApiParam({ 
+    name: 'id', 
+    description: 'MongoDB ObjectId of the proxy record',
+    example: '6401234567890abcdef12345'
   })
-  @ApiResponse({
-    status: 200,
-    description: 'The proxy has been found',
-    type: DeepchatProxy
+  @ApiResponse({ 
+    status: 200, 
+    description: 'The proxy has been found', 
+    type: DeepchatProxy,
+    schema: {
+      properties: {
+        _id: { type: 'string', example: '6401234567890abcdef12345' },
+        model: { type: 'string', example: 'gpt-4' },
+        url: { type: 'string', example: 'https://api.openai.com/v1' }
+      }
+    }
   })
   @ApiResponse({ status: 404, description: 'Proxy not found' })
-  async get(@Param('model') model: string): Promise<DeepchatProxy> {
-    const mapping = await this.deepchatProxyService.getByModel(model);
+  async get(@Param('id') id: string): Promise<DeepchatProxy> {
+    const mapping = await this.deepchatProxyService.get(id);
     if (!mapping) {
-      throw new NotFoundException(`No model with name ${model} found`);
+      throw new NotFoundException(`No model with ${id} found`);
     }
     return mapping;
   }
@@ -64,29 +69,37 @@ export class DeepchatProxyController {
     return this.deepchatProxyService.getAll();
   }
 
-  @Put('/:model')
-  @ApiOperation({
-    summary: 'Update a proxy',
-    description: 'Updates an existing Deepchat proxy configuration by model name'
+  @Put('/:id')
+  @ApiOperation({ 
+    summary: 'Update a proxy', 
+    description: 'Updates an existing Deepchat proxy configuration by ID'
   })
-  @ApiParam({
-    name: 'model',
-    description: 'Model name to update',
-    example: 'gpt-4'
+  @ApiParam({ 
+    name: 'id', 
+    description: 'MongoDB ObjectId of the proxy to update',
+    example: '6401234567890abcdef12345'
   })
-  @ApiBody({
-    type: CreateProxyMappingDto
+  @ApiBody({ 
+    type: CreateProxyMappingDto, 
+    description: 'Updated proxy configuration',
+    schema: {
+      properties: {
+        model: { type: 'string', example: 'gpt-4-turbo' },
+        url: { type: 'string', example: 'https://api.openai.com/v1' },
+        apiKey: { type: 'string', example: 'sk-....' }
+      }
+    }
   })
-  @ApiResponse({
-    status: 200,
-    description: 'The proxy has been successfully updated',
+  @ApiResponse({ 
+    status: 200, 
+    description: 'The proxy has been successfully updated', 
     type: DeepchatProxy
   })
   @ApiResponse({ status: 404, description: 'Proxy not found' })
-  async update(@Param('model') model: string, @Body() mapping: CreateProxyMappingDto): Promise<DeepchatProxy> {
-    const updatedMapping = await this.deepchatProxyService.updateByModel(model, mapping);
+  async update(@Param('id') id: string, @Body() mapping: CreateProxyMappingDto): Promise<DeepchatProxy> {
+    const updatedMapping = await this.deepchatProxyService.update(id, mapping);
     if (!updatedMapping) {
-      throw new NotFoundException(`No model with name ${model} found`);
+      throw new NotFoundException(`No model with ${id} found`);
     }
     return updatedMapping;
   }
@@ -110,12 +123,12 @@ export class DeepchatProxyController {
   }
 
   @Delete('/:model')
-  @ApiOperation({
-    summary: 'Delete a proxy',
+  @ApiOperation({ 
+    summary: 'Delete a proxy', 
     description: 'Deletes a Deepchat proxy by model name'
   })
-  @ApiParam({
-    name: 'model',
+  @ApiParam({ 
+    name: 'model', 
     description: 'Model name to delete',
     example: 'gpt-4'
   })

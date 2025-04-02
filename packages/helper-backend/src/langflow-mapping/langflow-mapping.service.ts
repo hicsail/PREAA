@@ -13,7 +13,7 @@ export class LangflowMappingService {
   ) {}
 
   async get(model: string): Promise<LangFlowMapping | null> {
-    return this.langFlowMappingModel.findOne({ modelName: model });
+    return this.langFlowMappingModel.findOne({ model });
   }
 
   async getAll(): Promise<LangFlowMapping[]> {
@@ -22,7 +22,7 @@ export class LangflowMappingService {
 
   async create(mapping: CreateLangFlowMapping): Promise<LangFlowMapping> {
     const mappedData = {
-      modelName: mapping.model,
+      model: mapping.model,
       langflowUrl: mapping.url,
       historyComponentID: mapping.historyComponentID
     };
@@ -31,7 +31,7 @@ export class LangflowMappingService {
 
   async update(mapping: UpdateLangFlowMapping): Promise<LangFlowMapping | null> {
     const mappedData: any = {
-      modelName: mapping.model
+      model: mapping.model
     };
 
     if (mapping.url) {
@@ -42,13 +42,13 @@ export class LangflowMappingService {
       mappedData.historyComponentID = mapping.historyComponentID;
     }
 
-    return await this.langFlowMappingModel.findOneAndUpdate({ modelName: mapping.model }, mappedData, {
+    return await this.langFlowMappingModel.findOneAndUpdate({ model: mapping.model }, mappedData, {
       new: true,
       upsert: true
     });
   }
 
   async delete(model: string): Promise<void> {
-    await this.langFlowMappingModel.deleteOne({ modelName: model });
+    await this.langFlowMappingModel.deleteOne({ model });
   }
 }
