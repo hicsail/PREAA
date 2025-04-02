@@ -4,7 +4,6 @@ import { ApiProperty } from '@nestjs/swagger';
 @Schema()
 export class LangFlowMapping {
   @ApiProperty({ description: 'Unique identifier' })
-  @Prop({ required: true })
   _id: string;
 
   @ApiProperty({ description: 'Model name' })
