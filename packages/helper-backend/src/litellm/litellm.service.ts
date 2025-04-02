@@ -1,4 +1,4 @@
-import { CompletionResponse } from './dtos/litellm.dto';
+import { CompletionResponse } from './dtos/completion.dto';
 import { CreateNewModel } from './dtos/create-model.dto';
 import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
