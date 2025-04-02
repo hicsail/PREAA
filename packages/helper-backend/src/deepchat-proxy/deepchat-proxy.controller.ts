@@ -139,28 +139,77 @@ export class DeepchatProxyController {
     await this.deepchatProxyService.delete(model);
   }
 
-  @Post('proxy/:model')
-  @ApiOperation({
-    summary: 'Proxy a request',
+  @Post('proxy/:id')
+  @ApiOperation({ 
+    summary: 'Proxy a request', 
     description: 'Proxies a completion request to the specified LLM provider using the stored configuration'
   })
-  @ApiParam({
-    name: 'model',
-    description: 'Model name',
-    example: 'gpt-4'
+  @ApiParam({ 
+    name: 'id', 
+    description: 'Proxy identifier (MongoDB ObjectId)',
+    example: '6401234567890abcdef12345'
   })
-  @ApiBody({
-    type: ProxyCompletion
+  @ApiBody({ 
+    type: ProxyCompletion, 
+    description: 'Completion request data',
+    schema: {
+      properties: {
+        messages: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              role: { type: 'string', enum: ['system', 'user', 'assistant'], example: 'user' },
+              content: { type: 'string', example: 'Hello, how can you help me today?' }
+            }
+          }
+        },
+        max_tokens: { type: 'number', example: 1000 },
+        temperature: { type: 'number', example: 0.7 }
+      }
+    }
   })
-  @ApiResponse({
-    status: 200,
-    description: 'Successful completion response',
-    type: CompletionResponse
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Successful completion response', 
+    type: CompletionResponse,
+    schema: {
+      properties: {
+        id: { type: 'string', example: 'chatcmpl-123456789' },
+        object: { type: 'string', example: 'chat.completion' },
+        created: { type: 'number', example: 1677858242 },
+        model: { type: 'string', example: 'gpt-4' },
+        choices: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              message: {
+                type: 'object',
+                properties: {
+                  role: { type: 'string', example: 'assistant' },
+                  content: { type: 'string', example: 'I can help you with information, answer questions, or assist with various tasks. How can I help you today?' }
+                }
+              },
+              finish_reason: { type: 'string', example: 'stop' }
+            }
+          }
+        },
+        usage: {
+          type: 'object',
+          properties: {
+            prompt_tokens: { type: 'number', example: 12 },
+            completion_tokens: { type: 'number', example: 42 },
+            total_tokens: { type: 'number', example: 54 }
+          }
+        }
+      }
+    }
   })
   @ApiResponse({ status: 404, description: 'Proxy not found' })
   @ApiResponse({ status: 500, description: 'Error communicating with the LLM provider' })
-  async proxyRequest(@Body() request: ProxyCompletion, @Param('model') model: string): Promise<CompletionResponse> {
-    const response = await this.deepchatProxyService.proxyRequestByModel(model, request);
+  async proxyRequest(@Body() request: ProxyCompletion, @Param('id') id: string): Promise<CompletionResponse> {
+    const response = await this.deepchatProxyService.proxyRequest(id, request);
     return response;
   }
 }
