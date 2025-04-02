@@ -24,18 +24,19 @@ export class DeepchatProxyController {
   constructor(private readonly deepchatProxyService: DeepchatProxyService) {}
 
   @Get('/:id')
-  @ApiOperation({ 
-    summary: 'Get proxy by ID', 
-    description: 'Retrieves a specific Deepchat proxy by ID. The API key is excluded from the response for security reasons.'
+  @ApiOperation({
+    summary: 'Get proxy by ID',
+    description:
+      'Retrieves a specific Deepchat proxy by ID. The API key is excluded from the response for security reasons.'
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'MongoDB ObjectId of the proxy record',
     example: '6401234567890abcdef12345'
   })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'The proxy has been found', 
+  @ApiResponse({
+    status: 200,
+    description: 'The proxy has been found',
     type: DeepchatProxy,
     schema: {
       properties: {
@@ -70,17 +71,17 @@ export class DeepchatProxyController {
   }
 
   @Put('/:id')
-  @ApiOperation({ 
-    summary: 'Update a proxy', 
+  @ApiOperation({
+    summary: 'Update a proxy',
     description: 'Updates an existing Deepchat proxy configuration by ID'
   })
-  @ApiParam({ 
-    name: 'id', 
+  @ApiParam({
+    name: 'id',
     description: 'MongoDB ObjectId of the proxy to update',
     example: '6401234567890abcdef12345'
   })
-  @ApiBody({ 
-    type: CreateProxyMappingDto, 
+  @ApiBody({
+    type: CreateProxyMappingDto,
     description: 'Updated proxy configuration',
     schema: {
       properties: {
@@ -90,9 +91,9 @@ export class DeepchatProxyController {
       }
     }
   })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'The proxy has been successfully updated', 
+  @ApiResponse({
+    status: 200,
+    description: 'The proxy has been successfully updated',
     type: DeepchatProxy
   })
   @ApiResponse({ status: 404, description: 'Proxy not found' })
@@ -123,12 +124,12 @@ export class DeepchatProxyController {
   }
 
   @Delete('/:model')
-  @ApiOperation({ 
-    summary: 'Delete a proxy', 
+  @ApiOperation({
+    summary: 'Delete a proxy',
     description: 'Deletes a Deepchat proxy by model name'
   })
-  @ApiParam({ 
-    name: 'model', 
+  @ApiParam({
+    name: 'model',
     description: 'Model name to delete',
     example: 'gpt-4'
   })
