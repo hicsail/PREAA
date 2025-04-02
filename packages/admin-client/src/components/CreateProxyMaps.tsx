@@ -1,5 +1,5 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormHelperText, Input, InputLabel } from '@mui/material'
-import axios from 'axios';
+import { deepchatProxyControllerCreate } from '../client';
 
 interface Props {
   open: boolean;
@@ -12,25 +12,28 @@ export default function CreateProxyMaps({ open, setOpen }: Props) {
     setOpen(false);
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
     const form = e.currentTarget;
     const model = form.querySelector('#model-name') as HTMLInputElement;
     const baseUrl = form.querySelector('#base-url') as HTMLInputElement;
     const key = form.querySelector('#key') as HTMLInputElement;
 
-    axios.post(`${import.meta.env.VITE_BACKEND_BASE_URL}/deepchat-proxy`, {
-      model: model.value,
-      url: baseUrl.value,
-      apiKey: key.value
-    })
-    .then(() => {
-      setOpen(false);
-    })
-    .catch((err) => {
-      console.error('Error creating proxy mapping');
-      console.error(err);
+    const response = await deepchatProxyControllerCreate({
+      body: {
+        model: model.value,
+        url: baseUrl.value,
+        apiKey: key.value
+      }
     });
+
+    if (response.error) {
+      console.error('Failed to make deepchat proxy');
+      console.error(response.error);
+    }
+
+    setOpen(false);
   }
 
   return (
