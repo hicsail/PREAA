@@ -39,7 +39,37 @@ export type LangFlowMapping = {
 };
 
 export type UpdateLangFlowMapping = {
+    /**
+     * New model name
+     */
+    model: string;
+    /**
+     * New url
+     */
+    url: string;
+    /**
+     * New history component
+     */
+    historyComponentID: string;
+};
+
+export type ObjectId = {
     [key: string]: unknown;
+};
+
+export type DeepchatProxy = {
+    /**
+     * MongoDB generated id
+     */
+    _id: ObjectId;
+    /**
+     * The model the deepchat proxy should talk to
+     */
+    model: string;
+    /**
+     * The LiteLLM url to communicate against
+     */
+    url: string;
 };
 
 export type CreateProxyMappingDto = {
@@ -55,10 +85,6 @@ export type CreateProxyMappingDto = {
      * API key for authentication with the LLM provider
      */
     apiKey: string;
-};
-
-export type DeepchatProxy = {
-    [key: string]: unknown;
 };
 
 export type Message = {
@@ -87,8 +113,53 @@ export type ProxyCompletion = {
     temperature?: number;
 };
 
+export type Usage = {
+    /**
+     * Tokens needed to make completion
+     */
+    completion_tokens: number;
+    /**
+     * Tokens used by prompt
+     */
+    prompt_tokens: number;
+    /**
+     * Total tokens used in interaction
+     */
+    total_tokens: number;
+    /**
+     * Additional context on completion token usagage
+     */
+    completion_tokens_details: {
+        [key: string]: unknown;
+    };
+    /**
+     * Additional context on prompt token usage
+     */
+    prompt_tokens_details: {
+        [key: string]: unknown;
+    };
+};
+
 export type CompletionResponse = {
-    [key: string]: unknown;
+    /**
+     * The id of the completion
+     */
+    id: string;
+    /**
+     * Creation date
+     */
+    created: number;
+    /**
+     * Model that make the completion
+     */
+    model: string;
+    object: string;
+    choices: Array<string>;
+    /**
+     * Usage information
+     */
+    usage: Usage;
+    text: string;
 };
 
 export type CreateNewModelParams = {
