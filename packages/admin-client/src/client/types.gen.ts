@@ -91,8 +91,34 @@ export type CompletionResponse = {
     [key: string]: unknown;
 };
 
+export type CreateNewModelParams = {
+    /**
+     * Model name for the backend
+     */
+    model: string;
+    /**
+     * Base URL for the model
+     */
+    api_base: string;
+    /**
+     * API key needed to be passed to the model backend
+     */
+    api_key: string;
+    /**
+     * The name of the custom provider (if needed)
+     */
+    custom_llm_provider: string;
+};
+
 export type CreateNewModel = {
-    [key: string]: unknown;
+    /**
+     * The name of the model
+     */
+    model_name: string;
+    /**
+     * LiteLLM parameters for configuring the model
+     */
+    litellm_params: CreateNewModelParams;
 };
 
 export type LangflowMappingControllerGetAllData = {

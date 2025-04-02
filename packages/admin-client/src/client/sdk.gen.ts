@@ -159,6 +159,10 @@ export const deepchatProxyControllerProxyRequest = <ThrowOnError extends boolean
     });
 };
 
+/**
+ * Create new LiteLLM model
+ * Create a new model in LiteLLM
+ */
 export const liteLlmControllerCreate = <ThrowOnError extends boolean = false>(options: Options<LiteLlmControllerCreateData, ThrowOnError>) => {
     return (options.client ?? _heyApiClient).post<unknown, unknown, ThrowOnError>({
         url: '/litellm',

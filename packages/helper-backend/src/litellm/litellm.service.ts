@@ -1,4 +1,5 @@
-import { CompletionResponse, CreateNewModel } from './dtos/litellm.dto';
+import { CompletionResponse } from './dtos/litellm.dto';
+import { CreateNewModel } from './dtos/create-model.dto';
 
 export class LiteLLMService {
   constructor() {}
