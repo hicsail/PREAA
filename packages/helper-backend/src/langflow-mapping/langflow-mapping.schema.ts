@@ -1,7 +1,20 @@
-import { Schema, Prop, SchemaFactory } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
 
-@Schema()
+export type LangFlowMappingDocument = LangFlowMapping & Document;
+
+@Schema({
+  timestamps: true,
+  toJSON: {
+    virtuals: true,
+    versionKey: false,
+    transform: (_, ret) => {
+      delete ret.__v;
+      return ret;
+    }
+  }
+})
 export class LangFlowMapping {
   @ApiProperty({ description: 'Unique identifier' })
   _id: string;
@@ -17,13 +30,14 @@ export class LangFlowMapping {
    */
   @ApiProperty({ description: 'URL to the Langflow instance' })
   @Prop({ required: true })
-  url: string;
+  langflowUrl: string;
 
   /**
    * The ID of the history component where messages history should be passed in
    *
    * ex) CompletionInterface-qNlsX
    */
+  @ApiProperty({ description: 'The history component ID for message history' })
   @Prop({ requied: true })
   historyComponentID: string;
 
@@ -36,5 +50,4 @@ export class LangFlowMapping {
   updatedAt: Date;
 }
 
-export type LangFlowMappingDocument = LangFlowMapping & Document;
 export const LangFlowMappingSchema = SchemaFactory.createForClass(LangFlowMapping);

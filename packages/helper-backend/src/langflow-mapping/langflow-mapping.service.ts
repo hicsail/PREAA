@@ -21,11 +21,28 @@ export class LangflowMappingService {
   }
 
   async create(mapping: CreateLangFlowMapping): Promise<LangFlowMapping> {
-    return await this.langFlowMappingModel.create(mapping);
+    const mappedData = {
+      model: mapping.model,
+      langflowUrl: mapping.url,
+      historyComponentID: mapping.historyComponentID
+    };
+    return await this.langFlowMappingModel.create(mappedData);
   }
 
   async update(mapping: UpdateLangFlowMapping): Promise<LangFlowMapping | null> {
-    return await this.langFlowMappingModel.findOneAndUpdate({ model: mapping.model }, mapping, {
+    const mappedData: any = {
+      model: mapping.model
+    };
+
+    if (mapping.url) {
+      mappedData.langflowUrl = mapping.url;
+    }
+
+    if (mapping.historyComponentID) {
+      mappedData.historyComponentID = mapping.historyComponentID;
+    }
+
+    return await this.langFlowMappingModel.findOneAndUpdate({ model: mapping.model }, mappedData, {
       new: true,
       upsert: true
     });
