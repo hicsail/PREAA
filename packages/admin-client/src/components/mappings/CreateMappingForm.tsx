@@ -82,9 +82,7 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
       });
 
       // Close the dialog after a short delay to allow the user to see the success message
-      setTimeout(() => {
-        onClose();
-      }, 1500);
+      onClose();
 
     } catch (error) {
       console.error(error);
