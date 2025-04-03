@@ -63,51 +63,12 @@ const MappingList = () => {
       });
     }
   };
-  const processRowUpdate = async (newRow: GridRowModel, oldRow: GridRowModel) => {
-
-    try {
-      const response = await langflowMappingControllerUpdate(newRow._id, {
-        model: newRow.model,
-        url: newRow.url,
-        historyComponentID: newRow.historyComponentID,
-      });
-
-      if (response.error) {
-        throw new Error(response.error.message || 'Failed to update mapping');
-      }
-
-      setSnackbar({
-        open: true,
-        message: 'Mapping updated successfully',
-        severity: 'success',
-      });
-
-      return newRow;
-    } catch (error) {
-      console.error('Error updating mapping:', error);
-      setSnackbar({
-        open: true,
-        message: error instanceof Error ? error.message : 'Failed to update mapping',
-        severity: 'error',
-      });
-      return oldRow;
-    }
-  };
-
-  const handleProcessRowUpdateError = (error: any) => {
-    console.error('Error during row update:', error);
-    setSnackbar({
-      open: true,
-      message: 'An error occurred while updating the mapping',
-      severity: 'error',
-    });
-  };
 
   const columns: GridColDef[] = [
     { field: '_id', headerName: 'ID', flex: 1, editable: false },
-    { field: 'model', headerName: 'Model Name', flex: 1, editable: true },
-    { field: 'url', headerName: 'URL', flex: 2, editable: true },
-    { field: 'historyComponentID', headerName: 'History Component ID', flex: 1.5, editable: true },
+    { field: 'model', headerName: 'Model Name', flex: 1, editable: false },
+    { field: 'url', headerName: 'URL', flex: 2, editable: false },
+    { field: 'historyComponentID', headerName: 'History Component ID', flex: 1.5, editable: false },
     {
       field: 'actions',
       type: 'actions',
@@ -137,9 +98,6 @@ const MappingList = () => {
           initialState={{
             pagination: { paginationModel: { pageSize: 10 } },
           }}
-          processRowUpdate={processRowUpdate}
-          onProcessRowUpdateError={handleProcessRowUpdateError}
-          editMode="row"
         />
       </div>
       <Snackbar
