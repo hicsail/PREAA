@@ -63,6 +63,11 @@ export class LiteLLMService {
     const modelInfo = await modelResponse.json();
     const models = modelInfo.data.map((model: any) => model);
     const modelId = models.find((modelT: any) => modelT.model_name === model).model_info.id;
+
+    if (!modelId) {
+      return false;
+    }
+
     const deleteResponse = await fetch(`${this.liteLLMBaseURL}/model/delete`, {
       method: 'POST',
       headers: {
