@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { LangFlowMapping, LangFlowMappingDocument } from './langflow-mapping.schema';
 import { Model } from 'mongoose';
@@ -9,7 +9,8 @@ import { LiteLLMService } from 'src/litellm/litellm.service';
 @Injectable()
 export class LangflowMappingService {
   constructor(
-    @InjectModel(LangFlowMapping.name) private readonly langFlowMappingModel: Model<LangFlowMappingDocument>
+    @InjectModel(LangFlowMapping.name) private readonly langFlowMappingModel: Model<LangFlowMappingDocument>,
+    private readonly liteLLMService: LiteLLMService
   ) {}
 
   async get(model: string): Promise<LangFlowMapping | null> {
@@ -32,6 +33,19 @@ export class LangflowMappingService {
   }
 
   async delete(model: string): Promise<void> {
+    if (!model) {
+      throw new BadRequestException('Model is required');
+    }
+    // check if model exists
+    const mapping = await this.langFlowMappingModel.findOne({ model });
+    if (!mapping) {
+      throw new NotFoundException(`No model ${model} found`);
+    }
+
+    const deleted = await this.liteLLMService.delete(model);
+    if (!deleted) {
+      throw new Error('Failed to delete model');
+    }
     await this.langFlowMappingModel.deleteOne({ model });
   }
 }

@@ -39,7 +39,6 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     const langFlowResponse = await langflowMappingControllerCreate({
       body: {
         model: formData.modelName,
@@ -52,7 +51,6 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
       console.error(langFlowResponse.error);
       return;
     }
-
     const liteLLMResponse = await liteLlmControllerCreate({
       body: {
         model_name: formData.modelName,

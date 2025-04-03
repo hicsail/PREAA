@@ -4,5 +4,6 @@ export default () => ({
   },
   litellm: {
     uri: process.env.LITE_LLM_BASE_URL || 'http://localhost:4000'
-  }
+  },
+  litellmAPIKey: process.env.LITE_LLM_API_KEY || 'sk-1234'
 });
