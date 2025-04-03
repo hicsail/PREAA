@@ -1,8 +1,8 @@
 import { Alert, Paper, Snackbar } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { DataGrid, GridActionsCellItem, GridColDef, GridRowId, GridRowModel } from '@mui/x-data-grid';
+import { DataGrid, GridActionsCellItem, GridColDef, GridRowId } from '@mui/x-data-grid';
 import Delete from '@mui/icons-material/Delete';
-import { LangFlowMapping, langflowMappingControllerGetAll, langflowMappingControllerDelete, langflowMappingControllerUpdate } from '../../client';
+import { LangFlowMapping, langflowMappingControllerGetAll, langflowMappingControllerDelete } from '../../client';
 
 const MappingList = () => {
   const [mappings, setMappings] = useState<LangFlowMapping[]>([]);
