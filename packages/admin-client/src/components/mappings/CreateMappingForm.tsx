@@ -57,7 +57,7 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
       });
 
       if (liteLLMResponse.error) {
-        throw new Error(`Failed to create LiteLLM model: ${liteLLMResponse.error.toString() || 'Unknown error'}`);
+        throw new Error(`Failed to create LiteLLM model: ${JSON.stringify(liteLLMResponse.error) || 'Unknown error'}`);
       }
 
       const langFlowResponse = await langflowMappingControllerCreate({
