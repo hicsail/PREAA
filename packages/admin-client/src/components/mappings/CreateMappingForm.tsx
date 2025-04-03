@@ -11,10 +11,9 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Snackbar,
-  Alert,
 } from '@mui/material';
 import { langflowMappingControllerCreate, liteLlmControllerCreate } from '../../client';
+import { useSnackbar } from '../../contexts/Snackbar.context';
 
 type CreateMappingFormProps = {
   open: boolean;
@@ -30,6 +29,7 @@ interface FormProps {
 }
 
 const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
+  const { showSnackbar } = useSnackbar();
   const [formData, setFormData] = useState<FormProps>({
     provider: 'langflow',
     url: '',
@@ -37,8 +37,6 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
     historyComponentID: '',
     apiKey: '',
   });
-
-  const [feedback, setFeedback] = useState<{ message: string, severity: 'success' | 'error' } | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,10 +70,7 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
       }
 
       // Success case
-      setFeedback({
-        message: 'Mapping created successfully!',
-        severity: 'success'
-      });
+      showSnackbar('Mapping created successfully!', 'success');
 
       // Reset Form Data
       setFormData({
@@ -89,20 +84,12 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
       // Close the dialog after a short delay to allow the user to see the success message
       setTimeout(() => {
         onClose();
-        setFeedback(null);
       }, 1500);
 
     } catch (error) {
       console.error(error);
-      setFeedback({
-        message: error instanceof Error ? error.message : 'An unknown error occurred',
-        severity: 'error'
-      });
+      showSnackbar(error instanceof Error ? error.message : 'An unknown error occurred', 'error');
     }
-  };
-
-  const handleCloseFeedback = () => {
-    setFeedback(null);
   };
 
   return (
@@ -166,22 +153,6 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
           </DialogActions>
         </form>
       </Dialog>
-      {feedback && (
-        <Snackbar
-          open={!!feedback}
-          autoHideDuration={6000}
-          onClose={handleCloseFeedback}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        >
-          <Alert
-            onClose={handleCloseFeedback}
-            severity={feedback.severity}
-            sx={{ width: '100%' }}
-          >
-            {feedback.message}
-          </Alert>
-        </Snackbar>
-      )}
     </>
   );
 };

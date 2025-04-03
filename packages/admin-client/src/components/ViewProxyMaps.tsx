@@ -1,16 +1,13 @@
 import { useEffect, useState } from 'react';
 import { DataGrid, GridColDef, GridActionsCellItem, GridRowId } from '@mui/x-data-grid';
-import { Alert, Paper, Snackbar } from '@mui/material';
+import { Paper } from '@mui/material';
 import { DeepchatProxy, deepchatProxyControllerGetAll, deepchatProxyControllerDelete } from '../client';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { useSnackbar } from '../contexts/Snackbar.context';
 
 export default function ViewProxyMaps() {
   const [rows, setRows] = useState<DeepchatProxy[]>([]);
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
-    open: false,
-    message: '',
-    severity: 'success',
-  });
+  const { showSnackbar } = useSnackbar();
 
   const fetchProxies = async () => {
     const response = await deepchatProxyControllerGetAll();
@@ -26,10 +23,6 @@ export default function ViewProxyMaps() {
     fetchProxies();
   }, []);
 
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
-
   const handleDeleteClick = (id: GridRowId, model: string) => async () => {
     try {
       const response = await deepchatProxyControllerDelete({ 
@@ -41,18 +34,10 @@ export default function ViewProxyMaps() {
       }
       
       setRows(rows.filter((row) => row._id.toString() !== id.toString()));
-      setSnackbar({
-        open: true,
-        message: 'Proxy deleted successfully',
-        severity: 'success',
-      });
+      showSnackbar('Proxy deleted successfully', 'success');
     } catch (error) {
       console.error('Error deleting proxy:', error);
-      setSnackbar({
-        open: true,
-        message: error instanceof Error ? error.message : 'Failed to delete proxy',
-        severity: 'error',
-      });
+      showSnackbar(error instanceof Error ? error.message : 'Failed to delete proxy', 'error');
     }
   };
 
@@ -85,16 +70,6 @@ export default function ViewProxyMaps() {
           getRowId={(row) => row._id}
         />
       </div>
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity}>
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
     </Paper>
   );
 }

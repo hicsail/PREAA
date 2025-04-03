@@ -3,24 +3,17 @@ import { useEffect, useState } from 'react';
 import { DataGrid, GridActionsCellItem, GridColDef, GridRowId } from '@mui/x-data-grid';
 import Delete from '@mui/icons-material/Delete';
 import { LangFlowMapping, langflowMappingControllerGetAll, langflowMappingControllerDelete } from '../../client';
+import { useSnackbar } from '../../contexts/Snackbar.context';
 
 const MappingList = () => {
+  const { showSnackbar } = useSnackbar();
   const [mappings, setMappings] = useState<LangFlowMapping[]>([]);
   const [loading, setLoading] = useState(true);
-  const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
-    open: false,
-    message: '',
-    severity: 'success',
-  });
 
   const fetchMappings = async () => {
     const response = await langflowMappingControllerGetAll();
     if (response.error) {
-      setSnackbar({
-        open: true,
-        message: 'Failed to fetch mappings',
-        severity: 'error',
-      });
+      showSnackbar('Failed to fetch mappings', 'error');
       setLoading(false);
       return;
     }
@@ -32,10 +25,6 @@ const MappingList = () => {
   useEffect(() => {
     fetchMappings();
   }, []);
-
-  const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false });
-  };
 
   const handleDeleteClick = (id: GridRowId, modelName: string) => async () => {
     try {
@@ -49,18 +38,10 @@ const MappingList = () => {
       }
       
       setMappings(mappings.filter((mapping) => mapping._id !== id));
-      setSnackbar({
-        open: true,
-        message: 'Mapping deleted successfully',
-        severity: 'success',
-      });
+      showSnackbar('Mapping deleted successfully', 'success');
     } catch (error) {
       console.error('Error deleting mapping:', error);
-      setSnackbar({
-        open: true,
-        message: error instanceof Error ? error.message : 'Failed to delete mapping',
-        severity: 'error',
-      });
+      showSnackbar(error instanceof Error ? error.message : 'Failed to delete mapping', 'error');
     }
   };
 
@@ -100,16 +81,6 @@ const MappingList = () => {
           }}
         />
       </div>
-      <Snackbar
-        open={snackbar.open}
-        autoHideDuration={6000}
-        onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity}>
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
     </Paper>
   );
 };
