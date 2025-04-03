@@ -52,7 +52,6 @@ export class LiteLLMService {
   }
 
   async delete(model: string): Promise<boolean> {
-
     const modelResponse = await fetch(`${this.liteLLMBaseURL}/model/info`, {
       method: 'GET',
       headers: {
