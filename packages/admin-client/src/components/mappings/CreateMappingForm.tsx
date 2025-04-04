@@ -46,7 +46,7 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
         body: {
           model_name: formData.modelName,
           litellm_params: {
-            model: formData.modelName,
+            model: `${formData.provider}/${formData.modelName}`,
             api_base: formData.url,
             api_key: formData.apiKey,
             custom_llm_provider: formData.provider
