@@ -4,7 +4,7 @@ import { LangFlowMapping, LangFlowMappingDocument } from './langflow-mapping.sch
 import { Model } from 'mongoose';
 import { CreateLangFlowMapping } from './dtos/create.dto';
 import { UpdateLangFlowMapping } from './dtos/update.dto';
-import { LiteLLMService } from 'src/litellm/litellm.service';
+import { LiteLLMService } from '../litellm/litellm.service';
 
 @Injectable()
 export class LangflowMappingService {
