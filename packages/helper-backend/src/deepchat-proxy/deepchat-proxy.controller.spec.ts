@@ -6,7 +6,7 @@ import { NotFoundException } from '@nestjs/common';
 import { DeepchatProxy } from './deepchat-proxy.schema';
 import mongoose from 'mongoose';
 import { ProxyCompletion } from './dtos/proxy-completion.dto';
-import { CompletionResponse } from 'src/litellm/dtos/litellm.dto';
+import { CompletionResponse } from '../litellm/dtos/completion.dto';
 
 const sampleProxy: DeepchatProxy = {
   _id: new mongoose.Types.ObjectId('6401234567890abcdef12345'),
