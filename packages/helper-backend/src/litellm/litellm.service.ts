@@ -79,7 +79,7 @@ export class LiteLLMService {
     });
     if (!deleteResponse.ok) {
       const errorText = await deleteResponse.text();
-      console.error(`Failed to delete model: ${errorText}`);
+      return false;
     }
     return true;
   }
