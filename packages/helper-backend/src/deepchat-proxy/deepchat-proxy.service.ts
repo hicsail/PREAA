@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { DeepchatProxy, DeepchatProxyDocument } from './deepchat-proxy.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { LiteLLMService } from 'src/litellm/litellm.service';
+import { LiteLLMService } from '../litellm/litellm.service';
 import { plainToInstance } from 'class-transformer';
 import { CreateProxyMappingDto } from './dtos/create.dto';
 
@@ -41,6 +41,15 @@ export class DeepchatProxyService {
   }
 
   async update(id: string, mapping: DeepchatProxy): Promise<DeepchatProxy | null> {
+    // TODO: The update mapping should take in an object with a series of optional
+    //       fields which represent the fields to be updated
+    // check if model with name already exists
+    const existingModel = await this.deepChatProxyModel.findOne({ model: mapping.model }).lean().exec();
+
+    if (existingModel) {
+      // throw bad request error
+      throw new BadRequestException(`Model with name ${mapping.model} already exists`);
+    }
     const result = await this.deepChatProxyModel.findOneAndUpdate({ _id: id }, mapping, {
       new: true,
       upsert: true
