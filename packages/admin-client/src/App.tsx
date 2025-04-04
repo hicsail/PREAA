@@ -5,19 +5,22 @@ import MappingsPage from './pages/MappingsPage';
 import ProxyingPage from './pages/ProxyingPage';
 import './App.css';
 import { ClientProvider } from './contexts/Client.context';
+import { SnackbarProvider } from './contexts/Snackbar.context';
 
 function App() {
   return (
     <ClientProvider>
-      <Router>
-        <MainLayout>
-          <Routes>
-            <Route path="/" element={<DashboardPage />} />
-            <Route path="/mappings" element={<MappingsPage />} />
-            <Route path="/proxying" element={<ProxyingPage />} />
-          </Routes>
-        </MainLayout>
-      </Router>
+      <SnackbarProvider>
+        <Router>
+          <MainLayout>
+            <Routes>
+              <Route path="/" element={<DashboardPage />} />
+              <Route path="/mappings" element={<MappingsPage />} />
+              <Route path="/proxying" element={<ProxyingPage />} />
+            </Routes>
+          </MainLayout>
+        </Router>
+      </SnackbarProvider>
     </ClientProvider>
   );
 }

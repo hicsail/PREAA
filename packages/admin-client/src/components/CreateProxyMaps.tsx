@@ -1,5 +1,6 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormHelperText, Input, InputLabel } from '@mui/material'
 import { deepchatProxyControllerCreate } from '../client';
+import { useSnackbar } from '../contexts/Snackbar.context';
 
 interface Props {
   open: boolean;
@@ -7,6 +8,7 @@ interface Props {
 }
 
 export default function CreateProxyMaps({ open, setOpen }: Props) {
+  const { showSnackbar } = useSnackbar();
 
   const handleClose = () => {
     setOpen(false);
@@ -20,20 +22,25 @@ export default function CreateProxyMaps({ open, setOpen }: Props) {
     const baseUrl = form.querySelector('#base-url') as HTMLInputElement;
     const key = form.querySelector('#key') as HTMLInputElement;
 
-    const response = await deepchatProxyControllerCreate({
-      body: {
-        model: model.value,
-        url: baseUrl.value,
-        apiKey: key.value
+    try {
+      const response = await deepchatProxyControllerCreate({
+        body: {
+          model: model.value,
+          url: baseUrl.value,
+          apiKey: key.value
+        }
+      });
+
+      if (response.error) {
+        throw new Error(response.error.toString() || 'Failed to create proxy mapping');
       }
-    });
 
-    if (response.error) {
-      console.error('Failed to make deepchat proxy');
-      console.error(response.error);
+      showSnackbar('Proxy mapping created successfully', 'success');
+      setOpen(false);
+    } catch (error) {
+      console.error('Failed to make deepchat proxy', error);
+      showSnackbar(error instanceof Error ? error.message : 'Failed to create proxy mapping', 'error');
     }
-
-    setOpen(false);
   }
 
   return (
