@@ -19,7 +19,7 @@ export const ChatWidgetComponent = () => {
         if (event.data && event.data.type === 'chat-command') {
           console.log('Received command from parent:', event.data);
           
-          const { action, skipAnimation } = event.data;
+          const { action } = event.data;
           
           switch (action) {
             case 'open':

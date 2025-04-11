@@ -1,5 +1,5 @@
 // src/contexts/ChatContext.tsx
-import { createContext, useContext, useState, useRef, ReactNode, useEffect } from 'react';
+import { createContext, useContext, useState, useRef, useEffect } from 'react';
 import { MessageContent, ChatConfig } from '../types/chat';
 
 // Update your ChatConfig interface in types/chat.ts to include introPanel
@@ -65,7 +65,7 @@ export const ChatProvider: React.FC<{ children: React.ReactNode, config?: Partia
   const chatRef = useRef<any>(null);
   const [isEmbedded, setIsEmbedded] = useState<boolean>(false);
   const [skipAnimation, setSkipAnimation] = useState<boolean>(false);
-  const [embedConfig, setEmbedConfig] = useState<{ position: string, theme: any }>({
+  const [embedConfig] = useState<{ position: string, theme: any }>({
     position: 'bottom-right',
     theme: {}
   });

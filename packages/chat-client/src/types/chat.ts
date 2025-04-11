@@ -3,7 +3,7 @@ export interface MessageContent {
   text?: string;
   html?: string;
   files?: File[];
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   [key: string]: any;
 }
 
@@ -20,7 +20,7 @@ export interface ChatConfig {
   avatarSrc?: string | null;
   supportTopics?: string | null;
   placeholder?: string;
-  position?: 'bottom-right' | 'bottom-left' | 'top-right' | 'top-left';
+  position?: "bottom-right" | "bottom-left" | "top-right" | "top-left";
   width?: number;
   height?: number;
   theme?: ChatTheme;

@@ -1,5 +1,5 @@
 // src/hooks/useChatMessages.ts
-import { useChat } from '../contexts/ChatContext';
+import { useChat } from "../contexts/ChatContext";
 
 export const useChatMessages = () => {
   const { chatRef, setChatMessages, chatMessages } = useChat();
@@ -23,12 +23,12 @@ export const useChatMessages = () => {
         try {
           // Clear existing messages
           chatRef.current.clearMessages(true);
-          
+
           // Add saved messages one by one
-          chatMessages.forEach(message => {
+          chatMessages.forEach((message) => {
             chatRef.current.addMessage(message, false);
           });
-          
+
           // Scroll to bottom
           chatRef.current.scrollToBottom();
         } catch (error) {

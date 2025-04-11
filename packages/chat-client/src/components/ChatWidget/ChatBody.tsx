@@ -1,29 +1,10 @@
 import { DeepChat } from "deep-chat-react";
 import { useChat } from '../../contexts/ChatContext';
 import { Box, Typography, Paper } from '@mui/material';
-import { useEffect, useState } from 'react';
 
 export const ChatBody = () => {
   const { chatRef, modelId, chatConfig, isEmbedded } = useChat();
-  const [showIntroPanel, setShowIntroPanel] = useState(true);
 
-  // Hide intro panel when first message is sent
-  useEffect(() => {
-    if (chatRef.current) {
-      const handleNewMessage = () => {
-        setShowIntroPanel(false);
-      };
-      
-      // Add event listener to hide intro panel when a message is sent
-      const chatElement = chatRef.current;
-      if (chatElement && chatElement.addEventListener) {
-        chatElement.addEventListener('messageSent', handleNewMessage);
-        return () => {
-          chatElement.removeEventListener('messageSent', handleNewMessage);
-        };
-      }
-    }
-  }, [chatRef.current]);
 
   // Define custom styles for DeepChat
   const deepChatStyles = {
