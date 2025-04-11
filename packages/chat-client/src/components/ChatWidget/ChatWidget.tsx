@@ -5,7 +5,7 @@ import { Box } from '@mui/material';
 import { useEffect } from 'react';
 
 export const ChatWidgetComponent = () => {
-  const { minimized, chatConfig, isEmbedded, embedConfig } = useChat();
+  const { minimized, setMinimized, chatConfig, isEmbedded } = useChat();
 
   // Handle iframe-specific adjustments
   useEffect(() => {
@@ -15,21 +15,42 @@ export const ChatWidgetComponent = () => {
     if (isInIframe) {
       // Add message listener for parent window communication
       const handleMessage = (event: MessageEvent) => {
-        // Handle any messages from parent frame if needed
+        // Handle commands from parent window
         if (event.data && event.data.type === 'chat-command') {
           console.log('Received command from parent:', event.data);
-          // Handle commands like minimize/maximize if needed
+          
+          const { action, skipAnimation } = event.data;
+          
+          switch (action) {
+            case 'open':
+              setMinimized(false);
+              break;
+            case 'minimize':
+              setMinimized(true);
+              break;
+            default:
+              console.log('Unknown command:', action);
+          }
         }
       };
 
       window.addEventListener('message', handleMessage);
       return () => window.removeEventListener('message', handleMessage);
     }
-  }, []);
+  }, [setMinimized]);
 
-  // Position styling based on config
-   // Position styling based on config and embed mode
-   const getPositionStyle = () => {
+  // Notify parent window about size changes
+  useEffect(() => {
+    if (isEmbedded && window !== window.parent) {
+      window.parent.postMessage({
+        type: 'chat-widget-resize',
+        size: minimized ? 'minimized' : 'expanded'
+      }, '*');
+    }
+  }, [minimized, isEmbedded]);
+
+  // Position styling based on config and embed mode
+  const getPositionStyle = () => {
     // When in embed mode, take up the full space of the iframe
     if (isEmbedded) {
       return {
@@ -38,10 +59,10 @@ export const ChatWidgetComponent = () => {
         left: 0,
         right: 0,
         bottom: 0,
-        zIndex: 1000,
+        zIndex: 2147483647, // Maximum z-index
         margin: 0,
         padding: 0,
-        background: 'transparent',
+        background: 'transparent', // Ensure transparent background
       };
     }
 
@@ -49,7 +70,8 @@ export const ChatWidgetComponent = () => {
     const position = chatConfig.position || 'bottom-right';
     const style: React.CSSProperties = {
       position: 'fixed',
-      zIndex: 1000,
+      zIndex: 2147483647, // Maximum z-index
+      background: 'transparent', // Ensure transparent background
     };
 
     if (position.includes('bottom')) {
@@ -67,12 +89,47 @@ export const ChatWidgetComponent = () => {
     return style;
   };
 
+  // Create a backdrop for the expanded chat when not in embed mode
+  const renderBackdrop = () => {
+    if (!isEmbedded && !minimized) {
+      return (
+        <Box
+          sx={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            bgcolor: 'rgba(0, 0, 0, 0.5)',
+            backdropFilter: 'blur(5px)',
+            zIndex: 2147483646, // Just below the chat widget
+            transition: 'opacity 0.3s ease',
+          }}
+          onClick={() => setMinimized(true)}
+        />
+      );
+    }
+    return null;
+  };
+
   return (
-    <Box sx={getPositionStyle()} className="chat-widget-container">
-      {minimized && (
-        <MinimizedChat />
-      )}
-      <ExpandedChat title={chatConfig.title} />
-    </Box>
+    <>
+      {renderBackdrop()}
+      <Box 
+        sx={{
+          ...getPositionStyle(),
+          background: 'transparent', // Ensure transparent background
+        }} 
+        className="chat-widget-container"
+        role="region"
+        aria-label="Chat widget"
+      >
+        {minimized ? (
+          <MinimizedChat />
+        ) : (
+          <ExpandedChat title={chatConfig.title} />
+        )}
+      </Box>
+    </>
   );
 };

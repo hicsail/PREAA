@@ -3,7 +3,7 @@ import { useChat } from '../../contexts/ChatContext';
 import { Box } from '@mui/material';
 
 export const ChatBody = () => {
-  const { chatRef, modelId, chatConfig } = useChat();
+  const { chatRef, modelId, chatConfig, isEmbedded } = useChat();
 
   // Define custom styles for DeepChat
   const deepChatStyles = {
@@ -95,6 +95,7 @@ export const ChatBody = () => {
       }
       .deep-chat-messages-container {
         padding: 16px 0;
+        height: calc(100% - 70px) !important;
       }
       .deep-chat-input {
         border-radius: 24px !important;
@@ -102,6 +103,18 @@ export const ChatBody = () => {
       .deep-chat-submit-button {
         margin-right: 8px;
       }
+      .deep-chat-full-size {
+        height: 100% !important;
+        display: flex;
+        flex-direction: column;
+      }
+      ${isEmbedded ? `
+      .deep-chat-container {
+        height: 100% !important;
+        display: flex;
+        flex-direction: column;
+      }
+      ` : ''}
     `
   };
 
@@ -121,7 +134,14 @@ export const ChatBody = () => {
   }
 
   return (
-    <Box sx={{ flex: 1, position: 'relative', height: '100%' }}>
+    <Box sx={{ 
+      flex: 1, 
+      position: 'relative', 
+      height: '100%',
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden'
+    }}>
       <DeepChat
         ref={chatRef}
         requestBodyLimits={{ maxMessages: -1 }}
