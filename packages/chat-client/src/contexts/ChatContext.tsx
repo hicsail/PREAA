@@ -2,6 +2,16 @@
 import { createContext, useContext, useState, useRef, ReactNode, useEffect } from 'react';
 import { MessageContent, ChatConfig } from '../types/chat';
 
+// Update your ChatConfig interface in types/chat.ts to include introPanel
+// If you can't modify that file directly, you can extend it here:
+interface ExtendedChatConfig extends ChatConfig {
+  introPanel?: {
+    enabled?: boolean;
+    title?: string;
+    description?: string;
+  };
+}
+
 interface ChatContextType {
   minimized: boolean;
   setMinimized: (value: boolean) => void;
@@ -12,7 +22,7 @@ interface ChatContextType {
   setModelId: (id: string | null) => void;
   errorMessage: string | null;
   setErrorMessage: (message: string | null) => void;
-  chatConfig: ChatConfig;
+  chatConfig: ExtendedChatConfig;
   isEmbedded: boolean;
   embedConfig: {
     position: string;
@@ -23,7 +33,7 @@ interface ChatContextType {
   setSkipAnimation: (value: boolean) => void;
 }
 
-const defaultConfig: ChatConfig = {
+const defaultConfig: ExtendedChatConfig = {
   title: 'Chat Assistant',
   botName: 'Assistant',
   avatarSrc: null,
@@ -37,12 +47,17 @@ const defaultConfig: ChatConfig = {
     secondary: '#f5f5f5',
     text: '#212121',
     background: '#ffffff'
+  },
+  introPanel: {
+    enabled: false,
+    title: 'Intro panel',
+    description: 'Insert a description to help your users understand how to use the component.'
   }
 };
 
 export const ChatContext = createContext<ChatContextType | undefined>(undefined);
 
-export const ChatProvider: React.FC<{ children: React.ReactNode, config?: Partial<ChatConfig> }> = ({ children, config }) => {
+export const ChatProvider: React.FC<{ children: React.ReactNode, config?: Partial<ExtendedChatConfig> }> = ({ children, config }) => {
 
   const [minimized, setMinimized] = useState(true); // Start minimized by default
   const [chatMessages, setChatMessages] = useState<MessageContent[]>([]);
@@ -79,6 +94,20 @@ export const ChatProvider: React.FC<{ children: React.ReactNode, config?: Partia
         setMinimized(false);
       }
 
+      // Parse introPanel configuration if present
+      const introPanelParam = urlParams.get('introPanel');
+      if (introPanelParam) {
+        try {
+          const introPanelObj = JSON.parse(introPanelParam);
+          chatConfig.introPanel = {
+            ...chatConfig.introPanel,
+            ...introPanelObj
+          };
+        } catch (e) {
+          console.error('Error parsing introPanel parameter:', e);
+        }
+      }
+
       // Set up message listener for parent window communication
       const handleMessage = (event: MessageEvent) => {
         if (event.data && event.data.type === 'chat-command') {
@@ -88,8 +117,6 @@ export const ChatProvider: React.FC<{ children: React.ReactNode, config?: Partia
             case 'open':
               // If skipAnimation is true, we should avoid any animations
               if (skipAnimation) {
-                // You might need to set a flag or use a different state setter
-                // that bypasses animations in your components
                 setMinimizedWithoutAnimation(false);
               } else {
                 setMinimized(false);

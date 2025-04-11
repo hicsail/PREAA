@@ -1,9 +1,29 @@
 import { DeepChat } from "deep-chat-react";
 import { useChat } from '../../contexts/ChatContext';
-import { Box } from '@mui/material';
+import { Box, Typography, Paper } from '@mui/material';
+import { useEffect, useState } from 'react';
 
 export const ChatBody = () => {
   const { chatRef, modelId, chatConfig, isEmbedded } = useChat();
+  const [showIntroPanel, setShowIntroPanel] = useState(true);
+
+  // Hide intro panel when first message is sent
+  useEffect(() => {
+    if (chatRef.current) {
+      const handleNewMessage = () => {
+        setShowIntroPanel(false);
+      };
+      
+      // Add event listener to hide intro panel when a message is sent
+      const chatElement = chatRef.current;
+      if (chatElement && chatElement.addEventListener) {
+        chatElement.addEventListener('messageSent', handleNewMessage);
+        return () => {
+          chatElement.removeEventListener('messageSent', handleNewMessage);
+        };
+      }
+    }
+  }, [chatRef.current]);
 
   // Define custom styles for DeepChat
   const deepChatStyles = {
@@ -108,6 +128,13 @@ export const ChatBody = () => {
         display: flex;
         flex-direction: column;
       }
+      .intro-panel {
+        margin-top: 20px !important;
+        margin-left: 16px !important;
+        margin-right: 16px !important;
+        width: calc(100% - 32px) !important;
+        max-width: 80% !important;
+      }
       ${isEmbedded ? `
       .deep-chat-container {
         height: 100% !important;
@@ -116,6 +143,39 @@ export const ChatBody = () => {
       }
       ` : ''}
     `
+  };
+
+  // Render intro panel if enabled in config
+  const renderIntroPanel = () => {
+    // Check if intro panel is enabled and should be shown
+    if (!chatConfig.introPanel) {
+      return null;
+    }
+
+    return (
+      <Paper 
+        elevation={2}
+        className="chat-intro-panel"
+        sx={{
+          marginTop: '20%',
+          bgcolor: '#f3f3f3',
+          borderRadius: '10px',
+          p: 2,
+          textAlign: 'left',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+          borderLeft: `3px solid ${chatConfig.theme?.primary || '#d32f2f'}`,
+          maxWidth: '80%',
+        }}
+      >
+        <Typography variant="subtitle1" fontWeight="bold" mb={0.5}>
+          {chatConfig.introPanel.title || 'Intro panel'}
+        </Typography>
+        <Typography variant="body2" sx={{ lineHeight: 1.5 }}>
+          {chatConfig.introPanel.description || 
+            'Insert a description to help your users understand how to use the component.'}
+        </Typography>
+      </Paper>
+    );
   };
 
   // Ensure we have a modelId before rendering the chat
@@ -151,7 +211,9 @@ export const ChatBody = () => {
         className="deep-chat-full-size"
         style={{ height: '100%', width: '100%' }}
         {...deepChatStyles}
-      />
+      >
+      {renderIntroPanel()}
+      </DeepChat>
     </Box>
   );
 };
