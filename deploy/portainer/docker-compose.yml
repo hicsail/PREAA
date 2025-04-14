@@ -56,7 +56,7 @@ services:
     command: mongod --noauth
 
   litellm:
-    image: ghcr.io/berriai/litellm:litellm_stable_release_branch-v1.61.20-stable
+    image: ghcr.io/berriai/litellm:litellm_stable_release_branch-v1.66.0-stable
     restart: unless-stopped
     container_name: portainer-litellm
     ports:
