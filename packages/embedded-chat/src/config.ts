@@ -4,6 +4,10 @@ export interface ChatConfig {
   title?: string;
   botName?: string;
   placeholder?: string;
+  supportTopics?: string[];
+  introMessage?: string;
+  introMessageDelay?: number;
+  botAvatarSrc?: string;
   theme?: {
     primary?: string;
     background?: string;
