@@ -30,13 +30,13 @@ const MappingList = () => {
     try {
       const response = await langflowMappingControllerDelete({
         path: {
-          model: modelName,
+          model: modelName
         }
       });
       if (!response.response.ok) {
-        throw new Error(response.error as string || 'Failed to delete mapping');
+        throw new Error((response.error as string) || 'Failed to delete mapping');
       }
-      
+
       setMappings(mappings.filter((mapping) => mapping._id !== id));
       showSnackbar('Mapping deleted successfully', 'success');
     } catch (error) {
@@ -61,11 +61,10 @@ const MappingList = () => {
           label="Delete"
           onClick={handleDeleteClick(params.id, params.row.model)}
           color="inherit"
-        />,
-      ],
-    },
+        />
+      ]
+    }
   ];
-
 
   return (
     <Paper sx={{ p: 2, mb: 4 }}>
@@ -77,7 +76,7 @@ const MappingList = () => {
           loading={loading}
           pageSizeOptions={[5, 10, 25]}
           initialState={{
-            pagination: { paginationModel: { pageSize: 10 } },
+            pagination: { paginationModel: { pageSize: 10 } }
           }}
         />
       </div>

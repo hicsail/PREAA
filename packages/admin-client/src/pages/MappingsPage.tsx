@@ -6,7 +6,7 @@ import MappingList from '../components/mappings/MappingList';
 
 const MappingsPage = () => {
   const [openForm, setOpenForm] = useState(false);
-  
+
   const handleOpenForm = () => {
     setOpenForm(true);
   };
@@ -19,10 +19,7 @@ const MappingsPage = () => {
     <Box>
       <MappingHeader onOpen={handleOpenForm} />
       <MappingList />
-      <CreateMappingForm 
-        open={openForm} 
-        onClose={handleCloseForm} 
-      />
+      <CreateMappingForm open={openForm} onClose={handleCloseForm} />
     </Box>
   );
 };

@@ -4,15 +4,12 @@ import Sidebar from './Sidebar';
 
 type MainLayoutProps = {
   children: ReactNode;
-}
+};
 
 const MainLayout = ({ children }: MainLayoutProps) => {
   return (
     <Box sx={{ display: 'flex' }}>
-      <AppBar
-        position="fixed"
-        sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}
-      >
+      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
           <Typography variant="h6" noWrap component="div">
             PREAA Admin

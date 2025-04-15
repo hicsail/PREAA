@@ -14,7 +14,7 @@ const Sidebar = () => {
   const menuItems = [
     { id: '/', text: 'Dashboard', icon: <DashboardIcon /> },
     { id: '/mappings', text: 'Mappings', icon: <MapIcon /> },
-    { id: '/proxying', text: 'Proxying', icon: <SettingsInputComponentIcon /> },
+    { id: '/proxying', text: 'Proxying', icon: <SettingsInputComponentIcon /> }
   ];
 
   const handleNavigate = (path: string) => {
@@ -29,8 +29,8 @@ const Sidebar = () => {
         flexShrink: 0,
         '& .MuiDrawer-paper': {
           width: drawerWidth,
-          boxSizing: 'border-box',
-        },
+          boxSizing: 'border-box'
+        }
       }}
     >
       <Box sx={{ overflow: 'auto', mt: 8 }}>
@@ -41,9 +41,7 @@ const Sidebar = () => {
                 selected={currentPath === item.id || (item.id === '/' && currentPath === '')}
                 onClick={() => handleNavigate(item.id)}
               >
-                <ListItemIcon>
-                  {item.icon}
-                </ListItemIcon>
+                <ListItemIcon>{item.icon}</ListItemIcon>
                 <ListItemText primary={item.text} />
               </ListItemButton>
             </ListItem>
