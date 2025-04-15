@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Box, List, ListItem, ListItemButton, ListItemText, Drawer, ListItemIcon } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -11,7 +10,7 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const currentPath = location.pathname;
-  
+
   const menuItems = [
     { id: '/', text: 'Dashboard', icon: <DashboardIcon /> },
     { id: '/mappings', text: 'Mappings', icon: <MapIcon /> },
@@ -38,7 +37,7 @@ const Sidebar = () => {
         <List>
           {menuItems.map((item) => (
             <ListItem key={item.id} disablePadding>
-              <ListItemButton 
+              <ListItemButton
                 selected={currentPath === item.id || (item.id === '/' && currentPath === '')}
                 onClick={() => handleNavigate(item.id)}
               >
@@ -55,4 +54,4 @@ const Sidebar = () => {
   );
 };
 
-export default Sidebar; 
+export default Sidebar;

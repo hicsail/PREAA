@@ -8,10 +8,10 @@ WORKDIR /usr/src/app
 
 COPY . .
 
-RUN npm install --legacy-peer-deps
+RUN npm install
 RUN npm run build
 
-FROM nginx:1.27.4-alpine as prod
+FROM nginx:1.27.4-alpine AS prod
 
 COPY --from=builder /usr/src/app/build .
 

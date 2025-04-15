@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { Box, AppBar, Toolbar, Typography, CssBaseline } from '@mui/material';
+import { Box, AppBar, Toolbar, Typography } from '@mui/material';
 import Sidebar from './Sidebar';
 
 type MainLayoutProps = {
@@ -27,4 +27,4 @@ const MainLayout = ({ children }: MainLayoutProps) => {
   );
 };
 
-export default MainLayout; 
+export default MainLayout;
