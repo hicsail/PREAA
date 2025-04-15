@@ -8,8 +8,6 @@ from langchain_community.utilities import SQLDatabase
 
 
 
-
-
 class ProblemSearchComponent(Component):
     display_name = 'Problem Search'
     description = 'Utility to search for a given problem in the database'

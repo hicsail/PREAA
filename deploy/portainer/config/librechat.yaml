@@ -82,7 +82,7 @@ actions:
 endpoints:
   custom:
     - name: "LiteLLM"
-      apiKey: "${LITELLM_API_KEY}"
+      apiKey: "user_provided"
       baseURL: "${LITELLM_URL}"
       # if using LiteLLM example in docker-compose.override.yml.example, use "http://litellm:8000/v1"
       models:
