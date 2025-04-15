@@ -2,7 +2,6 @@ import React from 'react';
 import { Box, Paper, Typography, IconButton, Avatar } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { ChatConfig } from '../config';
-import { useTheme } from '@mui/material/styles';
 
 interface MinimizedChatProps {
   config: ChatConfig;
@@ -10,8 +9,6 @@ interface MinimizedChatProps {
 }
 
 export const MinimizedChat: React.FC<MinimizedChatProps> = ({ config, onExpand }) => {
-  const theme = useTheme();
-
   // Use the primary color from config or default to the BU red
   const primaryColor = config.theme?.primary || '#c00';
 
