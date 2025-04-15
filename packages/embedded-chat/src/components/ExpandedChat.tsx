@@ -10,49 +10,44 @@ interface ExpandedChatProps {
   chatRef: React.RefObject<any>;
 }
 
-export const ExpandedChat: React.FC<ExpandedChatProps> = ({
-  config,
-  onMinimize,
-  chatRef
-}) => {
+export const ExpandedChat: React.FC<ExpandedChatProps> = ({ config, onMinimize, chatRef }) => {
   const primaryColor = config.theme?.primary || '#c00';
   return (
-    <Box sx={{
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      display: 'flex',
-      flexDirection: 'column',
-      bgcolor: 'background.paper',
-      borderRadius: { xs: 0, sm: '10px' },
-      overflow: 'hidden',
-      boxShadow: { xs: 'none', sm: '0 4px 12px rgba(0,0,0,0.15)' }
-    }}>
+    <Box
+      sx={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        bgcolor: 'background.paper',
+        borderRadius: { xs: 0, sm: '10px' },
+        overflow: 'hidden',
+        boxShadow: { xs: 'none', sm: '0 4px 12px rgba(0,0,0,0.15)' }
+      }}
+    >
       <AppBar position="static" color="primary" elevation={1}>
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             {config.title || 'May I help you?'}
           </Typography>
-          <IconButton
-            edge="end"
-            color="inherit"
-            onClick={onMinimize}
-            aria-label="close"
-          >
+          <IconButton edge="end" color="inherit" onClick={onMinimize} aria-label="close">
             <CloseIcon />
           </IconButton>
         </Toolbar>
       </AppBar>
 
-      <Box sx={{
-        flexGrow: 1,
-        overflow: 'hidden',
-        display: 'flex', // Add flex display
-        flexDirection: 'column', // Stack children vertically
-        height: 'calc(100% - 64px)' // Subtract AppBar height
-      }}>
+      <Box
+        sx={{
+          flexGrow: 1,
+          overflow: 'hidden',
+          display: 'flex', // Add flex display
+          flexDirection: 'column', // Stack children vertically
+          height: 'calc(100% - 64px)' // Subtract AppBar height
+        }}
+      >
         <DeepChat
           ref={chatRef}
           style={{
@@ -119,7 +114,7 @@ export const ExpandedChat: React.FC<ExpandedChatProps> = ({
             }
           }}
           submitButtonStyles={{
-            position: "inside-right",
+            position: 'inside-right',
             submit: {
               container: {
                 default: {
@@ -156,7 +151,7 @@ export const ExpandedChat: React.FC<ExpandedChatProps> = ({
                   minWidth: 'unset'
                 }
               }
-            },
+            }
           }}
           introMessage={{
             text: `Hi there! I'm ${config.botName || 'BUzz'}, a chatbot here to answer your ${config.supportTopics ? config.supportTopics : 'questions'}. What would you like to know?`
