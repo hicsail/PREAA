@@ -6,12 +6,12 @@ import App from './App';
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#1976d2',
+      main: '#1976d2'
     },
     secondary: {
-      main: '#dc004e',
-    },
-  },
+      main: '#dc004e'
+    }
+  }
 });
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

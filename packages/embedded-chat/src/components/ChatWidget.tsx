@@ -12,15 +12,18 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config }) => {
   const [minimized, setMinimized] = useState(true);
   const [messages, setMessages] = useState<any[]>([]);
   const chatRef = useRef<any>(null);
-  
+
   // Notify parent window about size changes
   useEffect(() => {
-    window.parent.postMessage({
-      type: 'chat-widget-resize',
-      size: minimized ? 'minimized' : 'expanded'
-    }, '*');
+    window.parent.postMessage(
+      {
+        type: 'chat-widget-resize',
+        size: minimized ? 'minimized' : 'expanded'
+      },
+      '*'
+    );
   }, [minimized]);
-  
+
   // Listen for commands from parent window
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -35,15 +38,15 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config }) => {
         }
       }
     };
-    
+
     window.addEventListener('message', handleMessage);
-    
+
     // Notify parent that widget is ready
     window.parent.postMessage({ type: 'chat-widget-ready' }, '*');
-    
+
     return () => window.removeEventListener('message', handleMessage);
   }, []);
-  
+
   // Save messages when chat is minimized
   const handleMinimize = () => {
     if (!minimized && chatRef.current) {
@@ -58,18 +61,18 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config }) => {
     }
     setMinimized(true);
   };
-  
+
   // Restore messages when chat is expanded
   const handleExpand = () => {
     setMinimized(false);
-    
+
     // Restore messages after a short delay to ensure the component is mounted
     if (messages.length > 0) {
       setTimeout(() => {
         if (chatRef.current) {
           try {
             chatRef.current.clearMessages(true);
-            messages.forEach(msg => {
+            messages.forEach((msg) => {
               chatRef.current.addMessage(msg, false);
             });
             chatRef.current.scrollToBottom();
@@ -80,26 +83,21 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ config }) => {
       }, 100);
     }
   };
-  
+
   return (
-    <Box sx={{ 
-      width: '100%', 
-      height: '100%', 
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center'
-    }}>
+    <Box
+      sx={{
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center'
+      }}
+    >
       {minimized ? (
-        <MinimizedChat 
-          config={config} 
-          onExpand={handleExpand} 
-        />
+        <MinimizedChat config={config} onExpand={handleExpand} />
       ) : (
-        <ExpandedChat 
-          config={config} 
-          onMinimize={handleMinimize}
-          chatRef={chatRef}
-        />
+        <ExpandedChat config={config} onMinimize={handleMinimize} chatRef={chatRef} />
       )}
     </Box>
   );

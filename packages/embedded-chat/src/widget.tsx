@@ -12,12 +12,12 @@ const config = parseConfigFromUrl();
 const theme = createTheme({
   palette: {
     primary: {
-      main: config.theme?.primary || '#d32f2f',
+      main: config.theme?.primary || '#d32f2f'
     },
     background: {
       default: 'transparent',
-      paper: config.theme?.background || '#ffffff',
-    },
+      paper: config.theme?.background || '#ffffff'
+    }
   },
   components: {
     MuiCssBaseline: {
