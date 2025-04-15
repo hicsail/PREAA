@@ -10,7 +10,7 @@ import {
   FormControl,
   InputLabel,
   Select,
-  MenuItem,
+  MenuItem
 } from '@mui/material';
 import { langflowMappingControllerCreate, liteLlmControllerCreate } from '../../client';
 import { useSnackbar } from '../../contexts/Snackbar.context';
@@ -35,7 +35,7 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
     url: '',
     modelName: '',
     historyComponentID: '',
-    apiKey: '',
+    apiKey: ''
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -78,12 +78,11 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
         modelName: '',
         historyComponentID: '',
         provider: 'langflow',
-        apiKey: '',
+        apiKey: ''
       });
 
       // Close the dialog after a short delay to allow the user to see the success message
       onClose();
-
     } catch (error) {
       console.error(error);
       showSnackbar(error instanceof Error ? error.message : 'An unknown error occurred', 'error');
@@ -104,7 +103,7 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
                   name="provider"
                   value={formData.provider}
                   label="Provider"
-                  onChange={e => setFormData({ ...formData, provider: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, provider: e.target.value })}
                 >
                   <MenuItem value="langflow">Langflow</MenuItem>
                 </Select>
@@ -113,7 +112,7 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
                 label="URL of Langflow Model"
                 name="url"
                 value={formData.url}
-                onChange={e => setFormData({ ...formData, url: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, url: e.target.value })}
                 fullWidth
                 required
               />
@@ -121,7 +120,7 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
                 label="Model Name"
                 name="modelName"
                 value={formData.modelName}
-                onChange={e => setFormData({ ...formData, modelName: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, modelName: e.target.value })}
                 fullWidth
                 required
                 helperText="Must be unique"
@@ -130,7 +129,7 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
                 label="API Key"
                 name="apiKey"
                 value={formData.apiKey}
-                onChange={e => setFormData({ ...formData, apiKey: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })}
                 fullWidth
                 required
               />
@@ -138,7 +137,7 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
                 label="History Component ID"
                 name="historyComponentID"
                 value={formData.historyComponentID}
-                onChange={e => setFormData({ ...formData, historyComponentID: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, historyComponentID: e.target.value })}
                 fullWidth
                 required
                 helperText="Same as Completion ID"
@@ -147,7 +146,9 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
           </DialogContent>
           <DialogActions>
             <Button onClick={onClose}>Cancel</Button>
-            <Button type="submit" variant="contained">Submit</Button>
+            <Button type="submit" variant="contained">
+              Submit
+            </Button>
           </DialogActions>
         </form>
       </Dialog>

@@ -17,7 +17,7 @@ export default function ViewProxyMaps() {
       return;
     }
     setRows(response.data!);
-  }
+  };
 
   useEffect(() => {
     fetchProxies();
@@ -25,14 +25,14 @@ export default function ViewProxyMaps() {
 
   const handleDeleteClick = (id: GridRowId, model: string) => async () => {
     try {
-      const response = await deepchatProxyControllerDelete({ 
+      const response = await deepchatProxyControllerDelete({
         path: { model }
       });
-      
+
       if (response.error) {
         throw new Error(response.error.toString() || 'Failed to delete proxy');
       }
-      
+
       setRows(rows.filter((row) => row._id.toString() !== id.toString()));
       showSnackbar('Proxy deleted successfully', 'success');
     } catch (error) {
@@ -56,19 +56,15 @@ export default function ViewProxyMaps() {
           label="Delete"
           onClick={handleDeleteClick(params.id, params.row.model)}
           color="inherit"
-        />,
-      ],
-    },
+        />
+      ]
+    }
   ];
 
   return (
     <Paper sx={{ p: 2, mb: 4 }}>
       <div style={{ height: 400, width: '100%' }}>
-        <DataGrid
-          rows={rows}
-          columns={columns}
-          getRowId={(row) => row._id}
-        />
+        <DataGrid rows={rows} columns={columns} getRowId={(row) => row._id} />
       </div>
     </Paper>
   );

@@ -1,7 +1,6 @@
 import { createContext, FC, ReactNode, useContext } from 'react';
 import { client } from '../client/client.gen';
 
-
 const ClientContext = createContext({} as typeof client);
 
 export interface ClientProviderProps {
@@ -13,11 +12,7 @@ export const ClientProvider: FC<ClientProviderProps> = ({ children }) => {
     baseUrl: import.meta.env.VITE_BACKEND_BASE_URL
   });
 
-  return (
-    <ClientContext.Provider value={client}>
-      {children}
-    </ClientContext.Provider>
-  );
+  return <ClientContext.Provider value={client}>{children}</ClientContext.Provider>;
 };
 
 export const useClient = () => useContext(ClientContext);

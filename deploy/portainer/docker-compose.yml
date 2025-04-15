@@ -201,6 +201,14 @@ services:
       - ../../stack.env
       - stack.env
 
+  admin-client:
+    image: hicsail/preaa-admin-client:main
+    pull_policy: always
+    container_name: portainer-admin-client
+    restart: unless-stopped
+    ports:
+      - "3010:80"
+
   chat-client:
     image: hicsail/preaa-chat-client:main
     pull_policy: always

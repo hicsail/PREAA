@@ -22,21 +22,21 @@ export const SnackbarProvider: React.FC<SnackbarProviderProps> = ({ children }) 
   const [snackbar, setSnackbar] = useState<SnackbarState>({
     open: false,
     message: '',
-    severity: 'info',
+    severity: 'info'
   });
 
   const showSnackbar = (message: string, severity: AlertColor = 'info') => {
     setSnackbar({
       open: true,
       message,
-      severity,
+      severity
     });
   };
 
   const hideSnackbar = () => {
     setSnackbar({
       ...snackbar,
-      open: false,
+      open: false
     });
   };
 
