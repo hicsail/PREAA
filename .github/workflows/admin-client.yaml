@@ -94,18 +94,29 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build & Push Docker Build
+      - name: Build & Push Docker Build (dev)
         uses: docker/build-push-action@v4
         with:
           push: ${{ github.event_name != 'pull_request' }}
           context: ./packages/admin-client
           file: ./packages/admin-client/Dockerfile
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: hicsail/preaa-admin-client:main
           cache-from: type=gha,scope=gateway
           cache-to: type=gha,mode=max,scope=gateway
           build-args: |
               VITE_BACKEND_BASE_URL=${{ secrets.HELPER_BACKEND_URL }}
+
+      - name: Build & Push Docker Build (prod)
+        uses: docker/build-push-action@v4
+        with:
+          push: ${{ github.event_name != 'pull_request' }}
+          context: ./packages/admin-client
+          file: ./packages/admin-client/Dockerfile
+          tags: hicsail/preaa-admin-client:prod
+          cache-from: type=gha,scope=gateway
+          cache-to: type=gha,mode=max,scope=gateway
+          build-args: |
+              VITE_BACKEND_BASE_URL=${{ secrets.HELPER_BACKEND_URL_PROD }}
 
   deployment:
     runs-on: ubuntu-latest
