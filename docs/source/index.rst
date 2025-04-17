@@ -3,6 +3,10 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+================
+Welcome to PREAA
+================
+
 PREAA Overview
 ==============
 
@@ -15,11 +19,11 @@ in an academic environment. Specifically, SAIL looks to improve the workflow for
 course assistants, and content aware agentic workflows.
 
 Core Objectives
----------------
+===============
 
 
 Tooling
--------
+=======
 
 PREAA is built on top of the following key open source projects.
 
@@ -31,5 +35,8 @@ PREAA is built on top of the following key open source projects.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+
+   use_cases.rst
+   architecture.rst
+   faq.rst
 
