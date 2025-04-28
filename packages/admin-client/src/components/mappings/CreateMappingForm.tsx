@@ -12,7 +12,7 @@ import {
   Select,
   MenuItem
 } from '@mui/material';
-import { langflowMappingControllerCreate, liteLlmControllerCreate } from '../../client';
+import { liteLlmControllerCreate } from '../../client';
 import { useSnackbar } from '../../contexts/Snackbar.context';
 
 type CreateMappingFormProps = {
@@ -24,7 +24,7 @@ interface FormProps {
   provider: string;
   url: string;
   modelName: string;
-  historyComponentID: string;
+  flowID: string;
   apiKey: string;
 }
 
@@ -33,8 +33,8 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
   const [formData, setFormData] = useState<FormProps>({
     provider: 'langflow',
     url: '',
+    flowID: '',
     modelName: '',
-    historyComponentID: '',
     apiKey: ''
   });
 
@@ -46,7 +46,7 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
         body: {
           model_name: formData.modelName,
           litellm_params: {
-            model: `${formData.provider}/${formData.modelName}`,
+            model: formData.flowID,
             api_base: formData.url,
             api_key: formData.apiKey,
             custom_llm_provider: formData.provider
@@ -58,17 +58,6 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
         throw new Error(`Failed to create LiteLLM model: ${JSON.stringify(liteLLMResponse.error) || 'Unknown error'}`);
       }
 
-      const langFlowResponse = await langflowMappingControllerCreate({
-        body: {
-          model: formData.modelName,
-          url: formData.url,
-          historyComponentID: formData.historyComponentID
-        }
-      });
-      if (langFlowResponse.error) {
-        throw new Error(`Failed to create langflow mapping: ${langFlowResponse.error.toString() || 'Unknown error'}`);
-      }
-
       // Success case
       showSnackbar('Mapping created successfully!', 'success');
 
@@ -76,7 +65,7 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
       setFormData({
         url: '',
         modelName: '',
-        historyComponentID: '',
+        flowID: '',
         provider: 'langflow',
         apiKey: ''
       });
@@ -109,7 +98,7 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
                 </Select>
               </FormControl>
               <TextField
-                label="URL of Langflow Model"
+                label="Base URL of LangFlow (no trailing slash)"
                 name="url"
                 value={formData.url}
                 onChange={(e) => setFormData({ ...formData, url: e.target.value })}
@@ -117,10 +106,19 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
                 required
               />
               <TextField
-                label="Model Name"
+                label="Human Readable Model Name"
                 name="modelName"
                 value={formData.modelName}
                 onChange={(e) => setFormData({ ...formData, modelName: e.target.value })}
+                fullWidth
+                required
+                helperText="Must be unique"
+              />
+              <TextField
+                label="LangFlow flow ID"
+                name="flowID"
+                value={formData.flowID}
+                onChange={(e) => setFormData({ ...formData, flowID: e.target.value })}
                 fullWidth
                 required
                 helperText="Must be unique"
@@ -132,15 +130,6 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
                 onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })}
                 fullWidth
                 required
-              />
-              <TextField
-                label="History Component ID"
-                name="historyComponentID"
-                value={formData.historyComponentID}
-                onChange={(e) => setFormData({ ...formData, historyComponentID: e.target.value })}
-                fullWidth
-                required
-                helperText="Same as Completion ID"
               />
             </Box>
           </DialogContent>
