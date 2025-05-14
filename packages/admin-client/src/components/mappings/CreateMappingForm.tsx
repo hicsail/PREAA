@@ -26,6 +26,7 @@ interface FormProps {
   modelName: string;
   flowID: string;
   apiKey: string;
+  modelProviderApiKey: string;
 }
 
 const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
@@ -35,7 +36,8 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
     url: '',
     flowID: '',
     modelName: '',
-    apiKey: ''
+    apiKey: '',
+    modelProviderApiKey: ''
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -45,10 +47,11 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
       const liteLLMResponse = await liteLlmControllerCreate({
         body: {
           model_name: formData.modelName,
+          api_key: formData.apiKey,
           litellm_params: {
             model: formData.flowID,
             api_base: formData.url,
-            api_key: formData.apiKey,
+            api_key: formData.modelProviderApiKey,
             custom_llm_provider: formData.provider
           }
         }
@@ -67,7 +70,8 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
         modelName: '',
         flowID: '',
         provider: 'langflow',
-        apiKey: ''
+        apiKey: '',
+        modelProviderApiKey: ''
       });
 
       // Close the dialog after a short delay to allow the user to see the success message
@@ -124,10 +128,18 @@ const CreateMappingForm = ({ open, onClose }: CreateMappingFormProps) => {
                 helperText="Must be unique"
               />
               <TextField
-                label="API Key"
+                label="API Key for LiteLLM"
                 name="apiKey"
                 value={formData.apiKey}
                 onChange={(e) => setFormData({ ...formData, apiKey: e.target.value })}
+                fullWidth
+                required
+              />
+              <TextField
+                label="API Key for Model Provider (LangFlow)"
+                name="apiKey"
+                value={formData.modelProviderApiKey}
+                onChange={(e) => setFormData({ ...formData, modelProviderApiKey: e.target.value })}
                 fullWidth
                 required
               />

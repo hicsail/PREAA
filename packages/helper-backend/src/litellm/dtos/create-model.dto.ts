@@ -45,4 +45,10 @@ export class CreateNewModel {
   })
   @ValidateNested()
   litellm_params: CreateNewModelParams;
+
+  @ApiProperty({
+    description: 'The LiteLLM API key to create the new model with',
+  })
+  @IsString()
+  api_key: string;
 }

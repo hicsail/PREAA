@@ -37,7 +37,7 @@ export class LiteLLMService {
       headers: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
-        'x-goog-api-key': newModel.litellm_params.api_key
+        'x-goog-api-key': newModel.api_key
       },
       body: JSON.stringify({
         model_name: newModel.model_name,

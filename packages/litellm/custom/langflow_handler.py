@@ -171,7 +171,7 @@ class Langflow(CustomLLM):
     def __init__(self):
         self.mapping_endpoint = f'{os.environ["HELPER_BACKEND"]}/mapping'
 
-    def _get_history_component_id(self, model: str, base_url: str, client: HTTPHandler) -> Optional[str]:
+    def _get_history_component_id(self, model: str, base_url: str, client: HTTPHandler, api_key: str) -> Optional[str]:
         """
         Get the history component ID. This relies on the LangFlow API to find the flow based on the
         model name and parse the components. The history component should start with `CompletionInterface`.
@@ -179,7 +179,7 @@ class Langflow(CustomLLM):
         # Make the request to get the flow data and handle any errors
         request_url = f'{base_url}/api/v1/flows/{model}'
         try:
-            response = client.get(request_url).json()
+            response = client.get(request_url, headers={'x-api-key': api_key}).json()
         except httpx.HTTPStatusError as e:
             error_headers = getattr(e, "headers", None)
             error_response = getattr(e, "response", None)
@@ -215,7 +215,7 @@ class Langflow(CustomLLM):
         # No history component node found
         return None
 
-    async def _aget_history_component_id(self, model: str, base_url: str, client: AsyncHTTPHandler) -> Optional[str]:
+    async def _aget_history_component_id(self, model: str, base_url: str, client: AsyncHTTPHandler, api_key: str) -> Optional[str]:
         """
         Get the history component ID. This relies on the LangFlow API to find the flow based on the
         model name and parse the components. The history component should start with `CompletionInterface`.
@@ -223,7 +223,7 @@ class Langflow(CustomLLM):
         # Make the request to get the flow data and handle any errors
         request_url = f'{base_url}/api/v1/flows/{model}'
         try:
-            response = (await client.get(request_url)).json()
+            response = (await client.get(request_url, headers={'x-api-key': api_key})).json()
         except httpx.HTTPStatusError as e:
             error_headers = getattr(e, "headers", None)
             error_response = getattr(e, "response", None)
@@ -281,15 +281,15 @@ class Langflow(CustomLLM):
             'tweaks': tweaks
         }
 
-    def _make_completion(self, model: str, messages: list, base_url: str, client: HTTPHandler) -> ModelResponse:
+    def _make_completion(self, model: str, messages: list, base_url: str, client: HTTPHandler, api_key: str) -> ModelResponse:
         """
         Make a single completition request
         """
         execution_url = f'{base_url}/api/v1/run/{model}'
-        history_component = self._get_history_component_id(model, base_url, client)
+        history_component = self._get_history_component_id(model, base_url, client, api_key)
 
         try:
-            response = client.post(execution_url, params={'stream': False}, json=self._make_request_body(messages, history_component))
+            response = client.post(execution_url, params={'stream': False}, json=self._make_request_body(messages, history_component), headers={'x-api-key': api_key})
         except httpx.HTTPStatusError as e:
             error_headers = getattr(e, "headers", None)
             error_response = getattr(e, "response", None)
@@ -312,15 +312,15 @@ class Langflow(CustomLLM):
             ]
         )
 
-    async def _amake_completion(self, model: str, messages: list, base_url: str, client: AsyncHTTPHandler) -> ModelResponse:
+    async def _amake_completion(self, model: str, messages: list, base_url: str, client: AsyncHTTPHandler, api_key: str) -> ModelResponse:
         """
         Make a single completition request
         """
         execution_url = f'{base_url}/api/v1/run/{model}'
-        history_component = await self._aget_history_component_id(model, base_url, client)
+        history_component = await self._aget_history_component_id(model, base_url, client, api_key)
 
         try:
-            response = await client.post(execution_url, params={'stream': False}, json=self._make_request_body(messages, history_component))
+            response = await client.post(execution_url, params={'stream': False}, json=self._make_request_body(messages, history_component), headers={'x-api-key': api_key})
         except httpx.HTTPStatusError as e:
             error_headers = getattr(e, "headers", None)
             error_response = getattr(e, "response", None)
@@ -343,12 +343,12 @@ class Langflow(CustomLLM):
             ]
         )
 
-    def _make_streaming(self, model: str, messages: list, base_url: str, client: HTTPHandler, sync_stream: bool) -> Iterator[GenericStreamingChunk]:
+    def _make_streaming(self, model: str, messages: list, base_url: str, client: HTTPHandler, sync_stream: bool, api_key) -> Iterator[GenericStreamingChunk]:
         execution_url = f'{base_url}/api/v1/run/{model}'
-        history_component = self._get_history_component_id(model, base_url, client)
+        history_component = self._get_history_component_id(model, base_url, client, api_key)
 
         try:
-            response = client.post(execution_url, params={'stream': True}, json=self._make_request_body(messages, history_component))
+            response = client.post(execution_url, params={'stream': True}, json=self._make_request_body(messages, history_component), headers={'x-api-key': api_key})
         except httpx.HTTPStatusError as e:
             error_headers = getattr(e, "headers", None)
             error_response = getattr(e, "response", None)
@@ -367,13 +367,13 @@ class Langflow(CustomLLM):
 
         return LangflowChunkParser(response, sync_stream=sync_stream)
 
-    async def _amake_streaming(self, model: str, messages: list, base_url: str, client: AsyncHTTPHandler) -> AsyncIterator[GenericStreamingChunk]:
+    async def _amake_streaming(self, model: str, messages: list, base_url: str, client: AsyncHTTPHandler, api_key: str) -> AsyncIterator[GenericStreamingChunk]:
         execution_url = f'{base_url}/api/v1/run/{model}'
-        history_component = await self._aget_history_component_id(model, base_url, client)
+        history_component = await self._aget_history_component_id(model, base_url, client, api_key)
 
         try:
             request_body = self._make_request_body(messages, history_component)
-            response = await client.post(execution_url, params={'stream': True}, json=request_body)
+            response = await client.post(execution_url, params={'stream': True}, json=request_body, headers={'x-api-key': api_key})
         except httpx.HTTPStatusError as e:
             error_headers = getattr(e, "headers", None)
             error_response = getattr(e, "response", None)
@@ -413,7 +413,7 @@ class Langflow(CustomLLM):
 
         client = client or HTTPHandler()
 
-        return self._make_completion(model, messages, api_base, client)
+        return self._make_completion(model, messages, api_base, client, api_key)
 
     async def acompletion(
             self,
@@ -436,7 +436,7 @@ class Langflow(CustomLLM):
 
         client = client or AsyncHTTPHandler()
 
-        return await self._amake_completion(model, messages, api_base, client)
+        return await self._amake_completion(model, messages, api_base, client, api_key)
 
     def streaming(
             self,
@@ -459,7 +459,7 @@ class Langflow(CustomLLM):
 
         client = client or HTTPHandler()
 
-        return self._make_streaming(model, messages, api_base, client, False)
+        return self._make_streaming(model, messages, api_base, client, False, api_key)
 
     def astreaming(
             self,
@@ -487,7 +487,7 @@ class Langflow(CustomLLM):
         the use of a coroutine.
         """
         sync_client = HTTPHandler()
-        result = self._make_streaming(model, messages, api_base, sync_client, True)
+        result = self._make_streaming(model, messages, api_base, sync_client, True, api_key)
 
         return result
 

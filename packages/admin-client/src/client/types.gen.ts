@@ -137,6 +137,10 @@ export type CreateNewModel = {
      * LiteLLM parameters for configuring the model
      */
     litellm_params: CreateNewModelParams;
+    /**
+     * The LiteLLM API key to create the new model with
+     */
+    api_key: string;
 };
 
 export type DeepchatProxyControllerGetData = {
