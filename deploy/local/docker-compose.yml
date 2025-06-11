@@ -26,7 +26,7 @@ services:
       retries: 10
 
   librechat:
-    image: ghcr.io/danny-avila/librechat:latest
+    image: your-dockerhub-username/librechat-custom:latest
     container_name: custom-rag-LibreChat
     extra_hosts:
       - "host.docker.internal:host-gateway"
