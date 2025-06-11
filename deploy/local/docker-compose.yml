@@ -1,6 +1,6 @@
 services:
   langflow:
-    image: langflowai/langflow:1.3.4
+    image: langflowai/langflow:1.4.1
     container_name: custom-rag-LangFlow
     ports:
       - "7860:7860"
@@ -26,7 +26,7 @@ services:
       retries: 10
 
   librechat:
-    image: your-dockerhub-username/librechat-custom:latest
+    image: am5815/librechat-custom:latest
     container_name: custom-rag-LibreChat
     extra_hosts:
       - "host.docker.internal:host-gateway"
