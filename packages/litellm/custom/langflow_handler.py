@@ -1,6 +1,8 @@
 from typing import Iterator, AsyncIterator, Optional, Tuple, Union, Callable
 import os
 import json
+import time
+import asyncio
 
 import httpx  # type: ignore
 
@@ -171,6 +173,18 @@ class Langflow(CustomLLM):
     def __init__(self):
         self.mapping_endpoint = f'{os.environ["HELPER_BACKEND"]}/mapping'
 
+    def _get_langflow_url(self, api_base: str) -> str:
+        """Convert external URLs to internal Docker container URLs for proper networking."""
+        if 'localhost' in api_base or '127.0.0.1' in api_base:
+            return api_base.replace('localhost', 'langflow').replace('127.0.0.1', 'langflow')
+        return api_base
+
+    def _extract_flow_name(self, model: str) -> str:
+        """Extract the flow name from LiteLLM model parameter (e.g., 'langflow/my-model' -> 'my-model')."""
+        if '/' in model:
+            return model.split('/', 1)[1]
+        return model
+
     def _get_history_component_id(self, model: str, base_url: str, client: HTTPHandler, api_key: str) -> Optional[str]:
         """
         Get the history component ID. This relies on the LangFlow API to find the flow based on the
@@ -179,7 +193,8 @@ class Langflow(CustomLLM):
         # Make the request to get the flow data and handle any errors
         request_url = f'{base_url}/api/v1/flows/{model}'
         try:
-            response = client.get(request_url, headers={'x-api-key': api_key}).json()
+            response = client.get(request_url, headers={'x-api-key': api_key})
+            response_json = response.json()
         except httpx.HTTPStatusError as e:
             error_headers = getattr(e, "headers", None)
             error_response = getattr(e, "response", None)
@@ -197,9 +212,9 @@ class Langflow(CustomLLM):
             raise BaseLLMException(status_code=500, message=str(e))
 
         # Get the data off of the response
-        flow_data = response.get('data', None)
+        flow_data = response_json.get('data', None)
         if flow_data is None:
-            raise BaseLLMException(status_code=500, message=f'Missing data field existing fields: {response.keys()}')
+            raise BaseLLMException(status_code=500, message=f'Missing data field existing fields: {response_json.keys()}')
 
         # Try to find the nodes
         nodes = flow_data.get('nodes', None)
@@ -223,7 +238,8 @@ class Langflow(CustomLLM):
         # Make the request to get the flow data and handle any errors
         request_url = f'{base_url}/api/v1/flows/{model}'
         try:
-            response = (await client.get(request_url, headers={'x-api-key': api_key})).json()
+            response = await client.get(request_url, headers={'x-api-key': api_key})
+            response_json = response.json()
         except httpx.HTTPStatusError as e:
             error_headers = getattr(e, "headers", None)
             error_response = getattr(e, "response", None)
@@ -241,9 +257,9 @@ class Langflow(CustomLLM):
             raise BaseLLMException(status_code=500, message=str(e))
 
         # Get the data off of the response
-        flow_data = response.get('data', None)
+        flow_data = response_json.get('data', None)
         if flow_data is None:
-            raise BaseLLMException(status_code=500, message=f'Missing data field existing fields: {response.keys()}')
+            raise BaseLLMException(status_code=500, message=f'Missing data field existing fields: {response_json.keys()}')
 
         # Try to find the nodes
         nodes = flow_data.get('nodes', None)
@@ -260,7 +276,36 @@ class Langflow(CustomLLM):
         return None
 
     def _get_completion_response(self, response: httpx.Response) -> str:
-        return response.json()['outputs'][0]['outputs'][0]['results']['message']['data']['text']
+        """Parse Langflow response with robust fallback handling."""
+        try:
+            response_json = response.json()
+            # Try the standard path first
+            try:
+                return response_json['outputs'][0]['outputs'][0]['results']['message']['data']['text']
+            except (KeyError, IndexError, TypeError):
+                # Try alternative paths for different response structures
+                try:
+                    if isinstance(response_json.get('outputs'), list) and len(response_json['outputs']) > 0:
+                        output = response_json['outputs'][0]
+                        if 'outputs' in output and len(output['outputs']) > 0:
+                            inner_output = output['outputs'][0]
+                            if 'results' in inner_output:
+                                if isinstance(inner_output['results'], dict):
+                                    if 'text' in inner_output['results']:
+                                        return inner_output['results']['text']
+                                    elif 'message' in inner_output['results']:
+                                        if isinstance(inner_output['results']['message'], dict):
+                                            if 'text' in inner_output['results']['message']:
+                                                return inner_output['results']['message']['text']
+                                elif isinstance(inner_output['results'], str):
+                                    return inner_output['results']
+                            elif 'text' in inner_output:
+                                return inner_output['text']
+                    return str(response_json)
+                except Exception:
+                    return str(response_json)
+        except Exception as e:
+            raise BaseLLMException(500, message=f"Failed to parse Langflow response: {str(e)}")
 
     def _make_request_body(self, messages: list, history_componet: Optional[str]) -> dict:
         history = dict()
@@ -285,8 +330,9 @@ class Langflow(CustomLLM):
         """
         Make a single completition request
         """
-        execution_url = f'{base_url}/api/v1/run/{model}'
-        history_component = self._get_history_component_id(model, base_url, client, api_key)
+        flow_name = self._extract_flow_name(model)
+        execution_url = f'{base_url}/api/v1/run/{flow_name}'
+        history_component = self._get_history_component_id(flow_name, base_url, client, api_key)
 
         try:
             response = client.post(execution_url, params={'stream': False}, json=self._make_request_body(messages, history_component), headers={'x-api-key': api_key})
@@ -308,7 +354,7 @@ class Langflow(CustomLLM):
 
         return ModelResponse(
             choices=[
-                litellm.Choices(finish_reason='stop', message=Message(content=self._get_completion_response(response)))
+                litellm.Choices(finish_reason='stop', message=Message(content=self._get_completion_response(response), role='assistant'))
             ]
         )
 
@@ -316,8 +362,9 @@ class Langflow(CustomLLM):
         """
         Make a single completition request
         """
-        execution_url = f'{base_url}/api/v1/run/{model}'
-        history_component = await self._aget_history_component_id(model, base_url, client, api_key)
+        flow_name = self._extract_flow_name(model)
+        execution_url = f'{base_url}/api/v1/run/{flow_name}'
+        history_component = await self._aget_history_component_id(flow_name, base_url, client, api_key)
 
         try:
             response = await client.post(execution_url, params={'stream': False}, json=self._make_request_body(messages, history_component), headers={'x-api-key': api_key})
@@ -339,58 +386,183 @@ class Langflow(CustomLLM):
 
         return ModelResponse(
             choices=[
-                litellm.Choices(finish_reason='stop', message=Message(content=self._get_completion_response(response)))
+                litellm.Choices(finish_reason='stop', message=Message(content=self._get_completion_response(response), role='assistant'))
             ]
         )
 
     def _make_streaming(self, model: str, messages: list, base_url: str, client: HTTPHandler, sync_stream: bool, api_key) -> Iterator[GenericStreamingChunk]:
-        execution_url = f'{base_url}/api/v1/run/{model}'
-        history_component = self._get_history_component_id(model, base_url, client, api_key)
-
+        """
+        Make streaming request - use chunked simulation for better compatibility.
+        """
+        # Extract flow name and convert URL for Docker networking
+        flow_name = self._extract_flow_name(model)
+        langflow_url = self._get_langflow_url(base_url)
+        execution_url = f'{langflow_url}/api/v1/run/{flow_name}'
+        
         try:
-            response = client.post(execution_url, params={'stream': True}, json=self._make_request_body(messages, history_component), headers={'x-api-key': api_key})
-        except httpx.HTTPStatusError as e:
-            error_headers = getattr(e, "headers", None)
-            error_response = getattr(e, "response", None)
-            if error_headers is None and error_response:
-                error_headers = getattr(error_response, "headers", None)
-            raise BaseLLMException(
-                status_code=e.response.status_code,
-                message=str(e.response.read()),
-                headers=error_headers,
-            )
+            # Get history component using converted URL
+            history_component = self._get_history_component_id(flow_name, langflow_url, client, api_key)
+            
+            # Make request using clean HTTP client for better reliability
+            with httpx.Client(timeout=30.0) as clean_client:
+                response = clean_client.post(
+                    execution_url, 
+                    params={'stream': False}, 
+                    json=self._make_request_body(messages, history_component), 
+                    headers={'x-api-key': api_key}
+                )
+                
+                if response.status_code != 200:
+                    raise BaseLLMException(
+                        status_code=response.status_code,
+                        message=f"Langflow request failed: {response.text}"
+                    )
+                
+                # Parse response and create chunked streaming
+                content = self._get_completion_response(response)
+                words = content.split()
+                chunk_size = max(1, len(words) // 8)  # 8 chunks for smooth streaming
+                
+                for i in range(0, len(words), chunk_size):
+                    chunk_words = words[i:i + chunk_size]
+                    chunk_text = " ".join(chunk_words)
+                    
+                    # Add space if not the last chunk
+                    if i + chunk_size < len(words):
+                        chunk_text += " "
+                    
+                    yield GenericStreamingChunk(
+                        text=chunk_text,
+                        is_finished=False,
+                        finish_reason='',
+                        usage=None,
+                        index=0,
+                        tool_use=None
+                    )
+                    
+                    # Small delay for smooth streaming effect
+                    time.sleep(0.05)
+                
+                # Final chunk to indicate completion
+                yield GenericStreamingChunk(
+                    text='',
+                    is_finished=True,
+                    finish_reason='stop',
+                    usage=None,
+                    index=0,
+                    tool_use=None
+                )
+                
         except Exception as e:
-            for exception in litellm.exceptions.LITELLM_EXCEPTION_TYPES:
-                if isinstance(e, exception):
-                    raise e
-            raise BaseLLMException(status_code=500, message=str(e))
-
-        return LangflowChunkParser(response, sync_stream=sync_stream)
+            if isinstance(e, BaseLLMException):
+                raise e
+            
+            # Fallback error handling
+            error_message = f"Streaming failed: {str(e)[:100]}. Please try non-streaming mode."
+            yield GenericStreamingChunk(
+                text=error_message,
+                is_finished=False,
+                finish_reason='',
+                usage=None,
+                index=0,
+                tool_use=None
+            )
+            
+            yield GenericStreamingChunk(
+                text='',
+                is_finished=True,
+                finish_reason='stop',
+                usage=None,
+                index=0,
+                tool_use=None
+            )
 
     async def _amake_streaming(self, model: str, messages: list, base_url: str, client: AsyncHTTPHandler, api_key: str) -> AsyncIterator[GenericStreamingChunk]:
-        execution_url = f'{base_url}/api/v1/run/{model}'
-        history_component = await self._aget_history_component_id(model, base_url, client, api_key)
-
+        """
+        Make async streaming request - use chunked simulation for better compatibility.
+        """
+        # Extract flow name and convert URL for Docker networking
+        flow_name = self._extract_flow_name(model)
+        langflow_url = self._get_langflow_url(base_url)
+        execution_url = f'{langflow_url}/api/v1/run/{flow_name}'
+        
         try:
-            request_body = self._make_request_body(messages, history_component)
-            response = await client.post(execution_url, params={'stream': True}, json=request_body, headers={'x-api-key': api_key})
-        except httpx.HTTPStatusError as e:
-            error_headers = getattr(e, "headers", None)
-            error_response = getattr(e, "response", None)
-            if error_headers is None and error_response:
-                error_headers = getattr(error_response, "headers", None)
-            raise BaseLLMException(
-                status_code=e.response.status_code,
-                message=str(e.response.read()),
-                headers=error_headers,
-            )
+            # Get history component using converted URL
+            history_component = await self._aget_history_component_id(flow_name, langflow_url, client, api_key)
+            
+            # Make request using clean HTTP client for better reliability
+            async with httpx.AsyncClient(timeout=30.0) as clean_client:
+                response = await clean_client.post(
+                    execution_url, 
+                    params={'stream': False}, 
+                    json=self._make_request_body(messages, history_component), 
+                    headers={'x-api-key': api_key}
+                )
+                
+                if response.status_code != 200:
+                    raise BaseLLMException(
+                        status_code=response.status_code,
+                        message=f"Langflow request failed: {response.text}"
+                    )
+                
+                # Parse response and create chunked streaming
+                content = self._get_completion_response(response)
+                words = content.split()
+                chunk_size = max(1, len(words) // 8)  # 8 chunks for smooth streaming
+                
+                for i in range(0, len(words), chunk_size):
+                    chunk_words = words[i:i + chunk_size]
+                    chunk_text = " ".join(chunk_words)
+                    
+                    # Add space if not the last chunk
+                    if i + chunk_size < len(words):
+                        chunk_text += " "
+                    
+                    yield GenericStreamingChunk(
+                        text=chunk_text,
+                        is_finished=False,
+                        finish_reason='',
+                        usage=None,
+                        index=0,
+                        tool_use=None
+                    )
+                    
+                    # Small delay for smooth streaming effect
+                    await asyncio.sleep(0.05)
+                
+                # Final chunk to indicate completion
+                yield GenericStreamingChunk(
+                    text='',
+                    is_finished=True,
+                    finish_reason='stop',
+                    usage=None,
+                    index=0,
+                    tool_use=None
+                )
+                
         except Exception as e:
-            for exception in litellm.exceptions.LITELLM_EXCEPTION_TYPES:
-                if isinstance(e, exception):
-                    raise e
-            raise BaseLLMException(status_code=500, message=str(e))
-
-        return LangflowChunkParser(response, sync_stream=False)
+            if isinstance(e, BaseLLMException):
+                raise e
+            
+            # Fallback error handling
+            error_message = f"Async streaming failed: {str(e)[:100]}. Please try non-streaming mode."
+            yield GenericStreamingChunk(
+                text=error_message,
+                is_finished=False,
+                finish_reason='',
+                usage=None,
+                index=0,
+                tool_use=None
+            )
+            
+            yield GenericStreamingChunk(
+                text='',
+                is_finished=True,
+                finish_reason='stop',
+                usage=None,
+                index=0,
+                tool_use=None
+            )
 
     def completion(
             self,
