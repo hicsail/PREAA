@@ -30,7 +30,7 @@ services:
       retries: 10
 
   librechat:
-    image: am5815/librechat-custom:latest
+    image: hicsail/librechat:main
     restart: unless-stopped
     container_name: portainer-LibreChat
     extra_hosts:

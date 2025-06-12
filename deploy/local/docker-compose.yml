@@ -26,7 +26,7 @@ services:
       retries: 10
 
   librechat:
-    image: am5815/librechat-custom:latest
+    image: hicsail/librechat:main
     container_name: custom-rag-LibreChat
     extra_hosts:
       - "host.docker.internal:host-gateway"
