@@ -73,6 +73,77 @@ class LangflowChunkParser:
         self.stream = self.langflow_response.iter_lines()
         self.astream = self.langflow_response.aiter_lines()
 
+        # Helper to determine if the request is agentic (doesn't produce token messages)
+        # As soon as a token payload is recieved, this is set to False
+        self.agentic = True
+
+    def _parse_token_chunk(self, payload: dict) -> GenericStreamingChunk:
+        # Get the token content from the chunk
+        data = payload.get('data', None)
+        if data is None:
+            verbose_logger.warning(f'data missing on chunk: {payload}')
+            raise BaseLLMException(500, message='Missing data on Langflow chunk')
+
+        chunk_text = data.get('chunk', None)
+        if chunk_text is None:
+            verbose_logger.warning(f'chunk is missing: {payload}')
+            raise BaseLLMException(500, message='Missing token content in Langflow chunk')
+
+        return GenericStreamingChunk(
+            text=chunk_text,
+            is_finished=False,
+            finish_reason='',
+            usage=None,
+            index=0,
+            tool_use=None
+        )
+
+    def _parse_agentic_end(self, payload: dict) -> GenericStreamingChunk:
+        # Try to find the data oject
+        data = payload.get('data', None)
+        if data is None:
+            verbose_logger.warning(f'data missing on chunk: {payload}')
+            raise BaseLLMException(500, message='Missing data on Langflow chunk')
+
+        # Get the outputs
+        output = data.get('result', {}).get('outputs', None)
+        if output is None or len(output) == 0:
+            verbose_logger.warning(f'output missing on chunk: {payload}')
+            raise BaseLLMException(500, message='Missing output on Langflow chunk')
+
+        # Try to get the output portion of the output (yes really)
+        output_result = output[0].get('outputs')
+        if output_result is None or len(output_result) == 0:
+            verbose_logger.warning(f'output result missing on chunk: {payload}')
+            raise BaseLLMException(500, message='Missing output result on Langflow chunk')
+
+        # Try to get the results
+        results = output_result[0].get('results', None)
+        if results is None:
+            verbose_logger.warning(f'result missing on chunk: {payload}')
+            raise BaseLLMException(500, message='Missing result on Langflow chunk')
+
+        # Get the message
+        message = results.get('message', None)
+        if message is None:
+            verbose_logger.warning(f'message missing on chunk: {payload}')
+            raise BaseLLMException(500, message='Missing message on Langflow chunk')
+
+        # Get the text
+        text = message.get('text', None)
+        if text is None:
+            verbose_logger.warning(f'text missing on chunk: {payload}')
+            raise BaseLLMException(500, message='Missing text on Langflow chunk')
+
+        return GenericStreamingChunk(
+            text=text,
+            is_finished=True,
+            finish_reason='stop',
+            usage=None,
+            index=0,
+            tool_use=None
+        )
+
     def _parse_chunck(self, raw: str) -> GenericStreamingChunk:
         if len(raw) == 0:
             return EMPTY_CHUNK
@@ -97,36 +168,25 @@ class LangflowChunkParser:
 
         # Token message handling
         if event_type == 'token':
-            # Get the token content from the chunk
-            data = chunk_json.get('data', None)
-            if data is None:
-                verbose_logger.warning(f'data missing on chunk: {raw}')
-                raise BaseLLMException(500, message='Missing data on Langflow chunk')
+            # Not agentic
+            self.agentic = False
 
-            chunk_text = data.get('chunk', None)
-            if chunk_text is None:
-                verbose_logger.warning(f'chunk is missing: {raw}')
-                raise BaseLLMException(500, message='Missing token content in Langflow chunk')
-
-            return GenericStreamingChunk(
-                text=chunk_text,
-                is_finished=False,
-                finish_reason='',
-                usage=None,
-                index=0,
-                tool_use=None
-            )
+            return self._parse_token_chunk(chunk_json)
 
         # Stop message handling
         if event_type == 'end':
-            return GenericStreamingChunk(
-                text='',
-                is_finished=True,
-                finish_reason='stop',
-                usage=None,
-                index=0,
-                tool_use=None
-            )
+            # Agentic responses will have one final end payload with all the content
+            if self.agentic:
+                return self._parse_agentic_end(chunk_json)
+            else:
+                return GenericStreamingChunk(
+                    text='',
+                    is_finished=True,
+                    finish_reason='stop',
+                    usage=None,
+                    index=0,
+                    tool_use=None
+                )
 
         # Otherwise we have reached an unexpected event
         verbose_logger.warning(f'Unexpected event type from Langflow {event_type}')
