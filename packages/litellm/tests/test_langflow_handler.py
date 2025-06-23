@@ -44,12 +44,14 @@ class HttpxResponseStreamMock:
 
 class TestLangflowchunkParser:
     def test_constructor(self):
+        """ Make use the parser can be constructed without error """
         # Create HTTPX Response mock
         response_mock = MagicMock()
 
         LangflowChunkParser(response_mock, True)
 
     def test_missing_token_data(self):
+        """ Proper handling of missing "data" field """
         # Load test data
         test_chunk = _load_test_json('missing_data_token_chunk.json')
 
@@ -61,6 +63,7 @@ class TestLangflowchunkParser:
             parser._parse_token_chunk(test_chunk)
 
     def test_missing_chunk_token_data(self):
+        """ Proper handling of missing "chunk" field" """
         # Load test data
         test_chunk = _load_test_json('missing_chunk_token.json')
 
@@ -72,6 +75,7 @@ class TestLangflowchunkParser:
             parser._parse_token_chunk(test_chunk)
 
     def test_valid_token_chunk(self):
+        """ Returning valid formed token chunk """
         # Load test data
         test_chunk = _load_test_json('valid_token_chunk.json')
 
@@ -85,6 +89,7 @@ class TestLangflowchunkParser:
         assert chunk['is_finished'] == False
 
     def test_valid_agentic_end(self):
+        """ Returining valid formed agentic end message """
         # Load test data
         test_chunk = _load_test_json('valid_agentic_end.json')
 
