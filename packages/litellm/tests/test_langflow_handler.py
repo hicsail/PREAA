@@ -1,9 +1,11 @@
 import os
 from pathlib import Path
 from unittest.mock import MagicMock
+import json
 os.environ['HELPER_BACKEND'] = 'test'
 
 from custom.langflow_handler import Langflow, LangflowChunkParser  # noqa: E402
+
 
 class HttpxResponseStreamMock:
     """
@@ -29,6 +31,7 @@ class HttpxResponseStreamMock:
 
 class TestLangflowchunkParser:
     def test_constructor(self):
+        # Create HTTPX Response mock
         response_mock = MagicMock()
 
         parser = LangflowChunkParser(response_mock, True)
@@ -36,4 +39,15 @@ class TestLangflowchunkParser:
         assert True
 
     def test_valid_token_chunk(self):
-        pass
+        # Load test data
+        test_file_location = Path(__file__).parent.resolve() / 'sample_data' / 'valid_token_chunk.json'
+        with open(test_file_location, 'r') as test_file:
+            test_chunk = json.load(test_file)
+
+        # Make unit under test
+        parser = LangflowChunkParser(MagicMock(), True)
+
+        # Get chunk
+        chunk = parser._parse_token_chunk(test_chunk)
+
+        assert chunk['text'] == 'Y'
