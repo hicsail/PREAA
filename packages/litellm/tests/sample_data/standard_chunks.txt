@@ -3,7 +3,6 @@
 {"event": "add_message", "data": {"timestamp": "2025-06-17 16:26:32 UTC", "sender": "Machine", "sender_name": "AI", "session_id": "8e785198-f630-4d9f-94fa-26c8e945da80", "text": "\ud83c\udf89", "files": [], "error": false, "edit": false, "properties": {"text_color": "", "background_color": "", "edited": false, "source": {"id": "OllamaModel-2CpQk", "display_name": "Ollama", "source": "llama3.1:latest"}, "icon": "Ollama", "allow_markdown": false, "positive_feedback": null, "state": "complete", "targets": []}, "category": "message", "content_blocks": [], "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "flow_id": "8e785198-f630-4d9f-94fa-26c8e945da80", "duration": null}}
 
 {"event": "token", "data": {"chunk": "\ud83c\udf89", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:32 UTC"}}
-INFO:     172.19.0.1:41658 - "POST /chat/completions HTTP/1.1" 200 OK
 
 {"event": "token", "data": {"chunk": " Y", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:32 UTC"}}
 
