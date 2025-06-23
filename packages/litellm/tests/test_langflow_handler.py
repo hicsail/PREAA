@@ -82,6 +82,7 @@ class TestLangflowchunkParser:
         chunk = parser._parse_token_chunk(test_chunk)
 
         assert chunk['text'] == 'Y'
+        assert chunk['is_finished'] == False
 
     def test_valid_agentic_end(self):
         # Load test data
@@ -94,3 +95,4 @@ class TestLangflowchunkParser:
         chunk = parser._parse_agentic_end(test_chunk)
 
         assert chunk['text'] == 'TEST'
+        assert chunk['is_finished'] == True
