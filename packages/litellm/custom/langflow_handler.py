@@ -1,10 +1,9 @@
-from typing import Iterator, AsyncIterator, Optional, Tuple, Union, Callable
+from typing import Iterator, AsyncIterator, Optional, Union, Callable
 import os
 import json
 
 import httpx  # type: ignore
 
-import litellm.litellm_core_utils
 import litellm.types
 import litellm.types.utils
 from litellm.types.utils import Message, ModelResponse
