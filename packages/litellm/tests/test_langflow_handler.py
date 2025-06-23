@@ -13,6 +13,13 @@ def _get_test_file_loc(file_name: str) -> Path:
     return Path(__file__).parent.resolve() / 'sample_data' / file_name
 
 
+def _load_test_json(file_name: str) -> dict:
+    test_file_location = _get_test_file_loc(file_name)
+    with open(test_file_location, 'r') as test_file:
+        return json.load(test_file)
+
+
+
 class HttpxResponseStreamMock:
     """
     Helper that mocks the streaming functionality
@@ -44,9 +51,7 @@ class TestLangflowchunkParser:
 
     def test_missing_token_data(self):
         # Load test data
-        test_file_location = _get_test_file_loc('missing_data_token_chunk.json')
-        with open(test_file_location, 'r') as test_file:
-            test_chunk = json.load(test_file)
+        test_chunk = _load_test_json('missing_data_token_chunk.json')
 
         # Make unit under test
         parser = LangflowChunkParser(MagicMock(), True)
@@ -57,9 +62,7 @@ class TestLangflowchunkParser:
 
     def test_missing_chunk_token_data(self):
         # Load test data
-        test_file_location = _get_test_file_loc('missing_chunk_token.json')
-        with open(test_file_location, 'r') as test_file:
-            test_chunk = json.load(test_file)
+        test_chunk = _load_test_json('missing_chunk_token.json')
 
         # Make unit under test
         parser = LangflowChunkParser(MagicMock(), True)
@@ -70,9 +73,7 @@ class TestLangflowchunkParser:
 
     def test_valid_token_chunk(self):
         # Load test data
-        test_file_location = _get_test_file_loc('valid_token_chunk.json')
-        with open(test_file_location, 'r') as test_file:
-            test_chunk = json.load(test_file)
+        test_chunk = _load_test_json('valid_token_chunk.json')
 
         # Make unit under test
         parser = LangflowChunkParser(MagicMock(), True)
@@ -81,3 +82,15 @@ class TestLangflowchunkParser:
         chunk = parser._parse_token_chunk(test_chunk)
 
         assert chunk['text'] == 'Y'
+
+    def test_valid_agentic_end(self):
+        # Load test data
+        test_chunk = _load_test_json('valid_agentic_end.json')
+
+        # Make unit under test
+        parser = LangflowChunkParser(MagicMock(), True)
+
+        # Get chunk
+        chunk = parser._parse_agentic_end(test_chunk)
+
+        assert chunk['text'] == 'TEST'
