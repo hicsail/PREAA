@@ -2,9 +2,15 @@ import os
 from pathlib import Path
 from unittest.mock import MagicMock
 import json
+import pytest
+
 os.environ['HELPER_BACKEND'] = 'test'
 
-from custom.langflow_handler import Langflow, LangflowChunkParser  # noqa: E402
+from custom.langflow_handler import LangflowChunkParser, BaseLLMException  # noqa: E402
+
+
+def _get_test_file_loc(file_name: str) -> Path:
+    return Path(__file__).parent.resolve() / 'sample_data' / file_name
 
 
 class HttpxResponseStreamMock:
@@ -38,9 +44,22 @@ class TestLangflowchunkParser:
         del parser
         assert True
 
+    def test_missing_token_data(self):
+        # Load test data
+        test_file_location = _get_test_file_loc('missing_data_token_chunk.json')
+        with open(test_file_location, 'r') as test_file:
+            test_chunk = json.load(test_file)
+
+        # Make unit under test
+        parser = LangflowChunkParser(MagicMock(), True)
+
+        # Get chunk, should raise exception
+        with pytest.raises(BaseLLMException):
+            chunk = parser._parse_token_chunk(test_chunk)
+
     def test_valid_token_chunk(self):
         # Load test data
-        test_file_location = Path(__file__).parent.resolve() / 'sample_data' / 'valid_token_chunk.json'
+        test_file_location = _get_test_file_loc('valid_token_chunk.json')
         with open(test_file_location, 'r') as test_file:
             test_chunk = json.load(test_file)
 
