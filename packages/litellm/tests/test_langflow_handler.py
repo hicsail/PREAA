@@ -40,9 +40,7 @@ class TestLangflowchunkParser:
         # Create HTTPX Response mock
         response_mock = MagicMock()
 
-        parser = LangflowChunkParser(response_mock, True)
-        del parser
-        assert True
+        LangflowChunkParser(response_mock, True)
 
     def test_missing_token_data(self):
         # Load test data
@@ -55,7 +53,20 @@ class TestLangflowchunkParser:
 
         # Get chunk, should raise exception
         with pytest.raises(BaseLLMException):
-            chunk = parser._parse_token_chunk(test_chunk)
+            parser._parse_token_chunk(test_chunk)
+
+    def test_missing_chunk_token_data(self):
+        # Load test data
+        test_file_location = _get_test_file_loc('missing_chunk_token.json')
+        with open(test_file_location, 'r') as test_file:
+            test_chunk = json.load(test_file)
+
+        # Make unit under test
+        parser = LangflowChunkParser(MagicMock(), True)
+
+        # Get chunk, should raise exception
+        with pytest.raises(BaseLLMException):
+            parser._parse_token_chunk(test_chunk)
 
     def test_valid_token_chunk(self):
         # Load test data
