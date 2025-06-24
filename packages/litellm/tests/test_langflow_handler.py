@@ -169,8 +169,7 @@ class TestStandard:
         # Pull in the full message
         full_message = ''
         for chunk in parser:
-            if chunk['is_finished'] != True:
-                full_message += chunk['text']
+            full_message += chunk['text']
 
         # Make sure the message matches
         assert full_message.strip() == expected_message.strip()
@@ -178,4 +177,24 @@ class TestStandard:
 
 class TestAgentic:
     def test_valid_payload(self):
+        # Make the test streamer
+        file_stream = HttpxResponseStreamMock(_get_test_file_loc('agent_chunks.txt'))
+        streamer_mock = MagicMock()
+        streamer_mock.iter_lines.return_value = file_stream
+
+        # Make unit under test
+        parser = LangflowChunkParser(streamer_mock, True)
+
+        # Read in the expected message output
+        with open(_get_test_file_loc('agent_chunks_output.txt'), 'r') as expected_output_file:
+            expected_message = expected_output_file.read()
+
+        # Pull in the full message
+        full_message = ''
+        for chunk in parser:
+            full_message += chunk['text']
+        print(full_message)
+
+        # Make sure the message matches
+        assert full_message.strip() == expected_message.strip()
         pass
