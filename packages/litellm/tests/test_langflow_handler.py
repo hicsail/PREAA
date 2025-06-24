@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from unittest.mock import MagicMock
 import json
+from httpx import stream
 import pytest
 
 os.environ['HELPER_BACKEND'] = 'test'
@@ -141,3 +142,40 @@ class TestParseChunk:
 
         assert chunk['text'] == ''
         assert chunk['is_finished'] == False
+
+    def test_unexpected_message_type(self):
+        # Make unit under test
+        parser = LangflowChunkParser(MagicMock(), True)
+
+        message = '{"event": "whatttt"}'
+        with pytest.raises(BaseLLMException):
+            parser._parse_chunck(message)
+
+
+class TestStandard:
+    def test_valid_payload(self):
+        # Make the test streamer
+        file_stream = HttpxResponseStreamMock(_get_test_file_loc('standard_chunks.txt'))
+        streamer_mock = MagicMock()
+        streamer_mock.iter_lines.return_value = file_stream
+
+        # Make unit under test
+        parser = LangflowChunkParser(streamer_mock, True)
+
+        # Read in the expected message output
+        with open(_get_test_file_loc('standard_chunks_output.txt'), 'r') as expected_output_file:
+            expected_message = expected_output_file.read()
+
+        # Pull in the full message
+        full_message = ''
+        for chunk in parser:
+            if chunk['is_finished'] != True:
+                full_message += chunk['text']
+
+        # Make sure the message matches
+        assert full_message.strip() == expected_message.strip()
+
+
+class TestAgentic:
+    def test_valid_payload(self):
+        pass
