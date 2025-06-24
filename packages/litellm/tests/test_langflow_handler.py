@@ -41,7 +41,7 @@ class HttpxResponseStreamMock:
         return content
 
 
-class TestLangflowchunkParser:
+class TestTokenParsing:
     def test_constructor(self):
         """ Make use the parser can be constructed without error """
         # Create HTTPX Response mock
@@ -87,6 +87,8 @@ class TestLangflowchunkParser:
         assert chunk['text'] == 'Y'
         assert chunk['is_finished'] == False
 
+
+class TestAgenticParsing:
     def test_missing_outputs_agentic_end(self):
         """ Proper handling of missing outputs field """
         # Load test data
