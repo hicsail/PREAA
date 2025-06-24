@@ -19,7 +19,6 @@ def _load_test_json(file_name: str) -> dict:
         return json.load(test_file)
 
 
-
 class HttpxResponseStreamMock:
     """
     Helper that mocks the streaming functionality
@@ -87,6 +86,18 @@ class TestLangflowchunkParser:
 
         assert chunk['text'] == 'Y'
         assert chunk['is_finished'] == False
+
+    def test_missing_outputs_agentic_end(self):
+        """ Proper handling of missing outputs field """
+        # Load test data
+        test_chunk = _load_test_json('missing_outputs_agentic_end.json')
+
+        # Make unit under test
+        parser = LangflowChunkParser(MagicMock(), True)
+
+        # Get chunk, should raise exception
+        with pytest.raises(BaseLLMException):
+            parser._parse_agentic_end(test_chunk)
 
     def test_valid_agentic_end(self):
         """ Returining valid formed agentic end message """
