@@ -114,3 +114,30 @@ class TestAgenticParsing:
 
         assert chunk['text'] == 'TEST'
         assert chunk['is_finished'] == True
+
+
+class TestParseChunk:
+    def test_invalid_json(self):
+        # Make unit under test
+        parser = LangflowChunkParser(MagicMock(), True)
+
+        with pytest.raises(BaseLLMException):
+            parser._parse_chunck('bad_json, stinky even')
+
+    def test_missing_event(self):
+        # Make unit under test
+        parser = LangflowChunkParser(MagicMock(), True)
+
+        with pytest.raises(BaseLLMException):
+            parser._parse_chunck('{"unexpected": "field"}')
+
+    def test_ignoring_add_message(self):
+        # Make unit under test
+        parser = LangflowChunkParser(MagicMock(), True)
+
+        message = '{"event": "add_message"}'
+
+        chunk = parser._parse_chunck(message)
+
+        assert chunk['text'] == ''
+        assert chunk['is_finished'] == False

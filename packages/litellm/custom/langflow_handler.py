@@ -196,10 +196,7 @@ class LangflowChunkParser:
 
     def __next__(self) -> GenericStreamingChunk:
         # Get the next chunk
-        try:
-            next_chunk = next(self.stream)
-        except StopIteration:
-            raise StopIteration
+        next_chunk = next(self.stream)
 
         # Parse the chunk
         parsed = self._parse_chunck(next_chunk)
@@ -211,10 +208,7 @@ class LangflowChunkParser:
 
     async def __anext__(self) -> GenericStreamingChunk:
         # Get the next chunk
-        try:
-            next_chunk = await anext(self.astream)
-        except StopIteration:
-            raise StopIteration
+        next_chunk = await anext(self.astream)
 
         # Parse the chunk
         parsed = self._parse_chunck(next_chunk)
