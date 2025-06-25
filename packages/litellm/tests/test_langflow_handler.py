@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 from unittest.mock import MagicMock
 import json
-from httpx import stream
 import pytest
 
 os.environ['HELPER_BACKEND'] = 'test'
@@ -86,7 +85,7 @@ class TestTokenParsing:
         chunk = parser._parse_token_chunk(test_chunk)
 
         assert chunk['text'] == 'Y'
-        assert chunk['is_finished'] == False
+        assert not chunk['is_finished']
 
 
 class TestAgenticParsing:
@@ -114,7 +113,7 @@ class TestAgenticParsing:
         chunk = parser._parse_agentic_end(test_chunk)
 
         assert chunk['text'] == 'TEST'
-        assert chunk['is_finished'] == True
+        assert chunk['is_finished']
 
 
 class TestParseChunk:
@@ -141,7 +140,7 @@ class TestParseChunk:
         chunk = parser._parse_chunck(message)
 
         assert chunk['text'] == ''
-        assert chunk['is_finished'] == False
+        assert chunk['is_finished']
 
     def test_unexpected_message_type(self):
         # Make unit under test
