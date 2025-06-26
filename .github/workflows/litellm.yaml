@@ -44,7 +44,7 @@ jobs:
 
   unit-testing:
     runs-on: ubuntu-latest
-    name: Check for Linting Errors
+    name: Unit Testing
     defaults:
       run:
         working-directory: packages/litellm
