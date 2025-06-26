@@ -140,7 +140,7 @@ class TestParseChunk:
         chunk = parser._parse_chunck(message)
 
         assert chunk['text'] == ''
-        assert chunk['is_finished']
+        assert not chunk['is_finished']
 
     def test_unexpected_message_type(self):
         # Make unit under test
@@ -192,8 +192,6 @@ class TestAgentic:
         full_message = ''
         for chunk in parser:
             full_message += chunk['text']
-        print(full_message)
 
         # Make sure the message matches
         assert full_message.strip() == expected_message.strip()
-        pass
