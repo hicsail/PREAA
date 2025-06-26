@@ -1,17 +1,17 @@
-name: litellm
+name: langflow
 
 on:
   workflow_dispatch:
   push:
     paths:
-      - 'packages/litellm/**'
+      - 'packages/langflow/**'
     branches:
       - main
     tags:
       - "v*.*.*"
   pull_request:
     paths:
-      - 'packages/litellm/**'
+      - 'packages/langflow/**'
     branches:
       - main
 
@@ -65,5 +65,5 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run unit tests
-        run: pytest tests/
+      - name: Check for Linting Issues
+        run: flake8 custom/ tests/
