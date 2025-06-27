@@ -5,6 +5,7 @@ import configuration from './config/configuration';
 import { MongooseModule } from '@nestjs/mongoose';
 import { DeepchatProxyModule } from './deepchat-proxy/deepchat-proxy.module';
 import { LitellmModule } from './litellm/litellm.module';
+import { ModelsModule } from './models/models.module';
 
 @Module({
   imports: [
@@ -20,7 +21,8 @@ import { LitellmModule } from './litellm/litellm.module';
       })
     }),
     DeepchatProxyModule,
-    LitellmModule
+    LitellmModule,
+    ModelsModule
   ],
   controllers: [],
   providers: [AppService]
