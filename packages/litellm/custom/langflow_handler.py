@@ -1,10 +1,9 @@
-from typing import Iterator, AsyncIterator, Optional, Tuple, Union, Callable
+from typing import Iterator, AsyncIterator, Optional, Union, Callable
 import os
 import json
 
 import httpx  # type: ignore
 
-import litellm.litellm_core_utils
 import litellm.types
 import litellm.types.utils
 from litellm.types.utils import Message, ModelResponse
@@ -197,10 +196,7 @@ class LangflowChunkParser:
 
     def __next__(self) -> GenericStreamingChunk:
         # Get the next chunk
-        try:
-            next_chunk = next(self.stream)
-        except StopIteration:
-            raise StopIteration
+        next_chunk = next(self.stream)
 
         # Parse the chunk
         parsed = self._parse_chunck(next_chunk)
@@ -212,10 +208,7 @@ class LangflowChunkParser:
 
     async def __anext__(self) -> GenericStreamingChunk:
         # Get the next chunk
-        try:
-            next_chunk = await anext(self.astream)
-        except StopIteration:
-            raise StopIteration
+        next_chunk = await anext(self.astream)
 
         # Parse the chunk
         parsed = self._parse_chunck(next_chunk)
@@ -349,7 +342,9 @@ class Langflow(CustomLLM):
         history_component = self._get_history_component_id(model, base_url, client, api_key)
 
         try:
-            response = client.post(execution_url, params={'stream': False}, json=self._make_request_body(messages, history_component), headers={'x-api-key': api_key})
+            response = client.post(execution_url, params={'stream': False},
+                                   json=self._make_request_body(messages, history_component),
+                                   headers={'x-api-key': api_key})
         except httpx.HTTPStatusError as e:
             error_headers = getattr(e, "headers", None)
             error_response = getattr(e, "response", None)
@@ -380,7 +375,9 @@ class Langflow(CustomLLM):
         history_component = await self._aget_history_component_id(model, base_url, client, api_key)
 
         try:
-            response = await client.post(execution_url, params={'stream': False}, json=self._make_request_body(messages, history_component), headers={'x-api-key': api_key})
+            response = await client.post(execution_url, params={'stream': False},
+                                         json=self._make_request_body(messages, history_component),
+                                         headers={'x-api-key': api_key})
         except httpx.HTTPStatusError as e:
             error_headers = getattr(e, "headers", None)
             error_response = getattr(e, "response", None)
@@ -408,7 +405,9 @@ class Langflow(CustomLLM):
         history_component = self._get_history_component_id(model, base_url, client, api_key)
 
         try:
-            response = client.post(execution_url, params={'stream': True}, json=self._make_request_body(messages, history_component), headers={'x-api-key': api_key})
+            response = client.post(execution_url, params={'stream': True},
+                                   json=self._make_request_body(messages, history_component),
+                                   headers={'x-api-key': api_key})
         except httpx.HTTPStatusError as e:
             error_headers = getattr(e, "headers", None)
             error_response = getattr(e, "response", None)

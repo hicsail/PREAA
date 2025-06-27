@@ -1,0 +1,167 @@
+{
+  "event": "end",
+  "data": {
+    "result": {
+      "session_id": "b8b12c75-49c6-42a8-846a-c4d568f80b6e",
+      "outputs": [
+        {
+          "inputs": {
+            "input_value": "hello!"
+          },
+          "outputs": [
+            {
+              "results": {
+                "message": {
+                  "text_key": "text",
+                  "data": {
+                    "timestamp": "2025-06-17 16:22:05 UTC",
+                    "sender": "Machine",
+                    "sender_name": "AI",
+                    "session_id": "b8b12c75-49c6-42a8-846a-c4d568f80b6e",
+                    "text": "TEST",
+                    "files": [],
+                    "error": false,
+                    "edit": false,
+                    "properties": {
+                      "text_color": "",
+                      "background_color": "",
+                      "edited": false,
+                      "source": {
+                        "id": "Agent-rDCm8",
+                        "display_name": "Agent",
+                        "source": "gpt-4o-mini"
+                      },
+                      "icon": "bot",
+                      "allow_markdown": false,
+                      "positive_feedback": null,
+                      "state": "complete",
+                      "targets": []
+                    },
+                    "category": "message",
+                    "content_blocks": [
+                      {
+                        "title": "Agent Steps",
+                        "contents": [
+                          {
+                            "type": "text",
+                            "duration": 2,
+                            "header": {
+                              "title": "Input",
+                              "icon": "MessageSquare"
+                            },
+                            "text": ""
+                          },
+                          {
+                            "type": "text",
+                            "duration": 2451,
+                            "header": {
+                              "title": "Output",
+                              "icon": "MessageSquare"
+                            },
+                            "text": ""
+                          }
+                        ],
+                        "allow_markdown": true,
+                        "media_url": null
+                      }
+                    ],
+                    "id": "bf9eb5a7-f25e-430b-933f-536a84de9f52",
+                    "flow_id": "b8b12c75-49c6-42a8-846a-c4d568f80b6e",
+                    "duration": null
+                  },
+                  "default_value": "",
+                  "text": "TEST",
+                  "sender": "Machine",
+                  "sender_name": "AI",
+                  "files": [],
+                  "session_id": "b8b12c75-49c6-42a8-846a-c4d568f80b6e",
+                  "timestamp": "2025-06-17T16:22:05+00:00",
+                  "flow_id": "b8b12c75-49c6-42a8-846a-c4d568f80b6e",
+                  "error": false,
+                  "edit": false,
+                  "properties": {
+                    "text_color": "",
+                    "background_color": "",
+                    "edited": false,
+                    "source": {
+                      "id": "Agent-rDCm8",
+                      "display_name": "Agent",
+                      "source": "gpt-4o-mini"
+                    },
+                    "icon": "bot",
+                    "allow_markdown": false,
+                    "positive_feedback": null,
+                    "state": "complete",
+                    "targets": []
+                  },
+                  "category": "message",
+                  "content_blocks": [
+                    {
+                      "title": "Agent Steps",
+                      "contents": [
+                        {
+                          "type": "text",
+                          "duration": 2,
+                          "header": {
+                            "title": "Input",
+                            "icon": "MessageSquare"
+                          },
+                          "text": ""
+                        },
+                        {
+                          "type": "text",
+                          "duration": 2451,
+                          "header": {
+                            "title": "Output",
+                            "icon": "MessageSquare"
+                          },
+                          "text": ""
+                        }
+                      ],
+                      "allow_markdown": true,
+                      "media_url": null
+                    }
+                  ],
+                  "duration": null
+                }
+              },
+              "artifacts": {
+                "message": "",
+                "sender": "Machine",
+                "sender_name": "AI",
+                "files": [],
+                "type": "object"
+              },
+              "outputs": {
+                "message": {
+                  "message": "",
+                  "type": "text"
+                }
+              },
+              "logs": {
+                "message": []
+              },
+              "messages": [
+                {
+                  "message": "",
+                  "sender": "Machine",
+                  "sender_name": "AI",
+                  "session_id": "b8b12c75-49c6-42a8-846a-c4d568f80b6e",
+                  "stream_url": null,
+                  "component_id": "ChatOutput-6spII",
+                  "files": [],
+                  "type": "text"
+                }
+              ],
+              "timedelta": null,
+              "duration": null,
+              "component_display_name": "Chat Output",
+              "component_id": "ChatOutput-6spII",
+              "used_frozen_result": false
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
