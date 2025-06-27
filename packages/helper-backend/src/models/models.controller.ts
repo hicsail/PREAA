@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Response } from '@nestjs/common';
 import { ModelsService } from './models.service';
 import { CreateModelDto } from './dto/create-model.dto';
 import { UpdateModelDto } from './dto/update-model.dto';
+import { Response as Res } from 'express';
 
 @Controller('models')
 export class ModelsController {
@@ -13,8 +14,11 @@ export class ModelsController {
   }
 
   @Get()
-  findAll() {
-    return this.modelsService.findAll();
+  async findAll(@Response() res: Res): Promise<any> {
+    const models = await this.modelsService.findAll();
+    res.setHeader('Content-Range', 'models 0-2/3')
+
+    return res.json(models);
   }
 
   @Get(':id')

@@ -8,6 +8,6 @@ import { litellmProvider } from './litellm.provider';
   imports: [ConfigModule],
   controllers: [LiteLLMController],
   providers: [LiteLLMService, litellmProvider],
-  exports: [LiteLLMService]
+  exports: [LiteLLMService, litellmProvider]
 })
 export class LitellmModule {}

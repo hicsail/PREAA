@@ -8,8 +8,11 @@ export const LITELLM_PROVIDER = 'LITELLM_PROVIDER';
 export const litellmProvider: Provider<Client> = {
   provide: LITELLM_PROVIDER,
   useFactory: (configService: ConfigService) => {
+    const apiKey = configService.getOrThrow<string>('litellmAPIKey');
+    console.log(apiKey)
     return createClient(createConfig<ClientOptions>({
-      baseUrl: configService.getOrThrow<string>('litellm.uri')
+      baseUrl: configService.getOrThrow<string>('litellm.uri'),
+      auth: () => apiKey
     }));
   },
   inject: [ConfigService]
