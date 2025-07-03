@@ -3,7 +3,7 @@ import { CreateModelDto } from './dto/create-model.dto';
 import { UpdateModelDto } from './dto/update-model.dto';
 import { Client as LitellmClient } from '../client-litellm/client/types';
 import { LITELLM_PROVIDER } from 'src/litellm/litellm.provider';
-import { modelListV1ModelsGet } from 'src/client-litellm';
+import { modelInfoV1ModelInfoGet } from 'src/client-litellm';
 
 @Injectable()
 export class ModelsService {
@@ -14,7 +14,7 @@ export class ModelsService {
   }
 
   async findAll(): Promise<any[]> {
-    const all = await modelListV1ModelsGet({ client: this.litellm });
+    const all = await modelInfoV1ModelInfoGet({ client: this.litellm });
 
     if (all.error) {
       console.error(all.error);
@@ -25,9 +25,12 @@ export class ModelsService {
       console.error('No error, but no data returned');
       throw new InternalServerErrorException('Empty response from LiteLLM API');
     }
-    console.log(all.data);
 
-    return (all.data as any).data;
+    // Need to add an ID field
+    let models = (all.data as any).data as any[];
+    models = models.map((model) => { return { ...model, id: model.model_info.id }})
+
+    return models;
   }
 
   findOne(id: number) {
