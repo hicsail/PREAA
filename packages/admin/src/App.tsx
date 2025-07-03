@@ -5,6 +5,6 @@ import { ModelsList } from './components/models/ModelsList.component';
 
 export const App = () => (
   <Admin layout={Layout} dataProvider={dataProvider}>
-    <Resource name='models' list={ModelsList} />
+    <Resource name="models" list={ModelsList} />
   </Admin>
 );
