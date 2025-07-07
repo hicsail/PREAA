@@ -1,4 +1,3 @@
-// in src/components/AdminApp.tsx
 'use client'; // remove this line if you choose Pages Router
 import { Admin, Resource, ListGuesser, EditGuesser } from 'react-admin';
 import jsonServerProvider from 'ra-data-json-server';
