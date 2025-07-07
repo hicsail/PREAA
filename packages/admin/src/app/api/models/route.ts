@@ -1,11 +1,11 @@
 import { container, LITELLM_PROVIDER } from "@/app/lib/container";
 import { Client as LiteLLMClient } from "../../lib/client-litellm/client/types";
-import { modelInfoV1ModelInfoGet } from "@/app/lib/client-litellm";
+import { addNewModelModelNewPost, modelInfoV1ModelInfoGet } from "@/app/lib/client-litellm";
 
 export async function GET(_request: Request) {
-  const litellmClient = container.resolve<LiteLLMClient>(LITELLM_PROVIDER);
+  const client = container.resolve<LiteLLMClient>(LITELLM_PROVIDER);
 
-  const all = await modelInfoV1ModelInfoGet({ client: litellmClient });
+  const all = await modelInfoV1ModelInfoGet({ client });
 
   if (all.error) {
     console.error(all.error);
@@ -28,4 +28,37 @@ export async function GET(_request: Request) {
       'Content-Range': 'models 0-2/3'
     }
   })
+}
+
+export async function POST(request: Request) {
+  const client = container.resolve<LiteLLMClient>(LITELLM_PROVIDER);
+
+  if (!request.body) {
+    return new Response('Missing body', { status: 400 });
+  }
+
+  const body = await request.json();
+
+  const result = await addNewModelModelNewPost({ body, client });
+  console.log(result);
+
+  if (result.error) {
+    console.error(result.error);
+    return new Response(JSON.stringify(result.error), { status: 500 });
+  }
+
+  if (!result.data) {
+    console.error('Missing data payload');
+    return new Response('Missing LiteLLM payload', { status: 500 });
+  }
+
+  // Add ID field
+  const newModel = { ...result.data, id: (result.data as any).model_id };
+
+  return new Response(JSON.stringify(newModel), {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
 }
