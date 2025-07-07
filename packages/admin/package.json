@@ -6,17 +6,21 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "codegen:litellm": "openapi-ts --file openapi-ts-litellm.config.ts"
   },
   "dependencies": {
     "next": "15.3.5",
     "ra-data-json-server": "^5.9.1",
     "react": "^19.0.0",
     "react-admin": "^5.9.1",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "reflect-metadata": "^0.2.2",
+    "tsyringe": "^4.10.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@hey-api/openapi-ts": "^0.78.2",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
