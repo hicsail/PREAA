@@ -1,25 +1,15 @@
-'use client'; // remove this line if you choose Pages Router
-import { Admin, Resource, ListGuesser, EditGuesser } from 'react-admin';
-import jsonServerProvider from 'ra-data-json-server';
+'use client';
+import { Admin, Resource } from 'react-admin';
 import { FC } from 'react';
+import { ModelsList } from './admin/models/ModelsList.component';
+import { ModelCreate } from './admin/models/ModelCreate.component';
+import simpleRestProvider from 'ra-data-simple-rest';
 
-const dataProvider = jsonServerProvider('https://jsonplaceholder.typicode.com');
+const dataProvider = simpleRestProvider('/api');
 
 const AdminApp: FC = () => (
   <Admin dataProvider={dataProvider}>
-    <Resource
-      name='users'
-      list={ListGuesser}
-      edit={EditGuesser}
-      recordRepresentation='name'
-    />
-    <Resource
-      name='posts'
-      list={ListGuesser}
-      edit={EditGuesser}
-      recordRepresentation='title'
-    />
-    <Resource name='comments' list={ListGuesser} edit={EditGuesser} />
+    <Resource name='models' list={ModelsList} create={ModelCreate} />
   </Admin>
 );
 
