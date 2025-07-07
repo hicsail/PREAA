@@ -9,7 +9,6 @@ export class ModelService {
 
   async create(newModel: any): Promise<Deployment> {
     const result = await addNewModelModelNewPost({ body: newModel, client: this.litellmClient as any });
-    console.log(result);
 
     if (result.error) {
       console.error(result.error);
@@ -42,7 +41,7 @@ export class ModelService {
     return { ...result.data, id: (result.data as any).model_id } as any;
   }
 
-  async getAll(): Promise<any[]> {
+  async getAll(): Promise<Deployment[]> {
     const result = await modelInfoV1ModelInfoGet({ client: this.litellmClient as any });
 
     if (result.error) {

@@ -10,6 +10,7 @@
     "codegen:litellm": "openapi-ts --file openapi-ts-litellm.config.ts"
   },
   "dependencies": {
+    "mongoose": "^8.16.2",
     "next": "15.3.5",
     "ra-data-json-server": "^5.9.1",
     "ra-data-simple-rest": "^5.9.1",
