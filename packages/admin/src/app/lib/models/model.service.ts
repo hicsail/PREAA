@@ -1,9 +1,9 @@
-import { injectable, inject } from "tsyringe";
+import { inject, singleton } from "tsyringe";
 import { LITELLM_PROVIDER } from "../container";
 import type { Client as LiteLLMClient } from "../client-litellm/core/types";
 import { addNewModelModelNewPost, deleteModelModelDeletePost, Deployment, modelInfoV1ModelInfoGet } from "@/app/lib/client-litellm";
 
-@injectable()
+@singleton()
 export class ModelService {
   constructor(@inject(LITELLM_PROVIDER) private readonly litellmClient: LiteLLMClient) {}
 
