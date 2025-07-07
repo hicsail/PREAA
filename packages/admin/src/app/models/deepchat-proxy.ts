@@ -12,3 +12,4 @@ const DeepchatProxySchema = new mongoose.Schema<DeepchatProxies>({
   apiKey: { type: String, required: [true, 'Please specify the API key to use'] }
 });
 
+export default mongoose.models.DeepchatProxy || mongoose.model<DeepchatProxies>("DeepchatProxy", DeepchatProxySchema);
