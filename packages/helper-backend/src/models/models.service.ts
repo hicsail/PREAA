@@ -3,13 +3,20 @@ import { CreateModelDto } from './dto/create-model.dto';
 import { UpdateModelDto } from './dto/update-model.dto';
 import { Client as LitellmClient } from '../client-litellm/client/types';
 import { LITELLM_PROVIDER } from 'src/litellm/litellm.provider';
-import { modelInfoV1ModelInfoGet } from 'src/client-litellm';
+import { addNewModelModelNewPost, modelInfoV1ModelInfoGet } from 'src/client-litellm';
 
 @Injectable()
 export class ModelsService {
   constructor (@Inject(LITELLM_PROVIDER) private readonly litellm: LitellmClient) {}
 
-  create(createModelDto: CreateModelDto) {
+  async create(createModelDto: CreateModelDto) {
+    const result = await addNewModelModelNewPost({ body: createModelDto as any });
+
+    if (result.error) {
+      console.error(result.error);
+      throw new InternalServerErrorException('Error response from LiteLLM API');
+    }
+
     return 'This action adds a new model';
   }
 
