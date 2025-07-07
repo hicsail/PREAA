@@ -1,5 +1,5 @@
+import { container } from '@/app/lib/container';
 import { ProxyService } from '@/app/lib/proxies/proxy.service';
-import { container } from 'tsyringe';
 
 export async function POST(request: Request) {
   const proxyService = container.resolve(ProxyService);
@@ -22,8 +22,6 @@ export async function POST(request: Request) {
 
 export async function GET(_request: Request) {
   const proxyService = container.resolve(ProxyService);
-
-  const proxies = await proxyService.get();
 
   try {
     const proxies = await proxyService.getAll();
