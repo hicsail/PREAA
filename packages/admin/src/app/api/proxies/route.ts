@@ -12,7 +12,14 @@ export async function POST(request: Request) {
 
   const newProxy = await proxyService.create(body);
 
-  return new Response(JSON.stringify(newProxy), {
+  // Add id field and remove API field
+  const proxyResponse = {
+    modelName: newProxy.modelName,
+    url: newProxy.url,
+    id: newProxy._id
+  };
+
+  return new Response(JSON.stringify(proxyResponse), {
     status: 200,
     headers: {
       'Content-Type': 'application/json'
@@ -25,8 +32,15 @@ export async function GET(_request: Request) {
 
   try {
     const proxies = await proxyService.getAll();
-    console.log(proxies)
-    return new Response(JSON.stringify(proxies), {
+
+    // Reshape the results
+    const proxiesResponse = proxies.map((proxy) => ({
+      id: proxy._id,
+      modelName: proxy.modelName,
+      url: proxy.url
+    }));
+
+    return new Response(JSON.stringify(proxiesResponse), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
