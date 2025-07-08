@@ -2,6 +2,7 @@ import DeepchatProxy, { DeepchatProxies } from '@/app/schemas/deepchat-proxy';
 import { inject, singleton } from 'tsyringe';
 import { LITELLM_PROVIDER } from '../container';
 import type { Client as LiteLLMClient } from '../client-litellm/core/types';
+import { chatCompletionV1ChatCompletionsPost } from '../client-litellm';
 
 @singleton()
 export class ProxyService {
@@ -31,6 +32,33 @@ export class ProxyService {
   }
 
   async proxyRequest(id: string, body: any): Promise<any> {
+    // Get the proxy information
+    const proxy = DeepchatProxy.findById(id);
+    if (!proxy) {
+      console.error(`Proxy with id ${id} not found`);
+      throw new Error('Missing proxy data for id');
+    }
 
+    const result = await chatCompletionV1ChatCompletionsPost({ body, client: this.litellmClient as any })
+
+    if (result.error) {
+      console.error(result.error);
+      throw new Error('Failed to make LiteLLM request');
+    }
+
+    if (!result.data) {
+      console.error('Missing data payload from liteLLM');
+      throw new Error('Missing LiteLLM Payload');
+    }
+
+    // Transform the data
+    const response = result.data as any;
+    response.text = response.choices[0].message.content;
+
+    console.log(response);
+
+    console.log(result);
+
+    return response;
   }
 }
