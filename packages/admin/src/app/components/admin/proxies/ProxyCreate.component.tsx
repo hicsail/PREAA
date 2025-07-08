@@ -6,7 +6,6 @@ export const ProxyCreate: FC = () => {
     <Create>
       <SimpleForm>
         <TextInput source='modelName' />
-        <TextInput source='url' />
         <TextInput source='apiKey' />
       </SimpleForm>
     </Create>

@@ -15,7 +15,6 @@ export async function POST(request: Request) {
   // Add id field and remove API field
   const proxyResponse = {
     modelName: newProxy.modelName,
-    url: newProxy.url,
     id: newProxy._id
   };
 
@@ -36,8 +35,7 @@ export async function GET(_request: Request) {
     // Reshape the results
     const proxiesResponse = proxies.map((proxy) => ({
       id: proxy._id,
-      modelName: proxy.modelName,
-      url: proxy.url
+      modelName: proxy.modelName
     }));
 
     return new Response(JSON.stringify(proxiesResponse), {

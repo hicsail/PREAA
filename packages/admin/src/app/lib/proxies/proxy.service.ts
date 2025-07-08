@@ -1,8 +1,12 @@
 import DeepchatProxy, { DeepchatProxies } from '@/app/schemas/deepchat-proxy';
-import { singleton } from 'tsyringe';
+import { inject, singleton } from 'tsyringe';
+import { LITELLM_PROVIDER } from '../container';
+import type { Client as LiteLLMClient } from '../client-litellm/core/types';
 
 @singleton()
 export class ProxyService {
+  constructor(@inject(LITELLM_PROVIDER) private readonly litellmClient: LiteLLMClient) {}
+
   async create(newProxy: any): Promise<DeepchatProxies> {
     return DeepchatProxy.create(newProxy);
   }
@@ -24,5 +28,9 @@ export class ProxyService {
     await DeepchatProxy.deleteOne({ _id: id });
 
     return existing;
+  }
+
+  async proxyRequest(id: string, body: any): Promise<any> {
+
   }
 }
