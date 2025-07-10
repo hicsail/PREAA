@@ -55,10 +55,6 @@ export class ProxyService {
     const response = result.data as any;
     response.text = response.choices[0].message.content;
 
-    console.log(response);
-
-    console.log(result);
-
     return response;
   }
 }

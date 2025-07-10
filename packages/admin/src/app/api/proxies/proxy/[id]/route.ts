@@ -15,6 +15,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     return new Response('Missing body', { status: 400 });
   }
 
+  console.log(body);
+
   const response = await proxyService.proxyRequest(id, body);
 
   return new Response(JSON.stringify(response), {
