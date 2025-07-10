@@ -33,13 +33,18 @@ export class ProxyService {
 
   async proxyRequest(id: string, body: any): Promise<any> {
     // Get the proxy information
-    const proxy = DeepchatProxy.findById(id);
+    const proxy = await DeepchatProxy.findById(id);
     if (!proxy) {
       console.error(`Proxy with id ${id} not found`);
       throw new Error('Missing proxy data for id');
     }
 
-    const result = await chatCompletionV1ChatCompletionsPost({ body, client: this.litellmClient as any })
+    // Transform the body
+    const request = { messages: [], model: '' };
+    request.messages = body.messages.map((message: any) => ({ content: message.text }));
+    request.model = proxy.modelName;
+
+    const result = await chatCompletionV1ChatCompletionsPost({ body: request as any, client: this.litellmClient as any })
 
     if (result.error) {
       console.error(result.error);
