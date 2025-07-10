@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "lint:fix": "next lint --fix",
     "codegen:litellm": "openapi-ts --file openapi-ts-litellm.config.ts",
     "prettier": "prettier -l \"src/**/*.ts(x)\"",
     "prettier:fix": "prettier -wl \"src/**/*.ts(x)\""

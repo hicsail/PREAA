@@ -55,7 +55,7 @@ export class ModelService {
     }
 
     // Add ID field
-    let models = (result.data as any).data as any[];
+    const models = (result.data as any).data as any[];
     return models.map((model) => { return { ...model, id: model.model_info.id }});
   }
 
