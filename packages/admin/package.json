@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "codegen:litellm": "openapi-ts --file openapi-ts-litellm.config.ts"
+    "codegen:litellm": "openapi-ts --file openapi-ts-litellm.config.ts",
+    "prettier": "prettier -l \"src/**/*.ts(x)\"",
+    "prettier:fix": "prettier -wl \"src/**/*.ts(x)\""
   },
   "dependencies": {
     "mongoose": "^8.16.2",
@@ -29,6 +31,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.3.5",
+    "prettier": "^3.6.2",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

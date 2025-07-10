@@ -11,8 +11,8 @@ const dataProvider = simpleRestProvider('/api');
 
 const AdminApp: FC = () => (
   <Admin dataProvider={dataProvider}>
-    <Resource name='models' list={ModelsList} create={ModelCreate} />
-    <Resource name='proxies' list={ProxiesList} create={ProxyCreate} />
+    <Resource name="models" list={ModelsList} create={ModelCreate} />
+    <Resource name="proxies" list={ProxiesList} create={ProxyCreate} />
   </Admin>
 );
 
