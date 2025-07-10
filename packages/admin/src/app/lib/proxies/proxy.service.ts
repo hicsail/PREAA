@@ -44,6 +44,7 @@ export class ProxyService {
     request.messages = body.messages.map((message: any) => ({ content: message.text }));
     request.model = proxy.modelName;
 
+    // Make the request
     const result = await chatCompletionV1ChatCompletionsPost({ body: request as any, client: this.litellmClient as any })
 
     if (result.error) {
