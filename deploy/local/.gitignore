@@ -8,3 +8,4 @@ config/.env.langfuse
 config/.env.clickhouse
 config/.env.prometheus
 config/.env.librechat-metrics
+config/.env.keycloak

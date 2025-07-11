@@ -160,6 +160,16 @@ services:
     volumes:
       - custom-rag-grafana-data:/var/lib/grafana
 
+  keycloak:
+    image: keycloak/keycloak:26.3
+    container_name: custom-rag-keycloak
+    env_file: "config/.env.keycloak"
+    depends_on:
+      - postgres
+    ports:
+      - "8080:8080"
+    command: "start-dev"
+
 
 volumes:
   custom-rag-langflow-data:
