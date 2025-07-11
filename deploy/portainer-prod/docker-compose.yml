@@ -190,17 +190,6 @@ services:
     volumes:
       - portainer-grafana-data:/var/lib/grafana
 
-  helper-backend:
-    image: hicsail/preaa-helper:main
-    pull_policy: always
-    container_name: portainer-helper-backend
-    restart: unless-stopped
-    ports:
-      - "3008:3001"
-    env_file:
-      - ../../stack.env
-      - stack.env
-
   chat-client:
     image: hicsail/preaa-chat-client:prod
     pull_policy: always
@@ -212,13 +201,18 @@ services:
       - ../../stack.env
       - stack.env
 
-  admin-client:
-    image: hicsail/preaa-admin-client:prod
+  admin:
+    image: hicsail/preaa-admin:main
     pull_policy: always
-    container_name: portainer-admin-client
+    container_name: portainer-admin
     restart: unless-stopped
     ports:
-      - "3016:80"
+      - "3016:3000"
+    depends_on:
+      - mongodb
+    env_file:
+      - ../../stack.env
+      - stack.env
 
   embedded-chat:
     image: hicsail/preaa-embedded-chat:prod

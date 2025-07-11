@@ -59,7 +59,7 @@ export const ExpandedChat: React.FC<ExpandedChatProps> = ({ config, onMinimize, 
           }}
           requestBodyLimits={{ maxMessages: -1 }}
           connect={{
-            url: `${import.meta.env.VITE_BACKEND_BASE_URL}/deepchat-proxy/proxy/${config.modelId}`
+            url: `${import.meta.env.VITE_BACKEND_BASE_URL}/api/proxies/proxy/${config.modelId}`
           }}
           messageStyles={{
             default: {
