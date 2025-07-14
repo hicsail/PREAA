@@ -1,3 +1,5 @@
+'use client';
+
 import { AuthProvider } from 'react-admin';
 import { SessionContextValue, signIn, signOut } from 'next-auth/react'
 
@@ -19,7 +21,10 @@ export const getAuth = (session: SessionContextValue): AuthProvider => {
 
     },
     logout: async () => {
-      await signOut();
+      const result = await signOut({ redirect: false });
+
+      session.update(null);
+      console.log(result);
     },
     checkError: async () => {
 
