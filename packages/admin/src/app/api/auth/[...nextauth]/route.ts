@@ -1,8 +1,16 @@
-import { container, AUTH_PROVIDER } from '@/app/lib/container';
-import { NextAuthResult } from 'next-auth';
+import NextAuth, { NextAuthOptions } from 'next-auth';
+import Keycloak from 'next-auth/providers/keycloak';
 
-// Get the endpoints for the auth provider
-const { handlers } = container.resolve<NextAuthResult>(AUTH_PROVIDER);
+export const authOptions: NextAuthOptions = {
+  providers: [
+    Keycloak({
+      clientId: process.env.AUTH_KEYCLOAK_ID!,
+      clientSecret: process.env.AUTH_KEYCLOAK_SECRET!,
+      issuer: process.env.AUTH_KEYCLOAK_ISSUER!
+    })
+  ]
+};
 
-// Re-export the get and post handlers
-export const { GET, POST } = handlers;
+const handler = NextAuth(authOptions);
+
+export { handler as GET, handler as POST };

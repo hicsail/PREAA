@@ -27,7 +27,6 @@ const InnerWrapper: FC = () => {
     if (session.status === 'loading') {
       return;
     }
-    console.log(session);
     setAuthProvider(getAuth(session));
   }, [session]);
 

@@ -9,9 +9,10 @@ export const getAuth = (session: SessionContextValue): AuthProvider => {
       await signIn('keycloak');
     },
     checkAuth: async () => {
-      console.log(session);
+      console.log(`check auth called: ${session.status}`);
       // If unauthenticated, redirect to login
       if (session.status === 'unauthenticated') {
+        console.log('here');
         await signIn('keycloak');
       }
 
@@ -21,9 +22,11 @@ export const getAuth = (session: SessionContextValue): AuthProvider => {
 
     },
     logout: async () => {
-      const result = await signOut({ redirect: false });
+      console.log('log out called')
+      const result = await signOut();
 
       session.update(null);
+      console.log('logged out');
       console.log(result);
     },
     checkError: async () => {
