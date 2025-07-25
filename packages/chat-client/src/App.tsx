@@ -11,7 +11,7 @@ function App() {
     const urlParams = new URLSearchParams(window.location.search);
     const modelId = urlParams.get('modelId');
     if (modelId) {
-      fetch(`${import.meta.env.VITE_BACKEND_BASE_URL}/deepchat-proxy/${modelId}`)
+      fetch(`${import.meta.env.VITE_BACKEND_BASE_URL}/api/proxies/${modelId}`)
         .then((response) => response.json())
         .then((data) => {
           if (data) {
@@ -39,7 +39,7 @@ function App() {
       <DeepChat
         requestBodyLimits={{ maxMessages: -1 }}
         connect={{
-          url: `${import.meta.env.VITE_BACKEND_BASE_URL}/deepchat-proxy/proxy/${modelId}`
+          url: `${import.meta.env.VITE_BACKEND_BASE_URL}/api/proxies/proxy/${modelId}`
         }}
       />
     </>
