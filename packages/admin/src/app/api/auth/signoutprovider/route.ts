@@ -4,9 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function PUT(request: NextRequest) {
   console.log("HEYYY")
-  const session = await getServerSession(authOptions);
-  console.log(session);
-  console.log('Yo')
+  // const session = await getServerSession(request, authOptions);
+  // console.log(session);
 
   return new NextResponse('Success', {
     status: 200

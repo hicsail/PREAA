@@ -23,6 +23,9 @@ export const getAuth = (session: SessionContextValue): AuthProvider => {
     },
     logout: async () => {
       console.log('log out called')
+      await fetch('/api/auth/signoutprovider', {
+        method: 'PUT'
+      });
       const result = await signOut();
 
       session.update(null);
