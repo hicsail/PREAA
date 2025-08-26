@@ -1,6 +1,6 @@
 services:
   langflow:
-    image: langflowai/langflow:1.4.1
+    image: langflowai/langflow:latest
     container_name: custom-rag-LangFlow
     ports:
       - "7860:7860"

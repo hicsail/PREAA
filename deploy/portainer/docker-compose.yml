@@ -1,6 +1,6 @@
 services:
   langflow:
-    image: langflowai/langflow:1.4.1
+    image: langflowai/langflow:latest
     restart: unless-stopped
     container_name: portainer-LangFlow
     ports:
