@@ -205,12 +205,10 @@ class PerplexityComponent(LCModelComponent):
         domain_filter = self.parse_domain_filter()
         if domain_filter:
             payload["search_domain_filter"] = domain_filter
-            print(f"DEBUG: Applying domain filter: {domain_filter}")
             
         # Add search recency filter if specified
         if self.search_recency_filter and self.search_recency_filter != "":
             payload["search_recency_filter"] = self.search_recency_filter
-            print(f"DEBUG: Applying recency filter: {self.search_recency_filter}")
         
         # Add numeric parameters with proper type conversion
         # Temperature
@@ -260,9 +258,6 @@ class PerplexityComponent(LCModelComponent):
         # Remove None values and empty strings
         payload = {k: v for k, v in payload.items() if v is not None and v != ""}
         
-        # Debug: Print the final payload (can be commented out in production)
-        print(f"DEBUG: Sending payload to Perplexity API: {json.dumps(payload, indent=2)}")
-        
         try:
             # Make the API request
             with httpx.Client() as client:
@@ -274,11 +269,7 @@ class PerplexityComponent(LCModelComponent):
                 )
                 response.raise_for_status()
                 result = response.json()
-                
-                # Debug: Print citations if present
-                if 'citations' in result:
-                    print(f"DEBUG: Found {len(result['citations'])} citations in API response")
-                    
+                  
                 return result
         except httpx.HTTPError as e:
             error_msg = f"Perplexity API error: {str(e)}"
