@@ -261,8 +261,12 @@ class Langflow(CustomLLM):
 
         # Next loop over the nodes for the target component
         for node in nodes:
-            id = node.get('id', None)
-            if id is not None and id.startswith('CompletionInterface'):
+            data = node.get('data', None)
+            if data is None:
+                continue
+            type = data.get('type', None)
+            id = data.get('id', None)
+            if type is not None and type.startswith('CompletionInterface'):
                 return id
 
         # No history component node found
