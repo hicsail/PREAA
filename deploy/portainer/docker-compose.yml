@@ -9,7 +9,7 @@ services:
       - postgres
     volumes:
       - portainer-langflow-data:/app/langflow
-      - portainer-langflow-components:/app/custom_components/
+      - portainer-langflow-components:/app/custom_components/helpers
     env_file:
       - ../../stack.env
       - stack.env
