@@ -69,7 +69,9 @@ interface:
 
 # Example Registration Object Structure (optional)
 registration:
-  socialLogins: ['github', 'google', 'discord', 'openid', 'facebook']
+  socialLogins: ['google']
+  allowedDomains: ['bu.edu']
+  
 
 # Example Actions Object Structure
 actions:
@@ -77,22 +79,20 @@ actions:
     - "swapi.dev"
     - "librechat.ai"
     - "google.com"
+    - "bu.edu"
 
 # Definition of custom endpoints
 endpoints:
   custom:
     - name: "LiteLLM"
-      apiKey: "${LITELLM_API_KEY}"
-      baseURL: "${LITELLM_URL}"
+      apiKey: "user_provided"
+      baseURL: "${LITELLM_URL}/v1"
       # if using LiteLLM example in docker-compose.override.yml.example, use "http://litellm:8000/v1"
       models:
-        default: ["llama3.1"]
+        default: ['']
         fetch: true
       titleConvo: true
       titleModel: "current_model"
       summaryModel: "current_model"
       summarize: false
       forcePrompt: false
-  agents:
-    recursionLimit: 50
-    disableBuilder: false
