@@ -37,6 +37,10 @@ services:
       - "host.docker.internal:host-gateway"
     ports:
       - "3080:3080"
+    environment:
+      - GOOGLE_CLIENT_ID=${LIBRECHAT_GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${LIBRECHAT_GOOGLE_CLIENT_SECRET}
+      - GOOGLE_CALLBACK_URL=${LIBRECHAT_GOOGLE_CALLBACK_URL}
     env_file:
       - ../../stack.env
       - stack.env
