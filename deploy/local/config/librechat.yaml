@@ -69,7 +69,9 @@ interface:
 
 # Example Registration Object Structure (optional)
 registration:
-  socialLogins: ['github', 'google', 'discord', 'openid', 'facebook']
+  socialLogins: ['google']
+  allowedDomains: ['bu.edu']
+  
 
 # Example Actions Object Structure
 actions:
@@ -77,6 +79,7 @@ actions:
     - "swapi.dev"
     - "librechat.ai"
     - "google.com"
+    - "bu.edu"
 
 # Definition of custom endpoints
 endpoints:
@@ -93,6 +96,3 @@ endpoints:
       summaryModel: "current_model"
       summarize: false
       forcePrompt: false
-  agents:
-    recursionLimit: 50
-    disableBuilder: false
