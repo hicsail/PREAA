@@ -75,6 +75,7 @@ class LangflowChunkParser:
         # Helper to determine if the request is agentic (doesn't produce token messages)
         # As soon as a token payload is recieved, this is set to False
         self.agentic = True
+        self.last_text_len = 0
 
     def _parse_token_chunk(self, payload: dict) -> GenericStreamingChunk:
         # Get the token content from the chunk
@@ -90,6 +91,30 @@ class LangflowChunkParser:
 
         return GenericStreamingChunk(
             text=chunk_text,
+            is_finished=False,
+            finish_reason='',
+            usage=None,
+            index=0,
+            tool_use=None
+        )
+
+    def _parse_message_chunk(self, payload: dict) -> GenericStreamingChunk:
+        # Get the token content from the chunk
+        data = payload.get('data', None)
+        if data is None:
+            verbose_logger.warning(f'data missing on chunk: {payload}')
+            raise BaseLLMException(500, message='Missing data on Langflow chunk')
+
+        text = data.get('text', None)
+        if text is None:
+            verbose_logger.warning(f'chunk is missing: {payload}')
+            raise BaseLLMException(500, message='Missing token content in Langflow chunk')
+
+        new_text = text[self.last_text_len:]
+        self.last_text_len = len(text)
+
+        return GenericStreamingChunk(
+            text=new_text,
             is_finished=False,
             finish_reason='',
             usage=None,
@@ -160,10 +185,8 @@ class LangflowChunkParser:
             verbose_logger.warning(f'event type missing on chunk: {raw}')
             raise BaseLLMException(500, message='Missing event type in Langflow chunk')
 
-        # Some events are not passed back to the user and an empty chunk is sent instead
-        unused_event_types = ['add_message']
-        if event_type in unused_event_types:
-            return EMPTY_CHUNK
+        if event_type == 'add_message':
+            return self._parse_message_chunk(chunk_json)
 
         # Token message handling
         if event_type == 'token':
