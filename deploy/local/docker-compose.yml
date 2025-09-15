@@ -52,7 +52,7 @@ services:
       - "27017:27017"
 
   litellm:
-    image: ghcr.io/berriai/litellm:litellm_stable_release_branch-v1.68.0-stable
+    image: ghcr.io/berriai/litellm:main-v1.76.1.rc.2
     ports:
       - "4000:4000"
     env_file: "config/.env.litellm"
