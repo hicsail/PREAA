@@ -20,8 +20,6 @@ services:
     container_name: portainer-PostgreSQL
     volumes:
       - portainer-postgres-data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
     env_file:
       - ../../stack.env
       - stack.env
