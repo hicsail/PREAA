@@ -12,7 +12,7 @@ services:
     env_file: "config/.env.langflow"
 
   postgres:
-    image: postgres:16
+    image: pgvector/pgvector:pg16
     container_name: custom-rag-PostgreSQL
     ports:
       - "5432:5432"
