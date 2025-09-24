@@ -194,6 +194,21 @@ services:
     volumes:
       - portainer-grafana-data:/var/lib/grafana
 
+  n8n:
+    image: docker.n8n.io/n8nio/n8n
+    container_name: portainer-n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    env_file:
+      - ../../stack.env
+      - stack.env
+    volumes:
+      - portainer-n8n-data:/home/node/.n8n
+      - portainer-n8n-files:/files
+    depends_on:
+      - postgres
+
   chat-client:
     image: hicsail/preaa-chat-client:main
     pull_policy: always
@@ -240,3 +255,5 @@ volumes:
   portainer-langfuse-minio-data:
   portainer-prometheus-config:
   portainer-grafana-data:
+  portainer-n8n-data:
+  portainer-n8n-files:

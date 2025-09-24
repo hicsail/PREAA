@@ -12,7 +12,7 @@ services:
     env_file: "config/.env.langflow"
 
   postgres:
-    image: postgres:16
+    image: pgvector/pgvector:pg16
     container_name: custom-rag-PostgreSQL
     ports:
       - "5432:5432"
@@ -160,6 +160,18 @@ services:
     volumes:
       - custom-rag-grafana-data:/var/lib/grafana
 
+  n8n:
+    image: docker.n8n.io/n8nio/n8n
+    container_name: custom-rag-n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    env_file: "config/.env.n8n"
+    volumes:
+      - custom-rag-n8n-data:/home/node/.n8n
+      - ./n8n-local-files:/files
+    depends_on:
+      - postgres
 
 volumes:
   custom-rag-langflow-data:
@@ -171,3 +183,4 @@ volumes:
   custom-rag-langfuse-clickhouse-logs:
   custom-rag-langfuse-minio-data:
   custom-rag-grafana-data:
+  custom-rag-n8n-data:
