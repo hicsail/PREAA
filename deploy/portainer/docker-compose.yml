@@ -18,6 +18,8 @@ services:
     image: pgvector/pgvector:pg16
     restart: unless-stopped
     container_name: portainer-PostgreSQL
+    ports:
+      - "5432:5432"
     volumes:
       - portainer-postgres-data:/var/lib/postgresql/data
     env_file:
