@@ -74,6 +74,7 @@ PREAA integrates several best-in-class open-source technologies to create a comp
    cp config/.env.litellm.sample config/.env.litellm
    cp config/.env.librechat-metrics.sample config/.env.librechat-metrics
    cp config/.env.langflow.sample config/.env.langflow
+   cp config/.env.n8n.sample config/.env.n8n
    ```
 
 4. **Configure required secrets:**
@@ -121,6 +122,7 @@ PREAA integrates several best-in-class open-source technologies to create a comp
    - LangFuse (Analytics): http://localhost:3000
    - LiteLLM (Proxy Management): http://localhost:4000
    - LangFlow (Workflow Builder): http://localhost:7860
+   - n8n (Workflow Builder): http://localhost:5678
    - Grafana (Monitoring): http://localhost:3002
    - Admin Dashboard: *Configure separately in packages/admin*
 
