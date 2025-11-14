@@ -18,6 +18,7 @@ services:
       - "5432:5432"
     volumes:
       - custom-rag-postgres-data:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d
     env_file: "config/.env.psql"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready", "--host=localhost", "--username psql"]
@@ -173,6 +174,100 @@ services:
     depends_on:
       - postgres
 
+  ragflow:
+    image: infiniflow/ragflow:v0.21.1-slim
+    platform: linux/amd64
+    container_name: custom-rag-ragflow
+    restart: on-failure
+    depends_on:
+      ragflow-es:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ragflow-tei:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+      ragflow-db-init:
+        condition: service_completed_successfully
+    ports:
+      - "7080:80"
+      - "7443:443"
+      - "9380:9380"
+      - "9381:9381"
+      - "9382:9382"
+    env_file:
+      - "config/.env.ragflow"
+    volumes:
+      - custom-rag-ragflow-logs:/ragflow/logs
+      - ./ragflow/service_conf.yaml.template:/ragflow/conf/service_conf.yaml.template
+      - ./ragflow/entrypoint.sh:/ragflow/entrypoint.sh
+      - ./ragflow/history_data_agent:/ragflow/history_data_agent
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  ragflow-es:
+    image: elasticsearch:8.11.3
+    container_name: custom-rag-ragflow-es
+    restart: on-failure
+    env_file: "config/.env.ragflow"
+    environment:
+      - node.name=ragflow-es
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD:-ragflow_elastic_pass}
+      - bootstrap.memory_lock=false
+      - discovery.type=single-node
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+      - cluster.routing.allocation.disk.watermark.low=5gb
+      - cluster.routing.allocation.disk.watermark.high=3gb
+      - cluster.routing.allocation.disk.watermark.flood_stage=2gb
+      - ES_JAVA_OPTS=${ES_JAVA_OPTS:--Xms512m -Xmx512m}
+    mem_limit: 4g
+    ports:
+      - "9202:9200"
+    volumes:
+      - custom-rag-ragflow-es-data:/usr/share/elasticsearch/data
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:9200 >/dev/null"]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+
+  ragflow-tei:
+    image: ${TEI_IMAGE_CPU:-infiniflow/text-embeddings-inference:cpu-1.8}
+    container_name: custom-rag-ragflow-tei
+    restart: on-failure
+    env_file: "config/.env.ragflow"
+    command: ["--model-id", "${TEI_MODEL:-BAAI/bge-small-en-v1.5}", "--auto-truncate"]
+    ports:
+      - "6380:80"
+    volumes:
+      - custom-rag-ragflow-tei-data:/data
+
+  ragflow-db-init:
+    image: postgres:16
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file: "config/.env.psql"
+    command: >
+      bash -c "
+        export PGPASSWORD=$${POSTGRES_PASSWORD};
+        until pg_isready -h postgres -U $${POSTGRES_USER:-psql} -d postgres; do
+          echo 'waiting for postgres...';
+          sleep 1;
+        done;
+        psql -h postgres -U $${POSTGRES_USER:-psql} -d postgres -tc \"SELECT 1 FROM pg_database WHERE datname = 'rag_flow'\" | grep -q 1 || psql -h postgres -U $${POSTGRES_USER:-psql} -d postgres -c 'CREATE DATABASE rag_flow';
+      "
+
 volumes:
   custom-rag-langflow-data:
   custom-rag-postgres-data:
@@ -184,3 +279,6 @@ volumes:
   custom-rag-langfuse-minio-data:
   custom-rag-grafana-data:
   custom-rag-n8n-data:
+  custom-rag-ragflow-logs:
+  custom-rag-ragflow-es-data:
+  custom-rag-ragflow-tei-data:

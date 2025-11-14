@@ -21,7 +21,7 @@ then follow the instructions below to find each secret that needs to be added in
 
 #### config/.env.psql
 
-* `POSTRES_PASSWORD`: any generated string
+* `POSTGRES_PASSWORD`: any generated string
 
 #### config/.env.langfuse
 
@@ -45,6 +45,43 @@ then follow the instructions below to find each secret that needs to be added in
 
 * `LITELLM_MASTER_KEY`: any generated string
 * `DATABASE_URL`: updated to match from `.env.psql`
+
+#### config/.env.ragflow
+
+**Required:**
+* `ELASTIC_PASSWORD`: secure password for the dedicated Elasticsearch cluster
+* `POSTGRES_PASSWORD`: reuse the value from `config/.env.psql` (must match `POSTGRES_PASSWORD`)
+* `POSTGRES_USER`: reuse the value from `config/.env.psql` (must match `POSTGRES_USER`, typically `psql`)
+* `MINIO_USER` / `MINIO_PASSWORD`: reuse the credentials from `config/.env.minio`
+* `REDIS_PASSWORD`: reuse the value from `config/.env.redis`
+
+**Optional Service Control:**
+* `ENABLE_WEBSERVER`: enable web server (nginx + API), default `1` (enabled)
+* `ENABLE_TASKEXECUTOR`: enable background task workers, default `1` (enabled). Set to `0` to disable for memory optimization
+* `ENABLE_DATASYNC`: enable data source sync workers, default `0` (disabled)
+* `ENABLE_MCP_SERVER`: enable MCP server, default `0` (disabled)
+* `ENABLE_ADMIN_SERVER`: enable admin server, default `0` (disabled)
+* `WORKERS`: number of task executor workers, default `1`
+
+**Optional Configuration:**
+* Update `MINIO_HOST` / `REDIS_HOST` / `POSTGRES_HOST` only if you change the shared service names
+* Optionally update `TEI_MODEL` if you want to load a different embedding model
+* `USE_DOCLING`: enable docling document processing, default `false`
+* `USE_MINERU`: enable mineru PDF extraction, default `false`
+
+### RagFlow Setup
+
+1. Ensure the host satisfies the RagFlow prerequisites (Docker ≥ 24, Docker Compose ≥ 2.26.1, 4 CPU cores, 16 GB RAM, 50 GB disk).
+2. Set `vm.max_map_count` to at least `262144` before starting Elasticsearch. On macOS with Docker Desktop, run:
+   ```bash
+   docker run --rm --privileged --pid=host alpine sysctl -w vm.max_map_count=262144
+   ```
+   Repeat after reboot or automate it per the RagFlow docs.
+3. Copy `config/.env.ragflow.sample` to `config/.env.ragflow` and align the Postgres, MinIO, and Redis entries with the existing shared services.
+4. (Optional) If you plan to use a private Hugging Face mirror, set `HF_ENDPOINT` in `config/.env.ragflow`.
+5. Launch the stack with `npm run dev:https` or `docker compose -f deploy/local/docker-compose.yml up -d`.
+6. The `rag_flow` database will be automatically created in Postgres by the `ragflow-db-init` service.
+7. Access the RagFlow UI at http://localhost:7080 once migrations finish. The admin endpoint is proxied on port `9381`.
 
 ### LangFuse + LiteLLM Setup
 

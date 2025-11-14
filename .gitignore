@@ -1,2 +1,5 @@
 __pycache__/
 stack.env
+# Ignore all .env files in deploy/local/config (keep .sample files)
+deploy/local/config/.env*
+!deploy/local/config/.env*.sample
