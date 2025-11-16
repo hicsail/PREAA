@@ -50,9 +50,9 @@ then follow the instructions below to find each secret that needs to be added in
 
 **Required:**
 * `ELASTIC_PASSWORD`: secure password for the dedicated Elasticsearch cluster
-* `POSTGRES_PASSWORD`: reuse the value from `config/.env.psql` (must match `POSTGRES_PASSWORD`)
+* `POSTGRES_PASSWORD`: reuse the value from `config/.env.psql` (must match the value set in `config/.env.psql`)
 * `POSTGRES_USER`: reuse the value from `config/.env.psql` (must match `POSTGRES_USER`, typically `psql`)
-* `MINIO_USER` / `MINIO_PASSWORD`: reuse the credentials from `config/.env.minio`
+* `MINIO_USER` / `MINIO_PASSWORD`: set these to the values of `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD` from `config/.env.minio`
 * `REDIS_PASSWORD`: reuse the value from `config/.env.redis`
 
 **Optional Service Control:**
