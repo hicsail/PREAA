@@ -65,9 +65,9 @@ then follow the instructions below to find each secret that needs to be added in
 
 **Optional Configuration:**
 * Update `MINIO_HOST` / `REDIS_HOST` / `POSTGRES_HOST` only if you change the shared service names
-* Optionally update `TEI_MODEL` if you want to load a different embedding model
 * `USE_DOCLING`: enable docling document processing, default `false`
 * `USE_MINERU`: enable mineru PDF extraction, default `false`
+* **Embedding Models**: By default, RagFlow will use external embedding providers (OpenAI, Azure, etc.) configured in the UI. If you prefer self-hosted embeddings, uncomment the TEI variables in `.env.ragflow` and add the `ragflow-tei` service to docker-compose.yml
 
 ### RagFlow Setup
 

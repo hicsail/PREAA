@@ -187,8 +187,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      ragflow-tei:
-        condition: service_started
       postgres:
         condition: service_healthy
     ports:
@@ -240,17 +238,6 @@ services:
       timeout: 10s
       retries: 120
 
-  ragflow-tei:
-    image: ${TEI_IMAGE_CPU:-infiniflow/text-embeddings-inference:cpu-1.8}
-    container_name: custom-rag-ragflow-tei
-    restart: on-failure
-    env_file: "config/.env.ragflow"
-    command: ["--model-id", "${TEI_MODEL:-BAAI/bge-small-en-v1.5}", "--auto-truncate"]
-    ports:
-      - "6380:80"
-    volumes:
-      - custom-rag-ragflow-tei-data:/data
-
 volumes:
   custom-rag-langflow-data:
   custom-rag-postgres-data:
@@ -264,4 +251,3 @@ volumes:
   custom-rag-n8n-data:
   custom-rag-ragflow-logs:
   custom-rag-ragflow-es-data:
-  custom-rag-ragflow-tei-data:
