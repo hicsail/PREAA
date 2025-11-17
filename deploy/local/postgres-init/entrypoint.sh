@@ -6,7 +6,8 @@ docker-entrypoint.sh postgres &
 POSTGRES_PID=$!
 
 # Wait for postgres to be ready
-until pg_isready -U "${POSTGRES_USER:-psql}" -d postgres; do
+# Use TCP connection (127.0.0.1) instead of Unix socket to avoid peer authentication issues
+until PGPASSWORD="${POSTGRES_PASSWORD}" pg_isready -h 127.0.0.1 -U "${POSTGRES_USER:-psql}" -d postgres; do
   echo 'Waiting for postgres to be ready...'
   sleep 1
 done
@@ -17,7 +18,8 @@ for script in /docker-entrypoint-initdb.d/*.sql; do
   if [ -f "$script" ]; then
     echo "Executing: $(basename "$script")"
     # Capture output and exit code for better error handling
-    OUTPUT=$(psql -U "${POSTGRES_USER:-psql}" -d postgres -f "$script" 2>&1)
+    # Use TCP connection and explicit password to avoid peer authentication issues
+    OUTPUT=$(PGPASSWORD="${POSTGRES_PASSWORD}" psql -h 127.0.0.1 -U "${POSTGRES_USER:-psql}" -d postgres -f "$script" 2>&1)
     EXIT_CODE=$?
     if [ $EXIT_CODE -ne 0 ]; then
       # Suppress only expected idempotent errors (e.g., "already exists")
