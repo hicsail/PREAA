@@ -19,6 +19,7 @@ services:
     volumes:
       - custom-rag-postgres-data:/var/lib/postgresql/data
       - ./postgres-init:/docker-entrypoint-initdb.d
+    entrypoint: ["/bin/bash", "/docker-entrypoint-initdb.d/entrypoint.sh"]
     env_file: "config/.env.psql"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready", "--host=localhost", "--username psql"]
@@ -190,8 +191,6 @@ services:
         condition: service_started
       postgres:
         condition: service_healthy
-      ragflow-db-init:
-        condition: service_completed_successfully
     ports:
       - "7080:80"
       - "7443:443"
@@ -204,6 +203,7 @@ services:
       - custom-rag-ragflow-logs:/ragflow/logs
       - ./ragflow/service_conf.yaml.template:/ragflow/conf/service_conf.yaml.template
       - ./ragflow/entrypoint.sh:/ragflow/entrypoint.sh
+      - ./ragflow/nginx.conf:/etc/nginx/sites-available/default
       - ./ragflow/history_data_agent:/ragflow/history_data_agent
     extra_hosts:
       - "host.docker.internal:host-gateway"
@@ -250,23 +250,6 @@ services:
       - "6380:80"
     volumes:
       - custom-rag-ragflow-tei-data:/data
-
-  ragflow-db-init:
-    image: postgres:16
-    restart: "no"
-    depends_on:
-      postgres:
-        condition: service_healthy
-    env_file: "config/.env.psql"
-    command: >
-      bash -c "
-        export PGPASSWORD=$${POSTGRES_PASSWORD};
-        until pg_isready -h postgres -U $${POSTGRES_USER:-psql} -d postgres; do
-          echo 'waiting for postgres...';
-          sleep 1;
-        done;
-        psql -h postgres -U $${POSTGRES_USER:-psql} -d postgres -tc \"SELECT 1 FROM pg_database WHERE datname = 'rag_flow'\" | grep -q 1 || psql -h postgres -U $${POSTGRES_USER:-psql} -d postgres -c 'CREATE DATABASE rag_flow';
-      "
 
 volumes:
   custom-rag-langflow-data:
