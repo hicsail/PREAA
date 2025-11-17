@@ -22,11 +22,13 @@ services:
       - "5432:5432"
     volumes:
       - portainer-postgres-data:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d
+    entrypoint: ["/bin/bash", "/docker-entrypoint-initdb.d/entrypoint.sh"]
     env_file:
       - ../../stack.env
       - stack.env
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready", "--host=localhost", "--username psql"]
+      test: ["CMD-SHELL", "PGPASSWORD=$${POSTGRES_PASSWORD} pg_isready -h 127.0.0.1 -U $${POSTGRES_USER:-psql} -d postgres"]
       interval: 3s
       timeout: 3s
       retries: 10
@@ -243,6 +245,72 @@ services:
     ports:
       - "3017:80"
 
+  ragflow:
+    image: infiniflow/ragflow:v0.21.1-slim
+    platform: linux/amd64
+    container_name: portainer-ragflow
+    restart: unless-stopped
+    depends_on:
+      ragflow-es:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    ports:
+      - "7080:80"
+      - "7443:443"
+      - "9380:9380"
+      - "9381:9381"
+      - "9382:9382"
+    env_file:
+      - ../../stack.env
+      - stack.env
+    volumes:
+      - portainer-ragflow-logs:/ragflow/logs
+      - ./ragflow/service_conf.yaml.template:/ragflow/conf/service_conf.yaml.template
+      - ./ragflow/entrypoint.sh:/ragflow/entrypoint.sh
+      - ./ragflow/nginx.conf:/etc/nginx/sites-available/default
+      - ./ragflow/history_data_agent:/ragflow/history_data_agent
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  ragflow-es:
+    image: elasticsearch:8.11.3
+    container_name: portainer-ragflow-es
+    restart: unless-stopped
+    env_file:
+      - ../../stack.env
+      - stack.env
+    environment:
+      - node.name=ragflow-es
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD:-ragflow_elastic_pass}
+      - bootstrap.memory_lock=false
+      - discovery.type=single-node
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+      - cluster.routing.allocation.disk.watermark.low=5gb
+      - cluster.routing.allocation.disk.watermark.high=3gb
+      - cluster.routing.allocation.disk.watermark.flood_stage=2gb
+      - ES_JAVA_OPTS=${ES_JAVA_OPTS:--Xms512m -Xmx512m}
+    mem_limit: 4g
+    ports:
+      - "9202:9200"
+    volumes:
+      - portainer-ragflow-es-data:/usr/share/elasticsearch/data
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -u elastic:$${ELASTIC_PASSWORD} http://localhost:9200 >/dev/null"]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+
 volumes:
   portainer-langflow-data:
   portainer-langflow-components:
@@ -259,3 +327,5 @@ volumes:
   portainer-grafana-data:
   portainer-n8n-data:
   portainer-n8n-files:
+  portainer-ragflow-logs:
+  portainer-ragflow-es-data:
