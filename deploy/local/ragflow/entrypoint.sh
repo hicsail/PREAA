@@ -153,9 +153,16 @@ TEMPLATE_FILE="${CONF_DIR}/service_conf.yaml.template"
 CONF_FILE="${CONF_DIR}/service_conf.yaml"
 
 rm -f "${CONF_FILE}"
-while IFS= read -r line || [[ -n "$line" ]]; do
-    eval "echo \"$line\"" >> "${CONF_FILE}"
-done < "${TEMPLATE_FILE}"
+# Use envsubst for safer variable substitution (avoids eval security risk)
+# Fallback to eval if envsubst is not available
+if command -v envsubst >/dev/null 2>&1; then
+    envsubst < "${TEMPLATE_FILE}" > "${CONF_FILE}"
+else
+    # Fallback: use eval (less safe, but needed if envsubst unavailable)
+    while IFS= read -r line || [[ -n "$line" ]]; do
+        eval "echo \"$line\"" >> "${CONF_FILE}"
+    done < "${TEMPLATE_FILE}"
+fi
 
 export LD_LIBRARY_PATH="/usr/lib/x86_64-linux-gnu/"
 PY=python3
@@ -168,11 +175,12 @@ function task_exe() {
     local consumer_id="$1"
     local host_id="$2"
 
+    # Compute JEMALLOC_PATH once before the loop (more efficient)
     JEMALLOC_PATH="$(pkg-config --variable=libdir jemalloc)/libjemalloc.so"
     while true; do
         LD_PRELOAD="$JEMALLOC_PATH" \
         "$PY" rag/svr/task_executor.py "${host_id}_${consumer_id}"  &
-        wait;
+        wait $!
         sleep 1;
     done
 }
@@ -245,7 +253,7 @@ if [[ "${ENABLE_WEBSERVER}" -eq 1 ]]; then
     echo "Starting ragflow_server..."
     while true; do
         "$PY" api/ragflow_server.py &
-        wait;
+        wait $!
         sleep 1;
     done &
 fi
@@ -254,7 +262,7 @@ if [[ "${ENABLE_DATASYNC}" -eq 1 ]]; then
     echo "Starting data sync..."
     while true; do
         "$PY" rag/svr/sync_data_source.py &
-        wait;
+        wait $!
         sleep 1;
     done &
 fi
@@ -263,7 +271,7 @@ if [[ "${ENABLE_ADMIN_SERVER}" -eq 1 ]]; then
     echo "Starting admin_server..."
     while true; do
         "$PY" admin/server/admin_server.py &
-        wait;
+        wait $!
         sleep 1;
     done &
 fi

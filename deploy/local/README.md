@@ -80,7 +80,7 @@ then follow the instructions below to find each secret that needs to be added in
 3. Copy `config/.env.ragflow.sample` to `config/.env.ragflow` and align the Postgres, MinIO, and Redis entries with the existing shared services.
 4. (Optional) If you plan to use a private Hugging Face mirror, set `HF_ENDPOINT` in `config/.env.ragflow`.
 5. Launch the stack with `npm run dev:https` or `docker compose -f deploy/local/docker-compose.yml up -d`.
-6. The `rag_flow` database will be automatically created in Postgres by the `ragflow-db-init` service.
+6. The `rag_flow` database will be automatically created in Postgres by the shared Postgres service's custom entrypoint.
 7. Access the RagFlow UI at http://localhost:7080 once migrations finish. The admin endpoint is proxied on port `9381`.
 
 ### LangFuse + LiteLLM Setup

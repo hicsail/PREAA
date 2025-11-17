@@ -20,10 +20,12 @@ es:
   hosts: 'http://${ES_HOST:-ragflow-es}:9200'
   username: '${ES_USER:-elastic}'
   password: '${ELASTIC_PASSWORD:-infini_rag_flow}'
+# Optional/alternative backend: OpenSearch. Not enabled by default in this deployment.
 os:
   hosts: 'http://${OS_HOST:-ragflow-opensearch}:9201'
   username: '${OS_USER:-admin}'
   password: '${OPENSEARCH_PASSWORD:-infini_rag_flow_OS_01}'
+# Optional/alternative backend: Infinity. Not enabled by default in this deployment.
 infinity:
   uri: '${INFINITY_HOST:-ragflow-infinity}:23817'
   db_name: 'default_db'
