@@ -149,20 +149,28 @@ done
 # Replace env variables in the service_conf.yaml file
 # -----------------------------------------------------------------------------
 CONF_DIR="/ragflow/conf"
-TEMPLATE_FILE="${CONF_DIR}/service_conf.yaml.template"
+CONFIG_FILES_DIR="/ragflow/config-files"
+TEMPLATE_FILE="${CONFIG_FILES_DIR}/service_conf.yaml.template"
 CONF_FILE="${CONF_DIR}/service_conf.yaml"
+
+# Copy template from config volume
+cp "${TEMPLATE_FILE}" "${CONF_FILE}.tmp"
 
 rm -f "${CONF_FILE}"
 # Use envsubst for safer variable substitution (avoids eval security risk)
 # Fallback to eval if envsubst is not available
 if command -v envsubst >/dev/null 2>&1; then
-    envsubst < "${TEMPLATE_FILE}" > "${CONF_FILE}"
+    envsubst < "${CONF_FILE}.tmp" > "${CONF_FILE}"
 else
     # Fallback: use eval (less safe, but needed if envsubst unavailable)
     while IFS= read -r line || [[ -n "$line" ]]; do
         eval "echo \"$line\"" >> "${CONF_FILE}"
-    done < "${TEMPLATE_FILE}"
+    done < "${CONF_FILE}.tmp"
 fi
+rm -f "${CONF_FILE}.tmp"
+
+# Copy nginx config from config volume
+cp "${CONFIG_FILES_DIR}/nginx.conf" /etc/nginx/sites-available/default
 
 export LD_LIBRARY_PATH="/usr/lib/x86_64-linux-gnu/"
 PY=python3

@@ -22,7 +22,7 @@ services:
       - "5432:5432"
     volumes:
       - portainer-postgres-data:/var/lib/postgresql/data
-      - ./postgres-init:/docker-entrypoint-initdb.d
+      - portainer-postgres-init:/docker-entrypoint-initdb.d
     entrypoint: ["/bin/bash", "/docker-entrypoint-initdb.d/entrypoint.sh"]
     env_file:
       - ../../stack.env
@@ -270,10 +270,9 @@ services:
       - stack.env
     volumes:
       - portainer-ragflow-logs:/ragflow/logs
-      - ./ragflow/service_conf.yaml.template:/ragflow/conf/service_conf.yaml.template
-      - ./ragflow/entrypoint.sh:/ragflow/entrypoint.sh
-      - ./ragflow/nginx.conf:/etc/nginx/sites-available/default
-      - ./ragflow/history_data_agent:/ragflow/history_data_agent
+      - portainer-ragflow-config:/ragflow/config-files
+      - portainer-ragflow-history-data-agent:/ragflow/history_data_agent
+    entrypoint: ["/bin/bash", "/ragflow/config-files/entrypoint.sh"]
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
@@ -327,5 +326,8 @@ volumes:
   portainer-grafana-data:
   portainer-n8n-data:
   portainer-n8n-files:
+  portainer-postgres-init:
   portainer-ragflow-logs:
+  portainer-ragflow-config:
+  portainer-ragflow-history-data-agent:
   portainer-ragflow-es-data:
