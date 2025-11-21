@@ -76,9 +76,11 @@ PREAA integrates several best-in-class open-source technologies to create a comp
    cp config/.env.open-webui.sample config/.env.open-webui
    cp config/.env.librechat-metrics.sample config/.env.librechat-metrics
    cp config/.env.langflow.sample config/.env.langflow
+   cp config/.env.ragflow.sample config/.env.ragflow
    cp config/.env.n8n.sample config/.env.n8n
    ```
 
+   When filling in `config/.env.ragflow`, reuse the credentials you already set in `config/.env.minio` and `config/.env.redis` so RagFlow shares the existing MinIO and Redis instances.
 4. **Configure required secrets:**
 
    **Database passwords** (generate secure passwords for each):
