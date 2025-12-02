@@ -1,0 +1,41 @@
+ragflow:
+  host: ${RAGFLOW_HOST:-0.0.0.0}
+  http_port: 9380
+admin:
+  host: ${RAGFLOW_HOST:-0.0.0.0}
+  http_port: 9381
+postgres:
+  name: '${POSTGRES_DBNAME:-rag_flow}'
+  user: '${POSTGRES_USER:-psql}'
+  password: '${POSTGRES_PASSWORD:-temp-password}'
+  host: '${POSTGRES_HOST:-postgres}'
+  port: 5432
+  max_connections: 100
+  stale_timeout: 30
+minio:
+  user: '${MINIO_USER:-rag_flow}'
+  password: '${MINIO_PASSWORD:-infini_rag_flow}'
+  host: '${MINIO_HOST:-minio}:9000'
+es:
+  hosts: 'http://${ES_HOST:-ragflow-es}:9200'
+  username: '${ES_USER:-elastic}'
+  password: '${ELASTIC_PASSWORD:-infini_rag_flow}'
+# Optional/alternative backend: OpenSearch. Not enabled by default in this deployment.
+os:
+  hosts: 'http://${OS_HOST:-ragflow-opensearch}:9201'
+  username: '${OS_USER:-admin}'
+  password: '${OPENSEARCH_PASSWORD:-infini_rag_flow_OS_01}'
+# Optional/alternative backend: Infinity. Not enabled by default in this deployment.
+infinity:
+  uri: '${INFINITY_HOST:-ragflow-infinity}:23817'
+  db_name: 'default_db'
+redis:
+  db: 1
+  password: '${REDIS_PASSWORD:-infini_rag_flow}'
+  host: '${REDIS_HOST:-redis}:6379'
+user_default_llm:
+  default_models:
+    embedding_model:
+      api_key: 'xxx'
+      base_url: 'http://${TEI_HOST:-ragflow-tei}:80'
+
