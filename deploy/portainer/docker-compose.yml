@@ -28,7 +28,7 @@ services:
       - ../../stack.env
       - stack.env
     healthcheck:
-      test: ["CMD-SHELL", "PGPASSWORD=$${POSTGRES_PASSWORD} pg_isready -h 127.0.0.1 -U $${POSTGRES_USER:-psql} -d postgres"]
+      test: ["CMD-SHELL", "PGPASSWORD=$${POSTGRES_PASSWORD} pg_isready -h 127.0.0.1 -U $${POSTGRES_USER:-psql} -d langflow"]
       interval: 3s
       timeout: 3s
       retries: 10
