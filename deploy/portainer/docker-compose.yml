@@ -268,6 +268,8 @@ services:
     env_file:
       - ../../stack.env
       - stack.env
+    environment:
+      - DB_TYPE=${RAGFLOW_DB_TYPE:-postgres}
     volumes:
       - portainer-ragflow-logs:/ragflow/logs
       - portainer-ragflow-config:/ragflow/config-files
