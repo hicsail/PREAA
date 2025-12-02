@@ -23,7 +23,7 @@ services:
     volumes:
       - portainer-postgres-data:/var/lib/postgresql/data
       - portainer-postgres-init:/docker-entrypoint-initdb.d
-    entrypoint: ["/bin/bash", "/docker-entrypoint-initdb.d/entrypoint.sh"]
+      
     env_file:
       - ../../stack.env
       - stack.env
