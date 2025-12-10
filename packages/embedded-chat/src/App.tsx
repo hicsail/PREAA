@@ -25,6 +25,7 @@ interface WidgetConfig {
   botAvatarSrc: string;
   baseUrl: string;
   language: string;
+  apiKey: string;
   theme: {
     primary: string;
     background: string;
@@ -43,6 +44,7 @@ const App: React.FC = () => {
     botAvatarSrc: '/assets/bu-logo.svg',
     baseUrl: 'https://embedded-preaa.sail.codes',
     language: 'en',
+    apiKey: '',
     theme: {
       primary: '#c00',
       background: '#ffffff',
@@ -76,7 +78,8 @@ const App: React.FC = () => {
         text: '${escapeJsString(widgetConfig.theme.text)}'
       },
       baseUrl: '${escapeJsString(widgetConfig.baseUrl)}',
-      language: '${escapeJsString(widgetConfig.language)}'
+      language: '${escapeJsString(widgetConfig.language)}',
+      apiKey: '${escapeJsString(widgetConfig.apiKey)}'
     };
 
     // Load the widget script
@@ -122,7 +125,8 @@ const App: React.FC = () => {
       botAvatarSrc: widgetConfig.botAvatarSrc,
       theme: widgetConfig.theme,
       baseUrl: widgetConfig.baseUrl,
-      language: widgetConfig.language
+      language: widgetConfig.language,
+      apiKey: widgetConfig.apiKey
     };
 
     // Remove existing widget if present
@@ -283,6 +287,22 @@ const App: React.FC = () => {
                     })
                   }
                   helperText="Language code (e.g., en, es, fr)"
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="API Key"
+                  fullWidth
+                  type="password"
+                  value={widgetConfig.apiKey}
+                  onChange={(e) =>
+                    setWidgetConfig({
+                      ...widgetConfig,
+                      apiKey: e.target.value
+                    })
+                  }
+                  helperText="API key for authenticating requests (required)"
                 />
               </Grid>
 

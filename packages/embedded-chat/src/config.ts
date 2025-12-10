@@ -10,6 +10,7 @@ export interface ChatConfig {
   botAvatarSrc?: string;
   baseUrl?: string;
   language?: string;
+  apiKey?: string;
   theme?: {
     primary?: string;
     background?: string;
@@ -32,6 +33,7 @@ export function parseConfigFromUrl(): ChatConfig {
   if (params.has('botAvatarSrc')) config.botAvatarSrc = params.get('botAvatarSrc')!;
   if (params.has('baseUrl')) config.baseUrl = params.get('baseUrl')!;
   if (params.has('language')) config.language = params.get('language')!;
+  if (params.has('apiKey')) config.apiKey = params.get('apiKey')!;
   
   // Parse theme if provided
   try {
