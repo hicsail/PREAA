@@ -33,9 +33,7 @@ export default function HomePage() {
             </div>
           ) : (
             <div className="space-y-2">
-              <p className="text-lg text-gray-600 dark:text-gray-400">
-                Please sign in to access the admin panel.
-              </p>
+              <p className="text-lg text-gray-600 dark:text-gray-400">Please sign in to access the admin panel.</p>
               <button
                 onClick={() => signIn('keycloak')}
                 className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
