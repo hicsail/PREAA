@@ -52,9 +52,14 @@ const App: React.FC = () => {
   const [copySuccess, setCopySuccess] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
 
-  // Function to escape single quotes for JavaScript strings
+  // Function to safely escape strings for embedding in JavaScript source
   const escapeJsString = (str: string): string => {
-    return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n');
+    // Use JSON.stringify to handle quotes, backslashes, control chars, etc.,
+    // then remove the surrounding quotes to embed into single-quoted literals.
+    const jsonEscaped = JSON.stringify(str);
+    const inner = jsonEscaped.substring(1, jsonEscaped.length - 1);
+    // Optionally escape characters that could interfere with HTML parsing.
+    return inner.replace(/</g, '\\u003C').replace(/>/g, '\\u003E').replace(/&/g, '\\u0026');
   };
 
   // Function to generate the script tag
