@@ -43,7 +43,7 @@ const App: React.FC = () => {
     baseUrl: 'https://embedded-preaa.sail.codes',
     language: 'en',
     theme: {
-      primary: '#c00',
+      primary: '#cc0000',
       background: '#ffffff',
       text: '#212121'
     }
