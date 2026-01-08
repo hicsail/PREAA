@@ -6,12 +6,11 @@ import {
   Typography,
   TextField,
   Paper,
-  Grid,
   Divider,
   Alert,
   Snackbar,
   InputAdornment,
-  IconButton
+  Grid
 } from '@mui/material';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import CheckIcon from '@mui/icons-material/Check';
@@ -153,7 +152,7 @@ const App: React.FC = () => {
 
       <Grid container spacing={3}>
         {/* Configuration Form */}
-        <Grid item xs={12} md={8}>
+        <Grid size={{ xs: 12, md: 8 }}>
           <Paper sx={{ p: 3, mb: 3 }}>
             <Typography variant="h6" gutterBottom>
               Widget Configuration
@@ -162,13 +161,13 @@ const App: React.FC = () => {
 
             <Grid container spacing={2}>
               {/* Basic Settings */}
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'bold' }}>
                   Basic Settings
                 </Typography>
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   label="Model ID"
                   fullWidth
@@ -183,7 +182,7 @@ const App: React.FC = () => {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   label="Base URL"
                   fullWidth
@@ -198,7 +197,7 @@ const App: React.FC = () => {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   label="Title"
                   fullWidth
@@ -212,7 +211,7 @@ const App: React.FC = () => {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   label="Bot Name"
                   fullWidth
@@ -226,7 +225,7 @@ const App: React.FC = () => {
                 />
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <TextField
                   label="Placeholder Text"
                   fullWidth
@@ -241,7 +240,7 @@ const App: React.FC = () => {
                 />
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <TextField
                   label="Support Topics"
                   fullWidth
@@ -256,7 +255,7 @@ const App: React.FC = () => {
                 />
               </Grid>
 
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <TextField
                   label="Bot Avatar Source"
                   fullWidth
@@ -271,7 +270,7 @@ const App: React.FC = () => {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   label="Language"
                   fullWidth
@@ -287,13 +286,13 @@ const App: React.FC = () => {
               </Grid>
 
               {/* Theme Settings */}
-              <Grid item xs={12} sx={{ mt: 2 }}>
+              <Grid size={12} sx={{ mt: 2 }}>
                 <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'bold' }}>
                   Theme Settings
                 </Typography>
               </Grid>
 
-              <Grid item xs={12} sm={4}>
+              <Grid size={{ xs: 12, sm: 4 }}>
                 <TextField
                   label="Primary Color"
                   fullWidth
@@ -326,7 +325,7 @@ const App: React.FC = () => {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={4}>
+              <Grid size={{ xs: 12, sm: 4 }}>
                 <TextField
                   label="Background Color"
                   fullWidth
@@ -359,7 +358,7 @@ const App: React.FC = () => {
                 />
               </Grid>
 
-              <Grid item xs={12} sm={4}>
+              <Grid size={{ xs: 12, sm: 4 }}>
                 <TextField
                   label="Text Color"
                   fullWidth
@@ -432,7 +431,7 @@ const App: React.FC = () => {
         </Grid>
 
         {/* Script Preview */}
-        <Grid item xs={12} md={4}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <Paper sx={{ p: 3, position: 'sticky', top: 20 }}>
             <Typography variant="h6" gutterBottom>
               Generated Script
