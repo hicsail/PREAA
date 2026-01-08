@@ -448,9 +448,7 @@ const App: React.FC = () => {
                 fontSize: '0.75rem'
               }}
             >
-              <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>
-                {generateScript()}
-              </pre>
+              <pre style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}>{generateScript()}</pre>
             </Box>
             <Button
               variant="outlined"
@@ -471,11 +469,7 @@ const App: React.FC = () => {
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert
-          onClose={handleCloseSnackbar}
-          severity={copySuccess ? 'success' : 'error'}
-          sx={{ width: '100%' }}
-        >
+        <Alert onClose={handleCloseSnackbar} severity={copySuccess ? 'success' : 'error'} sx={{ width: '100%' }}>
           {copySuccess ? 'Script copied to clipboard!' : 'Failed to copy script'}
         </Alert>
       </Snackbar>
