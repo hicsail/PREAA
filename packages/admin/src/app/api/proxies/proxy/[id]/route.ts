@@ -51,10 +51,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   let response;
   try {
     response = await proxyService.proxyRequest(id, body);
-  } catch (_error) {
-    console.error('Proxy request failed:', _error);
+  } catch (error) {
+    console.error('Proxy request failed:', error);
     return new Response(
-      JSON.stringify({ error: 'Failed to process request' }),
+      JSON.stringify({
+        error: 'Proxy request failed',
+        errorCode: 'PROXY_REQUEST_FAILED'
+      }),
       { status: 500, headers: { 'Content-Type': 'application/json' } }
     );
   }
