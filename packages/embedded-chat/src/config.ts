@@ -4,10 +4,12 @@ export interface ChatConfig {
   title?: string;
   botName?: string;
   placeholder?: string;
-  supportTopics?: string[];
+  supportTopics?: string | string[];
   introMessage?: string;
   introMessageDelay?: number;
   botAvatarSrc?: string;
+  baseUrl?: string;
+  language?: string;
   theme?: {
     primary?: string;
     background?: string;
@@ -26,6 +28,10 @@ export function parseConfigFromUrl(): ChatConfig {
   if (params.has('title')) config.title = params.get('title')!;
   if (params.has('botName')) config.botName = params.get('botName')!;
   if (params.has('placeholder')) config.placeholder = params.get('placeholder')!;
+  if (params.has('supportTopics')) config.supportTopics = params.get('supportTopics')!;
+  if (params.has('botAvatarSrc')) config.botAvatarSrc = params.get('botAvatarSrc')!;
+  if (params.has('baseUrl')) config.baseUrl = params.get('baseUrl')!;
+  if (params.has('language')) config.language = params.get('language')!;
   
   // Parse theme if provided
   try {
