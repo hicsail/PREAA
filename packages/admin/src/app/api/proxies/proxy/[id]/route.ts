@@ -6,14 +6,26 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const id = (await params).id;
 
   if (!id) {
-    return new Response('Missing ID param', { status: 400 });
+    return new Response(
+      JSON.stringify({ error: 'Missing ID param' }),
+      { status: 400, headers: { 'Content-Type': 'application/json' } }
+    );
   }
 
   // Check rate limits (before processing the request)
   // Enforces: 12 requests per minute per IP, blocks for 1 hour if exceeded
-  const rateLimitResult = checkRateLimits(request);
-  if (!rateLimitResult.allowed) {
-    return createRateLimitErrorResponse(rateLimitResult.ipLimit, rateLimitResult.blockedUntil);
+  let rateLimitResult;
+  try {
+    rateLimitResult = checkRateLimits(request);
+    if (!rateLimitResult.allowed) {
+      return createRateLimitErrorResponse(rateLimitResult.ipLimit, rateLimitResult.blockedUntil);
+    }
+  } catch (_error) {
+    // Handle IP detection failure (shouldn't happen due to try-catch in checkRateLimits, but added for safety)
+    return new Response(
+      JSON.stringify({ error: 'Unable to determine client IP address. Request rejected for security.' }),
+      { status: 400, headers: { 'Content-Type': 'application/json' } }
+    );
   }
 
   // Parse and validate request body
@@ -28,7 +40,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   }
 
   if (!body) {
-    return new Response('Missing body', { status: 400 });
+    return new Response(
+      JSON.stringify({ error: 'Missing body' }),
+      { status: 400, headers: { 'Content-Type': 'application/json' } }
+    );
   }
 
   // Process the proxy request

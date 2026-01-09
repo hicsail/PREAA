@@ -32,12 +32,16 @@ const BLOCK_DURATION_MS = 60 * 60 * 1000; // 1 hour
 
 /**
  * Get client IP address from request
+ * @throws Error if IP cannot be determined (security requirement)
  */
 function getClientIP(request: Request): string {
   // Check various headers for the real IP
   const forwarded = request.headers.get('x-forwarded-for');
   if (forwarded) {
-    return forwarded.split(',')[0].trim();
+    const ip = forwarded.split(',')[0].trim();
+    if (ip) {
+      return ip;
+    }
   }
 
   const realIP = request.headers.get('x-real-ip');
@@ -45,8 +49,15 @@ function getClientIP(request: Request): string {
     return realIP;
   }
 
-  // Fallback (in production, this should be set by your reverse proxy)
-  return 'unknown';
+  // Check for CF-Connecting-IP (Cloudflare)
+  const cfIP = request.headers.get('cf-connecting-ip');
+  if (cfIP) {
+    return cfIP;
+  }
+
+  // In production, IP should always be set by reverse proxy
+  // Reject requests without IP identification to prevent rate limit bypass
+  throw new Error('Unable to determine client IP address. Request rejected for security.');
 }
 
 /**
@@ -75,7 +86,22 @@ function cleanupStore() {
  * Check rate limits for a request
  */
 export function checkRateLimits(request: Request): RateLimitResult {
-  const ip = getClientIP(request);
+  let ip: string;
+  try {
+    ip = getClientIP(request);
+  } catch (_error) {
+    // If we can't determine IP, reject the request
+    // This prevents rate limit bypass attacks
+    return {
+      allowed: false,
+      ipLimit: {
+        limit: REQUESTS_PER_MINUTE,
+        remaining: 0,
+        resetTime: 0
+      }
+    };
+  }
+
   const now = Date.now();
 
   // Cleanup old entries periodically (every 100 requests, roughly)
@@ -157,6 +183,21 @@ export function createRateLimitErrorResponse(
   ipLimit: RateLimitInfo,
   blockedUntil?: number
 ): Response {
+  // Handle case where IP couldn't be determined
+  if (ipLimit.resetTime === 0 && ipLimit.remaining === 0 && !blockedUntil) {
+    return new Response(
+      JSON.stringify({
+        error: 'Unable to determine client IP address. Request rejected for security.'
+      }),
+      {
+        status: 400,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+  }
+
   const message = blockedUntil
     ? `Rate limit exceeded. IP blocked for 1 hour. Try again after ${new Date(blockedUntil).toISOString()}`
     : 'Rate limit exceeded. Too many requests.';
