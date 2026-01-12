@@ -75,12 +75,12 @@ def _create_openai_streaming_iterator(
 
         if len(chunk_text) == 0:
             verbose_logger.debug(
-                f"[Langflow Streaming] Empty chunk text, returning EMPTY_CHUNK"
+                "[Langflow Streaming] Empty chunk text, returning EMPTY_CHUNK"
             )
             return EMPTY_CHUNK
 
         if chunk_text == "[DONE]":
-            verbose_logger.info(f"[Langflow Streaming] Received [DONE] marker in chunk")
+            verbose_logger.info("[Langflow Streaming] Received [DONE] marker in chunk")
             return GenericStreamingChunk(
                 text="",
                 is_finished=True,
@@ -116,7 +116,7 @@ def _create_openai_streaming_iterator(
         verbose_logger.debug(f"[Langflow Streaming] Chunk status: {status}")
 
         if status == "completed":
-            verbose_logger.info(f"[Langflow Streaming] Chunk marked as completed")
+            verbose_logger.info("[Langflow Streaming] Chunk marked as completed")
             return GenericStreamingChunk(
                 text="",
                 is_finished=True,
@@ -159,7 +159,7 @@ def _create_openai_streaming_iterator(
 
         if not content:
             verbose_logger.debug(
-                f"[Langflow Streaming] No content in delta, returning EMPTY_CHUNK"
+                "[Langflow Streaming] No content in delta, returning EMPTY_CHUNK"
             )
             return EMPTY_CHUNK
 
@@ -208,7 +208,7 @@ def _create_openai_streaming_iterator(
 
             # Log first few bytes to see what we're receiving
             verbose_logger.info(
-                f"[Langflow Streaming] Starting to read stream from Langflow"
+                "[Langflow Streaming] Starting to read stream from Langflow"
             )
 
             # Iterate over lines from the streaming response
@@ -228,7 +228,7 @@ def _create_openai_streaming_iterator(
                     )
 
                 if not line:
-                    verbose_logger.debug(f"[Langflow Streaming] Skipping empty line")
+                    verbose_logger.debug("[Langflow Streaming] Skipping empty line")
                     continue
 
                 # Handle SSE format: "data: {...}\n\n"
@@ -253,7 +253,7 @@ def _create_openai_streaming_iterator(
                         if chunk.get("is_finished", False):
                             chunks_yielded += 1
                             verbose_logger.info(
-                                f"[Langflow Streaming] Received finished chunk, ending stream"
+                                "[Langflow Streaming] Received finished chunk, ending stream"
                             )
                             verbose_logger.info(
                                 f"[Langflow Streaming] Stream summary: lines={line_count}, chunks_parsed={chunk_count}, chunks_with_content={chunks_with_content}, chunks_yielded={chunks_yielded}"
@@ -270,7 +270,7 @@ def _create_openai_streaming_iterator(
                             yield chunk
                         else:
                             verbose_logger.debug(
-                                f"[Langflow Streaming] Chunk has no text, skipping"
+                                "[Langflow Streaming] Chunk has no text, skipping"
                             )
                     except Exception as parse_err:
                         verbose_logger.error(
@@ -281,7 +281,7 @@ def _create_openai_streaming_iterator(
                         continue
                 elif line.strip() == "[DONE]":
                     verbose_logger.info(
-                        f"[Langflow Streaming] Received [DONE] marker on standalone line"
+                        "[Langflow Streaming] Received [DONE] marker on standalone line"
                     )
                     yield GenericStreamingChunk(
                         text="",
@@ -297,7 +297,7 @@ def _create_openai_streaming_iterator(
                         f"[Langflow Streaming] Line does not match SSE format: {line[:100]}..."
                     )
 
-            verbose_logger.info(f"[Langflow Streaming] Stream ended - no more lines")
+            verbose_logger.info("[Langflow Streaming] Stream ended - no more lines")
             verbose_logger.info(
                 f"[Langflow Streaming] Final summary: lines={line_count}, chunks_parsed={chunk_count}, chunks_with_content={chunks_with_content}, chunks_yielded={chunks_yielded}"
             )
@@ -877,7 +877,7 @@ class Langflow(CustomLLM):
         Fallback streaming method using /api/v1/run endpoint.
         This endpoint supports full messages array with conversation history.
         """
-        verbose_logger.info(f"[Langflow Streaming Fallback] Using /api/v1/run endpoint")
+        verbose_logger.info("[Langflow Streaming Fallback] Using /api/v1/run endpoint")
         execution_url = f"{base_url}/api/v1/run/{model}"
         history_component = self._get_history_component_id(
             model, base_url, client, api_key
@@ -901,7 +901,7 @@ class Langflow(CustomLLM):
             headers = {"x-api-key": api_key, "Content-Type": "application/json"}
 
             verbose_logger.info(
-                f"[Langflow Streaming Fallback] Making streaming POST request with stream=True param"
+                "[Langflow Streaming Fallback] Making streaming POST request with stream=True param"
             )
 
             # Use httpx streaming - this uses Langflow's native format
@@ -929,7 +929,7 @@ class Langflow(CustomLLM):
                 # Use the old LangflowChunkParser for Langflow's native format
                 parser = LangflowChunkParser(response, sync_stream=sync_stream)
                 verbose_logger.info(
-                    f"[Langflow Streaming Fallback] Created LangflowChunkParser, returning"
+                    "[Langflow Streaming Fallback] Created LangflowChunkParser, returning"
                 )
 
                 # Return iterator that yields from the parser
@@ -1011,7 +1011,7 @@ class Langflow(CustomLLM):
 
         if not input_text:
             verbose_logger.error(
-                f"[Langflow Async Streaming] No user message found in messages array"
+                "[Langflow Async Streaming] No user message found in messages array"
             )
             raise BaseLLMException(
                 400, message="No user message found in messages array"
@@ -1035,7 +1035,7 @@ class Langflow(CustomLLM):
                 f"[Langflow Async Streaming] Making async POST request to {execution_url}"
             )
             verbose_logger.debug(
-                f"[Langflow Async Streaming] Headers: x-api-key present, Content-Type: application/json"
+                "[Langflow Async Streaming] Headers: x-api-key present, Content-Type: application/json"
             )
 
             # Use async client and streaming context manager
@@ -1065,7 +1065,7 @@ class Langflow(CustomLLM):
 
                         if not line:
                             verbose_logger.debug(
-                                f"[Langflow Async Streaming] Skipping empty line"
+                                "[Langflow Async Streaming] Skipping empty line"
                             )
                             continue
 
@@ -1078,7 +1078,7 @@ class Langflow(CustomLLM):
 
                             if chunk_text == "[DONE]":
                                 verbose_logger.info(
-                                    f"[Langflow Async Streaming] Received [DONE] marker"
+                                    "[Langflow Async Streaming] Received [DONE] marker"
                                 )
                                 yield GenericStreamingChunk(
                                     text="",
@@ -1103,7 +1103,7 @@ class Langflow(CustomLLM):
 
                                 if status == "completed":
                                     verbose_logger.info(
-                                        f"[Langflow Async Streaming] Chunk marked as completed"
+                                        "[Langflow Async Streaming] Chunk marked as completed"
                                     )
                                     yield GenericStreamingChunk(
                                         text="",
@@ -1148,7 +1148,7 @@ class Langflow(CustomLLM):
                                 continue
                         elif line.strip() == "[DONE]":
                             verbose_logger.info(
-                                f"[Langflow Async Streaming] Received [DONE] marker on standalone line"
+                                "[Langflow Async Streaming] Received [DONE] marker on standalone line"
                             )
                             yield GenericStreamingChunk(
                                 text="",
