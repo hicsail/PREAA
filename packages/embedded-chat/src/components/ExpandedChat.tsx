@@ -64,13 +64,13 @@ export const ExpandedChat: React.FC<ExpandedChatProps> = ({ config, onMinimize, 
                   stream: true,
                   handler: async (body: any, signals: any) => {
                     const url = `${import.meta.env.VITE_BACKEND_BASE_URL}/api/proxies/proxy/${config.modelId}`;
-                    
+
                     // Set up abort controller for stop button functionality
                     const abortController = new AbortController();
                     signals.stopClicked.listener = () => {
                       abortController.abort();
                     };
-                    
+
                     try {
                       const response = await fetch(url, {
                         method: 'POST',
@@ -108,7 +108,7 @@ export const ExpandedChat: React.FC<ExpandedChatProps> = ({ config, onMinimize, 
 
                       while (true) {
                         const { done, value } = await reader.read();
-                        
+
                         if (done) {
                           signals.onClose();
                           break;
@@ -116,17 +116,17 @@ export const ExpandedChat: React.FC<ExpandedChatProps> = ({ config, onMinimize, 
 
                         // Decode and buffer chunks
                         buffer += decoder.decode(value, { stream: true });
-                        
+
                         // Process complete SSE lines (format: "data: {...}\n\n")
                         const lines = buffer.split('\n');
                         buffer = lines.pop() || '';
 
                         for (const line of lines) {
                           if (line.trim() === '') continue;
-                          
+
                           if (line.startsWith('data: ')) {
                             const data = line.slice(6);
-                            
+
                             if (data === '[DONE]') {
                               signals.onClose();
                               return;
@@ -134,7 +134,7 @@ export const ExpandedChat: React.FC<ExpandedChatProps> = ({ config, onMinimize, 
 
                             try {
                               const parsed = JSON.parse(data);
-                              
+
                               // Extract content from OpenAI-compatible SSE format
                               if (parsed.choices && parsed.choices[0]) {
                                 const delta = parsed.choices[0].delta || {};
