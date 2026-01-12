@@ -244,8 +244,14 @@ def _create_openai_streaming_iterator(
                         # GenericStreamingChunk is a TypedDict, so we check for required keys instead of isinstance
                         # Verify chunk has the expected structure (TypedDict is essentially a dict)
                         if not isinstance(chunk, dict) or "is_finished" not in chunk:
+                            chunk_keys = (
+                                list(chunk.keys())
+                                if isinstance(chunk, dict)
+                                else 'N/A'
+                            )
                             verbose_logger.error(
-                                f"[Langflow Streaming] _parse_chunk returned invalid chunk: {type(chunk)}, keys: {list(chunk.keys()) if isinstance(chunk, dict) else 'N/A'}"
+                                f"[Langflow Streaming] _parse_chunk returned invalid chunk: "
+                                f"{type(chunk)}, keys: {chunk_keys}"
                             )
                             # Skip this chunk
                             continue
@@ -256,7 +262,10 @@ def _create_openai_streaming_iterator(
                                 "[Langflow Streaming] Received finished chunk, ending stream"
                             )
                             verbose_logger.info(
-                                f"[Langflow Streaming] Stream summary: lines={line_count}, chunks_parsed={chunk_count}, chunks_with_content={chunks_with_content}, chunks_yielded={chunks_yielded}"
+                                f"[Langflow Streaming] Stream summary: lines={line_count}, "
+                                f"chunks_parsed={chunk_count}, "
+                                f"chunks_with_content={chunks_with_content}, "
+                                f"chunks_yielded={chunks_yielded}"
                             )
                             yield chunk
                             return
@@ -299,7 +308,10 @@ def _create_openai_streaming_iterator(
 
             verbose_logger.info("[Langflow Streaming] Stream ended - no more lines")
             verbose_logger.info(
-                f"[Langflow Streaming] Final summary: lines={line_count}, chunks_parsed={chunk_count}, chunks_with_content={chunks_with_content}, chunks_yielded={chunks_yielded}"
+                f"[Langflow Streaming] Final summary: lines={line_count}, "
+                f"chunks_parsed={chunk_count}, "
+                f"chunks_with_content={chunks_with_content}, "
+                f"chunks_yielded={chunks_yielded}"
             )
     except httpx.HTTPStatusError as e:
         error_text = ""
@@ -934,8 +946,15 @@ class Langflow(CustomLLM):
 
                 # Return iterator that yields from the parser
                 for chunk in parser:
+                    text_length = (
+                        len(chunk.get('text', ''))
+                        if chunk.get('text')
+                        else 0
+                    )
                     verbose_logger.debug(
-                        f"[Langflow Streaming Fallback] Yielding chunk: finished={chunk.get('is_finished', False)}, text_length={len(chunk.get('text', '')) if chunk.get('text') else 0}"
+                        f"[Langflow Streaming Fallback] Yielding chunk: "
+                        f"finished={chunk.get('is_finished', False)}, "
+                        f"text_length={text_length}"
                     )
                     yield chunk
 
