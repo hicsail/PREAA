@@ -10,7 +10,9 @@ import {
   Alert,
   Snackbar,
   InputAdornment,
-  Grid
+  Grid,
+  FormControlLabel,
+  Switch
 } from '@mui/material';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import CheckIcon from '@mui/icons-material/Check';
@@ -24,6 +26,7 @@ interface WidgetConfig {
   botAvatarSrc: string;
   baseUrl: string;
   language: string;
+  streaming: boolean;
   theme: {
     primary: string;
     background: string;
@@ -42,6 +45,7 @@ const App: React.FC = () => {
     botAvatarSrc: '/assets/bu-logo.svg',
     baseUrl: 'https://embedded-preaa.sail.codes',
     language: 'en',
+    streaming: false,
     theme: {
       primary: '#cc0000',
       background: '#ffffff',
@@ -80,7 +84,8 @@ const App: React.FC = () => {
         text: '${escapeJsString(widgetConfig.theme.text)}'
       },
       baseUrl: '${escapeJsString(widgetConfig.baseUrl)}',
-      language: '${escapeJsString(widgetConfig.language)}'
+      language: '${escapeJsString(widgetConfig.language)}',
+      streaming: ${widgetConfig.streaming}
     };
 
     // Load the widget script
@@ -126,7 +131,8 @@ const App: React.FC = () => {
       botAvatarSrc: widgetConfig.botAvatarSrc,
       theme: widgetConfig.theme,
       baseUrl: widgetConfig.baseUrl,
-      language: widgetConfig.language
+      language: widgetConfig.language,
+      streaming: widgetConfig.streaming
     };
 
     // Remove existing widget if present
@@ -287,6 +293,32 @@ const App: React.FC = () => {
                     })
                   }
                   helperText="Language code (e.g., en, es, fr)"
+                />
+              </Grid>
+
+              <Grid size={12}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={widgetConfig.streaming}
+                      onChange={(e) =>
+                        setWidgetConfig({
+                          ...widgetConfig,
+                          streaming: e.target.checked
+                        })
+                      }
+                    />
+                  }
+                  label={
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                        Enable Streaming
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Enable real-time streaming responses for better user experience
+                      </Typography>
+                    </Box>
+                  }
                 />
               </Grid>
 

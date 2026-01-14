@@ -5,7 +5,8 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        // API CORs
+        // API CORS for general API routes
+        // Note: /api/proxies/proxy/* routes handle CORS with origin validation in the route handler
         source: "/api/:path*",
         headers: [
           { key: "Access-Control-Allow-Credentials", value: "true" },
