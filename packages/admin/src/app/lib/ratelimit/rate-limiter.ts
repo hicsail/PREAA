@@ -2,6 +2,12 @@
  * Rate limiter for proxy requests
  * Enforces: 12 requests per minute per IP
  * Blocks IP for 1 hour if limit is exceeded
+ *
+ * IMPORTANT: This implementation uses an in-memory store and will NOT work correctly
+ * in a distributed or multi-instance deployment. Each instance will have its own Map,
+ * allowing users to bypass rate limits by hitting different instances. For production
+ * use with multiple instances, consider implementing Redis-based rate limiting or
+ * using a shared state solution.
  */
 
 interface RateLimitInfo {
@@ -22,7 +28,9 @@ interface IPRecord {
 }
 
 // In-memory store for rate limiting
-// In production, consider using Redis for distributed systems
+// WARNING: This will not work correctly in distributed/multi-instance deployments.
+// Each instance maintains its own Map, allowing rate limit bypass by hitting different instances.
+// For production with multiple instances, use Redis or another shared state solution.
 const ipStore = new Map<string, IPRecord>();
 
 // Configuration
@@ -30,33 +38,75 @@ const REQUESTS_PER_MINUTE = 12;
 const WINDOW_MS = 60 * 1000; // 1 minute
 const BLOCK_DURATION_MS = 60 * 60 * 1000; // 1 hour
 
+// Secret used to verify that a request has passed through a trusted proxy.
+// The proxy must set the "x-trusted-proxy-secret" header to this value.
+// If not set, IP headers will not be trusted (security requirement).
+const TRUSTED_PROXY_SECRET = process.env.TRUSTED_PROXY_SECRET;
+
+// Cleanup interval: run cleanup every 5 minutes
+const CLEANUP_INTERVAL_MS = 5 * 60 * 1000;
+let lastCleanupTime = Date.now();
+
+/**
+ * Basic validation for IPv4/IPv6 string formats.
+ */
+function isValidIP(ip: string): boolean {
+  // Simple IPv4 and IPv6 regexes; not exhaustively strict but good enough to
+  // prevent obviously invalid values from being used for rate limiting.
+  const ipv4 =
+    /^(25[0-5]|2[0-4]\d|1?\d{1,2})(\.(25[0-5]|2[0-4]\d|1?\d{1,2})){3}$/;
+  const ipv6 =
+    /^(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|(::1)|(::))$/;
+  return ipv4.test(ip) || ipv6.test(ip);
+}
+
+/**
+ * Verify that the request was forwarded by a trusted proxy.
+ * This prevents clients from spoofing IP-related headers directly.
+ */
+function isRequestFromTrustedProxy(request: Request): boolean {
+  if (!TRUSTED_PROXY_SECRET) {
+    // If no secret is configured, treat all requests as untrusted.
+    // In production, this should be set to prevent IP spoofing.
+    return false;
+  }
+  const providedSecret = request.headers.get('x-trusted-proxy-secret');
+  return providedSecret === TRUSTED_PROXY_SECRET;
+}
+
 /**
  * Get client IP address from request
  * @throws Error if IP cannot be determined (security requirement)
  */
 function getClientIP(request: Request): string {
-  // Check various headers for the real IP
+  // Only trust IP headers if the request has been verified as coming
+  // from a trusted reverse proxy.
+  if (!isRequestFromTrustedProxy(request)) {
+    throw new Error('Unable to determine client IP address. Request rejected for security.');
+  }
+
+  // Check various headers for the real IP, in order of preference.
   const forwarded = request.headers.get('x-forwarded-for');
   if (forwarded) {
     const ip = forwarded.split(',')[0].trim();
-    if (ip) {
+    if (ip && isValidIP(ip)) {
       return ip;
     }
   }
 
   const realIP = request.headers.get('x-real-ip');
-  if (realIP) {
+  if (realIP && isValidIP(realIP)) {
     return realIP;
   }
 
   // Check for CF-Connecting-IP (Cloudflare)
   const cfIP = request.headers.get('cf-connecting-ip');
-  if (cfIP) {
+  if (cfIP && isValidIP(cfIP)) {
     return cfIP;
   }
 
   // In production, IP should always be set by reverse proxy
-  // Reject requests without IP identification to prevent rate limit bypass
+  // Reject requests without valid IP identification to prevent rate limit bypass
   throw new Error('Unable to determine client IP address. Request rejected for security.');
 }
 
@@ -68,7 +118,7 @@ function cleanupStore() {
   for (const [ip, record] of ipStore.entries()) {
     // Remove block if expired
     if (record.blockedUntil && record.blockedUntil < now) {
-      record.blockedUntil = undefined;
+      delete record.blockedUntil;
     }
 
     // Remove old request timestamps (older than 1 minute)
@@ -84,12 +134,19 @@ function cleanupStore() {
 
 /**
  * Check rate limits for a request
+ * 
+ * Note: In a multi-instance deployment, this function has a race condition where
+ * concurrent requests from the same IP could all pass the limit check before any
+ * increments the counter. For production use with high concurrency, consider using
+ * Redis with atomic operations or implementing proper locking mechanisms.
  */
 export function checkRateLimits(request: Request): RateLimitResult {
   let ip: string;
   try {
     ip = getClientIP(request);
-  } catch (_error) {
+  } catch (error) {
+    // Log the error for debugging and security monitoring
+    console.error('IP detection failed:', error instanceof Error ? error.message : String(error));
     // If we can't determine IP, reject the request
     // This prevents rate limit bypass attacks
     return {
@@ -104,12 +161,16 @@ export function checkRateLimits(request: Request): RateLimitResult {
 
   const now = Date.now();
 
-  // Cleanup old entries periodically (every 100 requests, roughly)
-  if (Math.random() < 0.01) {
+  // Cleanup old entries deterministically (every CLEANUP_INTERVAL_MS)
+  if (now - lastCleanupTime >= CLEANUP_INTERVAL_MS) {
     cleanupStore();
+    lastCleanupTime = now;
   }
 
   // Get or create IP record
+  // Note: In high-concurrency scenarios, there's a race condition here where
+  // multiple requests could pass the limit check simultaneously. For production,
+  // use Redis with atomic operations or implement proper locking.
   let record = ipStore.get(ip);
   if (!record) {
     record = { requests: [] };
@@ -132,7 +193,7 @@ export function checkRateLimits(request: Request): RateLimitResult {
 
   // Remove expired block
   if (record.blockedUntil && record.blockedUntil <= now) {
-    record.blockedUntil = undefined;
+    delete record.blockedUntil;
   }
 
   // Remove requests older than the window
@@ -142,6 +203,9 @@ export function checkRateLimits(request: Request): RateLimitResult {
   // Check if limit is exceeded
   if (record.requests.length >= REQUESTS_PER_MINUTE) {
     // Block the IP for 1 hour
+    // Note: Clearing requests here means after the block expires, the user gets
+    // a fresh window. For production, consider preserving request history or
+    // implementing progressive penalties for repeat offenders.
     record.blockedUntil = now + BLOCK_DURATION_MS;
     record.requests = []; // Clear requests
 
@@ -160,11 +224,13 @@ export function checkRateLimits(request: Request): RateLimitResult {
   // Add current request
   record.requests.push(now);
 
-  // Calculate reset time (when the oldest request in the window expires)
-  const oldestRequest = record.requests[0];
-  const resetTime = oldestRequest
-    ? Math.ceil((oldestRequest + WINDOW_MS - now) / 1000)
-    : WINDOW_MS / 1000;
+  // Calculate reset time as when the current rate-limit window,
+  // anchored at the oldest request, fully elapses. Note that
+  // additional quota may become available earlier as individual
+  // requests age out of the rolling window.
+  const oldestRequest = record.requests[0] ?? now;
+  const windowResetMs = oldestRequest + WINDOW_MS - now;
+  const resetTime = windowResetMs > 0 ? Math.ceil(windowResetMs / 1000) : 0;
 
   return {
     allowed: true,
@@ -198,8 +264,27 @@ export function createRateLimitErrorResponse(
     );
   }
 
+  // Format user-friendly error message
+  let unblockInText: string | null = null;
+  let unblockAtText: string | null = null;
+
+  if (blockedUntil && blockedUntil > Date.now()) {
+    const msUntilUnblock = blockedUntil - Date.now();
+    const minutesUntilUnblock = Math.ceil(msUntilUnblock / 60000);
+    if (minutesUntilUnblock > 0) {
+      unblockInText =
+        minutesUntilUnblock === 1 ? 'in 1 minute' : `in ${minutesUntilUnblock} minutes`;
+    }
+  }
+
+  if (blockedUntil) {
+    unblockAtText = new Date(blockedUntil).toLocaleString();
+  }
+
   const message = blockedUntil
-    ? `Rate limit exceeded. IP blocked for 1 hour. Try again after ${new Date(blockedUntil).toISOString()}`
+    ? `Rate limit exceeded. IP blocked for 1 hour. Try again ${
+        unblockInText ?? `after ${unblockAtText}`
+      }`
     : 'Rate limit exceeded. Too many requests.';
 
   return new Response(
