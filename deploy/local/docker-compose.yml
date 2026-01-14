@@ -60,6 +60,7 @@ services:
     env_file: "config/.env.litellm"
     depends_on:
       - postgres
+      - langfuse-web
     volumes:
       - ../../packages/litellm/custom/:/app/langflowEP
       - type: bind

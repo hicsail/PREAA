@@ -6,3 +6,4 @@ model_list:
 litellm_settings:
   custom_provider_map:
   - {"provider": "langflow", "custom_handler": langflowEP.langflow_handler.langflow}
+  callbacks: ["langfuse"]

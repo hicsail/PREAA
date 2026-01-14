@@ -43,23 +43,163 @@ export const ExpandedChat: React.FC<ExpandedChatProps> = ({ config, onMinimize, 
         sx={{
           flexGrow: 1,
           overflow: 'hidden',
-          display: 'flex', // Add flex display
-          flexDirection: 'column', // Stack children vertically
-          height: 'calc(100% - 64px)' // Subtract AppBar height
+          display: 'flex',
+          flexDirection: 'column',
+          height: 'calc(100% - 64px)'
         }}
       >
         <DeepChat
           ref={chatRef}
           style={{
             width: '100%',
-            height: '100%', // Take full height
+            height: '100%',
             border: 'none',
             display: 'flex',
             flexDirection: 'column'
           }}
-          requestBodyLimits={{ maxMessages: -1 }}
-          connect={{
-            url: `${import.meta.env.VITE_BACKEND_BASE_URL}/api/proxies/proxy/${config.modelId}`
+          requestBodyLimits={{ maxMessages: 6 }}
+          connect={
+            config.streaming === true
+              ? {
+                  stream: true,
+                  handler: async (body: any, signals: any) => {
+                    const url = `${import.meta.env.VITE_BACKEND_BASE_URL}/api/proxies/proxy/${config.modelId}`;
+
+                    // Set up abort controller for stop button functionality
+                    const abortController = new AbortController();
+                    signals.stopClicked.listener = () => {
+                      abortController.abort();
+                    };
+
+                    try {
+                      const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                          'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                          ...body,
+                          stream: true
+                        }),
+                        signal: abortController.signal
+                      });
+
+                      if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('[DeepChat] Request failed:', response.status, errorText);
+                        signals.onResponse({ error: `Request failed: ${response.status}` });
+                        signals.onClose();
+                        return;
+                      }
+
+                      const reader = response.body?.getReader();
+                      if (!reader) {
+                        console.error('[DeepChat] No stream reader available');
+                        signals.onResponse({ error: 'No stream reader available' });
+                        signals.onClose();
+                        return;
+                      }
+
+                      // Initialize streaming session
+                      signals.onOpen();
+
+                      const decoder = new TextDecoder();
+                      let buffer = '';
+
+                      while (true) {
+                        const { done, value } = await reader.read();
+
+                        if (done) {
+                          signals.onClose();
+                          break;
+                        }
+
+                        // Decode and buffer chunks
+                        buffer += decoder.decode(value, { stream: true });
+
+                        // Process complete SSE lines (format: "data: {...}\n\n")
+                        const lines = buffer.split('\n');
+                        buffer = lines.pop() || '';
+
+                        for (const line of lines) {
+                          if (line.trim() === '') continue;
+
+                          if (line.startsWith('data: ')) {
+                            const data = line.slice(6);
+
+                            if (data === '[DONE]') {
+                              signals.onClose();
+                              return;
+                            }
+
+                            try {
+                              const parsed = JSON.parse(data);
+
+                              // Extract content from OpenAI-compatible SSE format
+                              if (parsed.choices && parsed.choices[0]) {
+                                const delta = parsed.choices[0].delta || {};
+                                const content = delta.content || '';
+                                const finishReason = parsed.choices[0].finish_reason;
+
+                                if (content) {
+                                  // Send chunk content - DeepChat appends automatically
+                                  await signals.onResponse({ text: content });
+                                }
+
+                                if (finishReason) {
+                                  signals.onClose();
+                                  return;
+                                }
+                              }
+                            } catch (parseError) {
+                              console.error('[DeepChat] Error parsing SSE chunk:', parseError);
+                            }
+                          }
+                        }
+                      }
+                    } catch (error: any) {
+                      // Handle abort and other errors
+                      if (error.name === 'AbortError') {
+                        signals.onClose();
+                        return;
+                      }
+                      console.error('[DeepChat] Streaming error:', error);
+                      signals.onResponse({ error: error?.message || 'Unknown error occurred' });
+                      signals.onClose();
+                    }
+                  }
+                }
+              : {
+                  // Non-streaming: use simple connect
+                  url: `${import.meta.env.VITE_BACKEND_BASE_URL}/api/proxies/proxy/${config.modelId}`
+                }
+          }
+          requestInterceptor={(requestDetails) => {
+            // Ensure stream parameter is set for non-streaming requests
+            if (!config.streaming && requestDetails.body && typeof requestDetails.body === 'object') {
+              requestDetails.body = {
+                ...requestDetails.body,
+                stream: false
+              };
+            }
+            return requestDetails;
+          }}
+          responseInterceptor={
+            config.streaming
+              ? undefined
+              : (response: any) => {
+                  // Transform OpenAI format to DeepChat format for non-streaming responses
+                  if (response && typeof response === 'object' && response.choices) {
+                    const content = response.choices[0]?.message?.content;
+                    if (content) {
+                      return { text: content };
+                    }
+                  }
+                  return response;
+                }
+          }
+          onError={(error: any) => {
+            console.error('[DeepChat] Error:', error);
           }}
           messageStyles={{
             default: {
