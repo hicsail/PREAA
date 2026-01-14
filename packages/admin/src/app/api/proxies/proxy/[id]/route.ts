@@ -1,5 +1,6 @@
 import { container } from '@/app/lib/container';
 import { ProxyService } from '@/app/lib/proxies/proxy.service';
+import { checkRateLimits, createRateLimitErrorResponse } from '@/app/lib/ratelimit/rate-limiter';
 
 /**
  * Get the allowed origin for CORS from environment variables.
@@ -37,7 +38,7 @@ function getCorsHeaders(requestOrigin?: string | null) {
     'Access-Control-Allow-Origin': allowedOrigin,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-    'Access-Control-Expose-Headers': 'Content-Type, Content-Length',
+    'Access-Control-Expose-Headers': 'Content-Type, Content-Length, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset',
     'Access-Control-Allow-Credentials': allowedOrigin !== '*' ? 'true' : 'false'
   };
 }
@@ -54,21 +55,78 @@ export async function OPTIONS(request: Request) {
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const proxyService = container.resolve(ProxyService);
   const origin = request.headers.get('origin');
   const corsHeaders = getCorsHeaders(origin);
-
   const id = (await params).id;
 
   if (!id) {
-    return new Response('Missing ID param', { status: 400, headers: corsHeaders });
+    return new Response(
+      JSON.stringify({ error: 'Missing ID param' }),
+      { 
+        status: 400, 
+        headers: { 
+          'Content-Type': 'application/json',
+          ...corsHeaders
+        } 
+      }
+    );
   }
 
-  const body = await request.json();
+  // Check rate limits (before processing the request)
+  // Enforces: 12 requests per minute per IP, blocks for 1 hour if exceeded
+  // Note: checkRateLimits handles all errors internally and returns a controlled response
+  const rateLimitResult = checkRateLimits(request);
+  if (!rateLimitResult.allowed) {
+    // Create rate limit error response and merge with CORS headers
+    const rateLimitResponse = createRateLimitErrorResponse(rateLimitResult.ipLimit, rateLimitResult.blockedUntil);
+    const rateLimitHeaders = Object.fromEntries(rateLimitResponse.headers.entries());
+    return new Response(rateLimitResponse.body, {
+      status: rateLimitResponse.status,
+      headers: {
+        ...rateLimitHeaders,
+        ...corsHeaders
+      }
+    });
+  }
+
+  // Parse and validate request body
+  let body;
+  try {
+    body = await request.json();
+  } catch (_error) {
+    return new Response(
+      JSON.stringify({ error: 'Invalid JSON in request body' }),
+      { 
+        status: 400, 
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-RateLimit-Limit': rateLimitResult.ipLimit.limit.toString(),
+          'X-RateLimit-Remaining': rateLimitResult.ipLimit.remaining.toString(),
+          'X-RateLimit-Reset': rateLimitResult.ipLimit.resetTime.toString(),
+          ...corsHeaders
+        } 
+      }
+    );
+  }
+
   if (!body) {
-    return new Response('Missing body', { status: 400, headers: corsHeaders });
+    return new Response(
+      JSON.stringify({ error: 'Missing body' }),
+      { 
+        status: 400, 
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-RateLimit-Limit': rateLimitResult.ipLimit.limit.toString(),
+          'X-RateLimit-Remaining': rateLimitResult.ipLimit.remaining.toString(),
+          'X-RateLimit-Reset': rateLimitResult.ipLimit.resetTime.toString(),
+          ...corsHeaders
+        } 
+      }
+    );
   }
 
+  // Process the proxy request
+  const proxyService = container.resolve(ProxyService);
   const stream = body.stream === true;
 
   try {
@@ -81,6 +139,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         'Cache-Control': 'no-cache',
         'Connection': 'keep-alive',
         'X-Accel-Buffering': 'no',
+        'X-RateLimit-Limit': rateLimitResult.ipLimit.limit.toString(),
+        'X-RateLimit-Remaining': rateLimitResult.ipLimit.remaining.toString(),
+        'X-RateLimit-Reset': rateLimitResult.ipLimit.resetTime.toString(),
         ...corsHeaders
       };
       
@@ -95,17 +156,29 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       status: 200,
       headers: {
         'Content-Type': 'application/json',
+        'X-RateLimit-Limit': rateLimitResult.ipLimit.limit.toString(),
+        'X-RateLimit-Remaining': rateLimitResult.ipLimit.remaining.toString(),
+        'X-RateLimit-Reset': rateLimitResult.ipLimit.resetTime.toString(),
         ...corsHeaders
       }
     });
   } catch (error: any) {
     console.error('Proxy request error:', error);
-    return new Response(JSON.stringify({ error: error.message || 'Internal server error' }), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json',
-        ...corsHeaders
+    return new Response(
+      JSON.stringify({ 
+        error: error.message || 'Internal server error',
+        errorCode: 'PROXY_REQUEST_FAILED'
+      }), 
+      {
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-RateLimit-Limit': rateLimitResult.ipLimit.limit.toString(),
+          'X-RateLimit-Remaining': rateLimitResult.ipLimit.remaining.toString(),
+          'X-RateLimit-Reset': rateLimitResult.ipLimit.resetTime.toString(),
+          ...corsHeaders
+        }
       }
-    });
+    );
   }
 }
