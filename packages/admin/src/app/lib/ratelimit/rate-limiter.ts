@@ -63,13 +63,21 @@ function isValidIP(ip: string): boolean {
 /**
  * Verify that the request was forwarded by a trusted proxy.
  * This prevents clients from spoofing IP-related headers directly.
+ * Returns true if:
+ * - TRUSTED_PROXY_SECRET is not set (development mode - allows requests through)
+ * - TRUSTED_PROXY_SECRET is set and matches the header value (production mode)
  */
 function isRequestFromTrustedProxy(request: Request): boolean {
+  // If no secret is configured, allow requests through (development mode)
+  // Log a warning to encourage setting it in production
   if (!TRUSTED_PROXY_SECRET) {
-    // If no secret is configured, treat all requests as untrusted.
-    // In production, this should be set to prevent IP spoofing.
-    return false;
+    if (process.env.NODE_ENV === 'production') {
+      console.warn('WARNING: TRUSTED_PROXY_SECRET is not set. IP spoofing protection is disabled. Set this in production!');
+    }
+    return true; // Allow in development when secret is not configured
   }
+  
+  // In production with secret configured, require the header to match
   const providedSecret = request.headers.get('x-trusted-proxy-secret');
   return providedSecret === TRUSTED_PROXY_SECRET;
 }
@@ -79,9 +87,9 @@ function isRequestFromTrustedProxy(request: Request): boolean {
  * @throws Error if IP cannot be determined (security requirement)
  */
 function getClientIP(request: Request): string {
-  // Only trust IP headers if the request has been verified as coming
-  // from a trusted reverse proxy.
-  if (!isRequestFromTrustedProxy(request)) {
+  // If TRUSTED_PROXY_SECRET is set, verify the request came from a trusted proxy
+  // If not set, we still try to extract IP (for development) but it's less secure
+  if (TRUSTED_PROXY_SECRET && !isRequestFromTrustedProxy(request)) {
     throw new Error('Unable to determine client IP address. Request rejected for security.');
   }
 
@@ -103,6 +111,27 @@ function getClientIP(request: Request): string {
   const cfIP = request.headers.get('cf-connecting-ip');
   if (cfIP && isValidIP(cfIP)) {
     return cfIP;
+  }
+
+  // Development fallback: If no IP headers found and we're in development mode
+  // (TRUSTED_PROXY_SECRET not set), use a fallback identifier
+  if (!TRUSTED_PROXY_SECRET && process.env.NODE_ENV !== 'production') {
+    // Try to create a unique identifier from available headers
+    const userAgent = request.headers.get('user-agent') || 'unknown';
+    const accept = request.headers.get('accept') || 'unknown';
+    // Use a simple identifier for development based on headers
+    // This is not secure but allows development to work
+    // Create a simple hash by summing character codes
+    let hash = 0;
+    const str = userAgent + accept;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32-bit integer
+    }
+    const devIdentifier = `dev-${Math.abs(hash).toString(36)}`;
+    console.warn(`[Rate Limiter] No IP headers found in development. Using fallback identifier: ${devIdentifier}`);
+    return devIdentifier;
   }
 
   // In production, IP should always be set by reverse proxy
