@@ -308,11 +308,20 @@ export const ExpandedChat: React.FC<ExpandedChatProps> = ({ config, onMinimize, 
             }}
           >
             <div>
-              <div style={{ textAlign: 'center', marginBottom: '12px', fontSize: '16px', fontWeight: 'bold', color: '#856404' }}>
+              <div
+                style={{
+                  textAlign: 'center',
+                  marginBottom: '12px',
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  color: '#856404'
+                }}
+              >
                 Important Notice
               </div>
               <div style={{ fontSize: '14px', lineHeight: '20px', color: '#856404' }}>
-                AI can sometimes make mistakes. Please double-check all information provided, especially for important decisions or factual claims.
+                AI can sometimes make mistakes. Please double-check all information provided, especially for important
+                decisions or factual claims.
               </div>
             </div>
           </div>
