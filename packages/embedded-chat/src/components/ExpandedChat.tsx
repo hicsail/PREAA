@@ -294,9 +294,38 @@ export const ExpandedChat: React.FC<ExpandedChatProps> = ({ config, onMinimize, 
             }
           }}
           introMessage={{
-            text: `Hi there! I'm ${config.botName || 'BUzz'}, a chatbot here to answer your ${config.supportTopics ? config.supportTopics : 'questions'}. What would you like to know?`
+            text: `Hi there! I'm ${config.botName || 'BUzz'}, a chatbot here to answer your ${config.supportTopics ? config.supportTopics : 'questions'}. What would you like to know? Remember, AI can sometimes make mistakes, so please double-check all information provided, especially for important decisions or factual claims.`
           }}
-        />
+        >
+          <div
+            style={{
+              width: '280px',
+              backgroundColor: '#fff3cd',
+              border: '1px solid #ffc107',
+              borderRadius: '10px',
+              padding: '16px',
+              display: 'none'
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  textAlign: 'center',
+                  marginBottom: '12px',
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  color: '#856404'
+                }}
+              >
+                Important Notice
+              </div>
+              <div style={{ fontSize: '14px', lineHeight: '20px', color: '#856404' }}>
+                AI can sometimes make mistakes. Please double-check all information provided, especially for important
+                decisions or factual claims.
+              </div>
+            </div>
+          </div>
+        </DeepChat>
       </Box>
     </Box>
   );
