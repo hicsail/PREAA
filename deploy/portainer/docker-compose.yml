@@ -246,7 +246,7 @@ services:
       - "3017:80"
 
   ragflow:
-    image: infiniflow/ragflow:v0.21.1-slim
+    image: infiniflow/ragflow:latest
     platform: linux/amd64
     container_name: portainer-ragflow
     restart: unless-stopped
