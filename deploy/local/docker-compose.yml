@@ -176,6 +176,15 @@ services:
     depends_on:
       - postgres
 
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: custom-rag-open-webui
+    restart: unless-stopped
+    ports:
+      - "7600:8080"
+    env_file: "config/.env.open-webui"
+    volumes:
+      - custom-rag-open-webui-data:/app/backend/data
   ragflow:
     image: infiniflow/ragflow:v0.21.1-slim
     platform: linux/amd64
@@ -250,5 +259,6 @@ volumes:
   custom-rag-langfuse-minio-data:
   custom-rag-grafana-data:
   custom-rag-n8n-data:
+  custom-rag-open-webui-data:
   custom-rag-ragflow-logs:
   custom-rag-ragflow-es-data:

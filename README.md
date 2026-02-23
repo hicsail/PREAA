@@ -13,6 +13,7 @@ PREAA integrates several best-in-class open-source technologies to create a comp
 ### Core Components
 
 - **LibreChat**: A ChatGPT-like all-in-one interface providing authentication, conversation history, and multi-model support
+- **Open WebUI**: A Preplexity-like all-in-one chat frontend that allows for custom backends in python, modular user access managment, and text streaming
 - **LiteLLM**: Unified proxy for LLM requests with rate limiting and standardized OpenAI-compatible interface
 - **LangFlow**: Visual LLM workflow builder supporting multiple AI providers, agentic tools, RAG components, and custom integrations
 - **LangFuse**: Comprehensive LLM analytics platform for token usage tracking, completion costs, and performance metrics
@@ -72,6 +73,7 @@ PREAA integrates several best-in-class open-source technologies to create a comp
    cp config/.env.langfuse.sample config/.env.langfuse
    cp config/.env.librechat.sample config/.env.librechat
    cp config/.env.litellm.sample config/.env.litellm
+   cp config/.env.open-webui.sample config/.env.open-webui
    cp config/.env.librechat-metrics.sample config/.env.librechat-metrics
    cp config/.env.langflow.sample config/.env.langflow
    cp config/.env.ragflow.sample config/.env.ragflow
@@ -120,7 +122,8 @@ PREAA integrates several best-in-class open-source technologies to create a comp
    ```
 
 6. **Access the services:**
-   - LibreChat (Main Interface): http://localhost:3080
+   - LibreChat (Chat Interface): http://localhost:3080
+   - Open WebUI (Chat Interface): http://localhost:7600
    - LangFuse (Analytics): http://localhost:3000
    - LiteLLM (Proxy Management): http://localhost:4000
    - LangFlow (Workflow Builder): http://localhost:7860
@@ -140,6 +143,19 @@ PREAA integrates several best-in-class open-source technologies to create a comp
 6. Under "Logging & Alerts", add a LangFuse callback
 7. Enter your LangFuse API keys and set host to `http://langfuse-web:3000`
 8. Test the integration
+
+### Open WebUI + Custom Provider Integrations
+
+1. Create an Open WebUI account at http://localhost:7600 (Your first registered account is always an admin).
+2. Navigate to the **Admin Panel** in the bottom left corner after clicking on your username.
+   - Here, you can manage users, create groups, and customize settings for your specific use case.
+3. Open the **Functions** tab and click either **New Function** or **Import**.
+   - Functions can serve as custom models, enabling integration with proxies like LiteLLM and flow-builders like n8n and Langflow.
+   - Clicking **New Function** allows you to use functions hosted online or create your own.
+   - One function provided by default integrates with streaming from n8n. Import it from the relative path `packages/open-webui/function-n8n_streaming.json`.
+4. Activate any desired functions and configure them with the appropriate values.
+
+*For more information on developing functions, visit the official documentation at [Open WebUI](https://docs.openwebui.com/features/plugin/functions/pipe).*
 
 ## 🔧 Development
 
