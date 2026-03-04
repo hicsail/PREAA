@@ -186,7 +186,7 @@ services:
     volumes:
       - custom-rag-open-webui-data:/app/backend/data
   ragflow:
-    image: infiniflow/ragflow:v0.21.1-slim
+    image: infiniflow/ragflow:latest
     platform: linux/amd64
     container_name: custom-rag-ragflow
     restart: on-failure
