@@ -205,6 +205,9 @@ services:
     restart: unless-stopped
     ports:
       - "5678:5678"
+    environment:
+      - NODE_ENV=production
+      - WEBHOOK_URL=${N8N_WEBHOOK_URL}
     env_file:
       - ../../stack.env
       - stack.env
@@ -259,7 +262,7 @@ services:
       - portainer-open-webui-data:/app/backend/data
 
   ragflow:
-    image: infiniflow/ragflow:latest
+    image: infiniflow/ragflow:v0.24.0
     platform: linux/amd64
     container_name: portainer-ragflow
     restart: unless-stopped
