@@ -1,0 +1,128 @@
+{"event": "add_message", "data": {"timestamp": "2025-06-17 16:26:32 UTC", "sender": "User", "sender_name": "User", "session_id": "8e785198-f630-4d9f-94fa-26c8e945da80", "text": "hi", "files": [], "error": false, "edit": false, "properties": {"text_color": "", "background_color": "", "edited": false, "source": {"id": null, "display_name": null, "source": null}, "icon": "", "allow_markdown": false, "positive_feedback": null, "state": "complete", "targets": []}, "category": "message", "content_blocks": [], "id": "4bf52a1d-b60e-434d-ae5e-cdb3d4c543b5", "flow_id": "8e785198-f630-4d9f-94fa-26c8e945da80", "duration": null}}
+
+{"event": "add_message", "data": {"timestamp": "2025-06-17 16:26:32 UTC", "sender": "Machine", "sender_name": "AI", "session_id": "8e785198-f630-4d9f-94fa-26c8e945da80", "text": "\ud83c\udf89", "files": [], "error": false, "edit": false, "properties": {"text_color": "", "background_color": "", "edited": false, "source": {"id": "OllamaModel-2CpQk", "display_name": "Ollama", "source": "llama3.1:latest"}, "icon": "Ollama", "allow_markdown": false, "positive_feedback": null, "state": "complete", "targets": []}, "category": "message", "content_blocks": [], "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "flow_id": "8e785198-f630-4d9f-94fa-26c8e945da80", "duration": null}}
+
+{"event": "token", "data": {"chunk": "\ud83c\udf89", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:32 UTC"}}
+
+{"event": "token", "data": {"chunk": " Y", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:32 UTC"}}
+
+{"event": "token", "data": {"chunk": "ET", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:32 UTC"}}
+
+{"event": "token", "data": {"chunk": " AN", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:32 UTC"}}
+
+{"event": "token", "data": {"chunk": "OTHER", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:32 UTC"}}
+
+{"event": "token", "data": {"chunk": " HEL", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:32 UTC"}}
+
+{"event": "token", "data": {"chunk": "LO", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:32 UTC"}}
+
+{"event": "token", "data": {"chunk": "!!!", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:32 UTC"}}
+
+{"event": "token", "data": {"chunk": " \ud83d\ude0a", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:32 UTC"}}
+
+{"event": "token", "data": {"chunk": " I", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:32 UTC"}}
+
+{"event": "token", "data": {"chunk": " love", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:32 UTC"}}
+
+{"event": "token", "data": {"chunk": " it", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:32 UTC"}}
+
+{"event": "token", "data": {"chunk": "!", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:32 UTC"}}
+
+{"event": "token", "data": {"chunk": " You", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:32 UTC"}}
+
+{"event": "token", "data": {"chunk": "'re", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " really", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " getting", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " into", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " the", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " party", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " spirit", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": ",", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " aren", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": "'t", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " you", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": "?", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " \ud83d\ude09", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " Alright", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": ",", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " let", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": "'s", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " get", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " this", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " fresh", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " start", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " party", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " started", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": "!", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " \ud83c\udf89", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " What", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": "'s", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " on", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " your", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " mind", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " today", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": "?", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " Do", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " you", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " have", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " a", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " specific", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " project", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " or", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " idea", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " in", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " mind", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " that", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " you", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " want", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " to", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": " tackle", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+
+{"event": "token", "data": {"chunk": ",", "id": "3cd51868-bdb5-4df9-b43a-e5af03d59147", "timestamp": "2025-06-17 16:26:33 UTC"}}
+

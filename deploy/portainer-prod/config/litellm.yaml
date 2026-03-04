@@ -1,0 +1,8 @@
+model_list:
+  - model_name: "langflow-example"
+    litellm_params:
+      model: "langflow/my-model"
+
+litellm_settings:
+  custom_provider_map:
+  - {"provider": "langflow", "custom_handler": langflow_handler.langflow}

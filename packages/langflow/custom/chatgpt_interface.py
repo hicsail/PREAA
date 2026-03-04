@@ -72,10 +72,18 @@ class CompletionInterface(Component):
     def build_message_history(self) -> Memory:
         message_history = CompletionChatMessageHistory('temp')
 
-        for message in self.messages['content']:
-            if message['role'] == 'user':
-                message_history.add_user_message(message['content'])
-            else:
-                message_history.add_ai_message(message['content'])
+        # If no message history dictionary is provided, return empty history
+        if self.messages is None:
+            return message_history
+
+        messages = self.messages.get('content', None)
+
+        # If messages found, add them to the history
+        if messages:
+            for message in self.messages['content']:
+                if message['role'] == 'user':
+                    message_history.add_user_message(message['content'])
+                else:
+                    message_history.add_ai_message(message['content'])
 
         return message_history

@@ -8,8 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "prettier:fix": "prettier -wl \"src/**/*.ts\"",
-    "prettier": "prettier -l \"src/**/*.ts\""
+    "prettier": "prettier -l \"src/**/*.ts(x)\"",
+    "prettier:fix": "prettier -wl \"src/**/*.ts(x)\""
   },
   "dependencies": {
     "deep-chat-react": "^2.1.1",

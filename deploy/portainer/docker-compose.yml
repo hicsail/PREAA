@@ -1,6 +1,6 @@
 services:
   langflow:
-    image: langflowai/langflow:1.2.0
+    image: langflowai/langflow:latest
     restart: unless-stopped
     container_name: portainer-LangFlow
     ports:
@@ -15,28 +15,36 @@ services:
       - stack.env
 
   postgres:
-    image: postgres:16
+    image: pgvector/pgvector:pg16
     restart: unless-stopped
     container_name: portainer-PostgreSQL
+    ports:
+      - "5432:5432"
     volumes:
       - portainer-postgres-data:/var/lib/postgresql/data
+      - portainer-postgres-init:/docker-entrypoint-initdb.d
+      
     env_file:
       - ../../stack.env
       - stack.env
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready", "--host=localhost", "--username psql"]
+      test: ["CMD-SHELL", "PGPASSWORD=$${POSTGRES_PASSWORD} pg_isready -h 127.0.0.1 -U $${POSTGRES_USER:-psql} -d langflow"]
       interval: 3s
       timeout: 3s
       retries: 10
 
   librechat:
-    image: ghcr.io/danny-avila/librechat:latest
+    image: hicsail/librechat:main
     restart: unless-stopped
     container_name: portainer-LibreChat
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
       - "3080:3080"
+    environment:
+      - GOOGLE_CLIENT_ID=${LIBRECHAT_GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${LIBRECHAT_GOOGLE_CLIENT_SECRET}
+      - GOOGLE_CALLBACK_URL=${LIBRECHAT_GOOGLE_CALLBACK_URL}
     env_file:
       - ../../stack.env
       - stack.env
@@ -56,11 +64,13 @@ services:
     command: mongod --noauth
 
   litellm:
-    image: ghcr.io/berriai/litellm:litellm_stable_release_branch-v1.61.20-stable
+    image: ghcr.io/berriai/litellm:litellm_stable_release_branch-v1.68.0-stable
     restart: unless-stopped
     container_name: portainer-litellm
     ports:
       - "4000:4000"
+    environment:
+      - DATABASE_URL=${LITELLM_DATABASE_URL}
     env_file:
       - ../../stack.env
       - stack.env
@@ -87,6 +97,8 @@ services:
         condition: service_healthy
     ports:
       - "3030:3030"
+    environment:
+      - DATABASE_URL=${LANGFUSE_DATABASE_URL}
     env_file:
       - ../../stack.env
       - stack.env
@@ -98,6 +110,8 @@ services:
     depends_on: *langfuse-depends-on
     ports:
       - "3000:3000"
+    environment:
+      - DATABASE_URL=${LANGFUSE_DATABASE_URL}
     env_file:
       - ../../stack.env
       - stack.env
@@ -184,16 +198,20 @@ services:
     volumes:
       - portainer-grafana-data:/var/lib/grafana
 
-  helper-backend:
-    image: hicsail/preaa-helper:main
-    pull_policy: always
-    container_name: portainer-helper-backend
+  n8n:
+    image: docker.n8n.io/n8nio/n8n
+    container_name: portainer-n8n
     restart: unless-stopped
     ports:
-      - "3008:3001"
+      - "5678:5678"
     env_file:
       - ../../stack.env
       - stack.env
+    volumes:
+      - portainer-n8n-data:/home/node/.n8n
+      - portainer-n8n-files:/files
+    depends_on:
+      - postgres
 
   chat-client:
     image: hicsail/preaa-chat-client:main
@@ -205,6 +223,94 @@ services:
     env_file:
       - ../../stack.env
       - stack.env
+
+  admin:
+    image: hicsail/preaa-admin:main
+    pull_policy: always
+    container_name: portainer-admin
+    restart: unless-stopped
+    ports:
+      - "3016:3000"
+    depends_on:
+      - mongodb
+    env_file:
+      - ../../stack.env
+      - stack.env
+
+  embedded-chat:
+    image: hicsail/preaa-embedded-chat:main
+    pull_policy: always
+    container_name: portainer-embedded-chat
+    restart: unless-stopped
+    ports:
+      - "3017:80"
+
+  ragflow:
+    image: infiniflow/ragflow:latest
+    platform: linux/amd64
+    container_name: portainer-ragflow
+    restart: unless-stopped
+    depends_on:
+      ragflow-es:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    ports:
+      - "7080:80"
+      - "7443:443"
+      - "9380:9380"
+      - "9381:9381"
+      - "9382:9382"
+    env_file:
+      - ../../stack.env
+      - stack.env
+    environment:
+      - DB_TYPE=${RAGFLOW_DB_TYPE:-postgres}
+    volumes:
+      - portainer-ragflow-logs:/ragflow/logs
+      - portainer-ragflow-config:/ragflow/config-files
+      - portainer-ragflow-history-data-agent:/ragflow/history_data_agent
+    entrypoint: ["/bin/bash", "/ragflow/config-files/entrypoint.sh"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  ragflow-es:
+    image: elasticsearch:8.11.3
+    container_name: portainer-ragflow-es
+    restart: unless-stopped
+    env_file:
+      - ../../stack.env
+      - stack.env
+    environment:
+      - node.name=ragflow-es
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD:-ragflow_elastic_pass}
+      - bootstrap.memory_lock=false
+      - discovery.type=single-node
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+      - cluster.routing.allocation.disk.watermark.low=5gb
+      - cluster.routing.allocation.disk.watermark.high=3gb
+      - cluster.routing.allocation.disk.watermark.flood_stage=2gb
+      - ES_JAVA_OPTS=${ES_JAVA_OPTS:--Xms512m -Xmx512m}
+    mem_limit: 4g
+    ports:
+      - "9202:9200"
+    volumes:
+      - portainer-ragflow-es-data:/usr/share/elasticsearch/data
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -u elastic:$${ELASTIC_PASSWORD} http://localhost:9200 >/dev/null"]
+      interval: 10s
+      timeout: 10s
+      retries: 120
 
 volumes:
   portainer-langflow-data:
@@ -220,3 +326,10 @@ volumes:
   portainer-langfuse-minio-data:
   portainer-prometheus-config:
   portainer-grafana-data:
+  portainer-n8n-data:
+  portainer-n8n-files:
+  portainer-postgres-init:
+  portainer-ragflow-logs:
+  portainer-ragflow-config:
+  portainer-ragflow-history-data-agent:
+  portainer-ragflow-es-data:
