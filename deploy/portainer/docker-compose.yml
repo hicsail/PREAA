@@ -76,6 +76,7 @@ services:
       - stack.env
     depends_on:
       - postgres
+      - langfuse-web
     volumes:
       - portainer-litellm:/app/config
     command: "--config /app/config/litellm.yaml"
@@ -204,6 +205,9 @@ services:
     restart: unless-stopped
     ports:
       - "5678:5678"
+    environment:
+      - NODE_ENV=production
+      - WEBHOOK_URL=${N8N_WEBHOOK_URL}
     env_file:
       - ../../stack.env
       - stack.env
@@ -245,8 +249,20 @@ services:
     ports:
       - "3017:80"
 
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: portainer-open-webui
+    restart: unless-stopped
+    ports:
+      - "7600:8080"
+    env_file:
+      - ../../stack.env
+      - stack.env
+    volumes:
+      - portainer-open-webui-data:/app/backend/data
+
   ragflow:
-    image: infiniflow/ragflow:latest
+    image: infiniflow/ragflow:v0.24.0
     platform: linux/amd64
     container_name: portainer-ragflow
     restart: unless-stopped
@@ -328,6 +344,7 @@ volumes:
   portainer-grafana-data:
   portainer-n8n-data:
   portainer-n8n-files:
+  portainer-open-webui-data:
   portainer-postgres-init:
   portainer-ragflow-logs:
   portainer-ragflow-config:

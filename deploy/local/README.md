@@ -41,10 +41,23 @@ then follow the instructions below to find each secret that needs to be added in
 * `JWT_SECRET`: see [LibreChat provided generator](https://www.librechat.ai/toolkit/creds_generator)
 * `JWT_REFRESH_SECRET`: see [LibreChat provided generator](https://www.librechat.ai/toolkit/creds_generator)
 
-#### config/.env.litellm 
+#### config/.env.litellm
 
 * `LITELLM_MASTER_KEY`: any generated string
 * `DATABASE_URL`: updated to match from `.env.psql`
+* `LANGFUSE_HOST`: set to `http://langfuse-web:3000` (Docker internal URL)
+* `LANGFUSE_PUBLIC_KEY`: matching public key from your LangFuse project
+* `LANGFUSE_SECRET_KEY`: matching secret key from your LangFuse project
+
+#### config/.env.n8n
+
+* No secrets required for basic setup (uses SQLite by default)
+* Optionally configure PostgreSQL database connection for persistence
+* Optionally set `N8N_ENCRYPTION_KEY` for secure credential storage
+
+#### config/.env.open-webui
+
+* `WEBUI_URL`: set to `http://localhost:7600` for local development
 
 #### config/.env.ragflow
 

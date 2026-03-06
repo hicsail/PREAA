@@ -13,10 +13,12 @@ PREAA integrates several best-in-class open-source technologies to create a comp
 ### Core Components
 
 - **LibreChat**: A ChatGPT-like all-in-one interface providing authentication, conversation history, and multi-model support
-- **Open WebUI**: A Preplexity-like all-in-one chat frontend that allows for custom backends in python, modular user access managment, and text streaming
+- **Open WebUI**: A Perplexity-like all-in-one chat frontend that allows for custom backends in python, modular user access management, and text streaming
 - **LiteLLM**: Unified proxy for LLM requests with rate limiting and standardized OpenAI-compatible interface
 - **LangFlow**: Visual LLM workflow builder supporting multiple AI providers, agentic tools, RAG components, and custom integrations
+- **n8n**: Workflow automation platform for building complex integrations and automations with a visual node-based editor
 - **LangFuse**: Comprehensive LLM analytics platform for token usage tracking, completion costs, and performance metrics
+- **RagFlow**: RAG (Retrieval-Augmented Generation) document processing engine with deep document parsing, chunking, and retrieval capabilities
 
 ### Frontend Components
 
@@ -38,6 +40,7 @@ PREAA integrates several best-in-class open-source technologies to create a comp
 - **Redis**: Caching and session management
 - **ClickHouse**: High-performance analytics database for LangFuse metrics
 - **MinIO**: S3-compatible object storage
+- **Elasticsearch**: Search engine for RagFlow document retrieval
 - **Prometheus & Grafana**: Monitoring and visualization stack
 
 ## 🚀 Getting Started
@@ -127,7 +130,8 @@ PREAA integrates several best-in-class open-source technologies to create a comp
    - LangFuse (Analytics): http://localhost:3000
    - LiteLLM (Proxy Management): http://localhost:4000
    - LangFlow (Workflow Builder): http://localhost:7860
-   - n8n (Workflow Builder): http://localhost:5678
+   - n8n (Workflow Automation): http://localhost:5678
+   - RagFlow (Document Processing): http://localhost:7080
    - Grafana (Monitoring): http://localhost:3002
    - Admin Dashboard: *Configure separately in packages/admin*
 
