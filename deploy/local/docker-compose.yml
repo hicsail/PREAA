@@ -186,7 +186,7 @@ services:
     volumes:
       - custom-rag-open-webui-data:/app/backend/data
   ragflow:
-    image: infiniflow/ragflow:v0.24.0
+    image: infiniflow/ragflow:latest
     platform: linux/amd64
     container_name: custom-rag-ragflow
     restart: on-failure
@@ -211,7 +211,7 @@ services:
       - custom-rag-ragflow-logs:/ragflow/logs
       - ./ragflow/service_conf.yaml.template:/ragflow/conf/service_conf.yaml.template
       - ./ragflow/entrypoint.sh:/ragflow/entrypoint.sh
-      - ./ragflow/nginx.conf:/etc/nginx/sites-available/default
+      - ./ragflow/nginx.conf:/etc/nginx/conf.d/default.conf
       - ./ragflow/history_data_agent:/ragflow/history_data_agent
     extra_hosts:
       - "host.docker.internal:host-gateway"
