@@ -169,8 +169,8 @@ else
 fi
 rm -f "${CONF_FILE}.tmp"
 
-# Copy nginx config from config volume
-cp "${CONFIG_FILES_DIR}/nginx.conf" /etc/nginx/sites-available/default
+# Copy nginx config from config volume to the nginx conf.d directory used by the image
+cp "${CONFIG_FILES_DIR}/nginx.conf" /etc/nginx/conf.d/default.conf
 
 export LD_LIBRARY_PATH="/usr/lib/x86_64-linux-gnu/"
 PY=python3
