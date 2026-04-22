@@ -1,0 +1,53 @@
+# Local Terraform state files
+*.tfstate
+*.tfstate.*
+
+# Backup files created by Terraform
+*.backup
+
+# Core plan output files
+*.tfplan
+
+# Crash logs created by Terraform
+crash.log
+
+# Override files (used for local overrides, not shared)
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Sensitive variable files
+*.tfvars
+*.tfvars.json
+
+# Ignore Terraform provider plugins
+.terraform/
+
+# Ignore lock files for Terraform plugins
+.terraform.lock.hcl
+
+# Temporary files created by editors or systems
+*.log
+*.swp
+*.bak
+*.tmp
+*.old
+*.orig
+*.rej
+
+# Ignore IDE and OS-specific files
+# IntelliJ IDEA
+.idea/
+*.iml
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
