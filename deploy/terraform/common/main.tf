@@ -1,5 +1,5 @@
-// Docker pull secret for images in Dockerhub
-resource "kubernetes_secret" "docker_pull" {
+# Docker pull secret for images in Dockerhub
+resource "kubernetes_secret_v1" "docker_pull" {
   metadata {
     name      = "docker-pull"
     namespace = var.namespace

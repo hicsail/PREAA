@@ -13,7 +13,7 @@ terraform {
 }
 
 provider "kubernetes" {
-
+  config_path = "~/.kube/config"
 }
 
 module "common" {
@@ -25,6 +25,10 @@ module "common" {
 module "psql" {
   source = "./psql/"
 
-  # K8s Configs
+  # Meta Configs
   namespace = var.namespace
+  docker_pull_secret = module.common.docker_pull_secret
+
+  # Users for each service
+  users = []
 }
