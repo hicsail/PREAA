@@ -4,6 +4,7 @@ locals {
   psql_ssl_key_path = "/psql/tsl.key"
   psql_ssl_mount = "n8n-psql-ssl"
   app_name = "preaa-n8n"
+  storage_name = "preaa-n8n-storage"
   n8n_port = 5678
 }
 
@@ -12,6 +13,21 @@ data "kubernetes_secret_v1" "db_keys" {
   metadata {
     name = "preaa-psql-cluster-cert"
     namespace = var.namespace
+  }
+}
+
+resource "kubernetes_persistent_volume_claim_v1" "storage" {
+  metadata {
+    name = local.storage_name
+    namespace = var.namespace
+  }
+  spec {
+    access_modes = ["ReadWriteOnce"]
+    resources {
+      requests = {
+        storage = "25Gi"
+      }
+    }
   }
 }
 
@@ -98,6 +114,12 @@ resource "kubernetes_deployment_v1" "n8n" {
             mount_path = "/psql"
           }
 
+          # Local storage
+          volume_mount {
+            name = local.storage_name
+            mount_path = "/.n8n"
+          }
+
           # Database connection settings
           env_from {
             secret_ref {
@@ -127,6 +149,13 @@ resource "kubernetes_deployment_v1" "n8n" {
           name = local.psql_ssl_mount
           secret {
             secret_name = data.kubernetes_secret_v1.db_keys.metadata.0.name
+          }
+        }
+
+        volume {
+          name = local.storage_name
+          persistent_volume_claim {
+            claim_name = kubernetes_persistent_volume_claim_v1.storage.metadata.0.name
           }
         }
       }
