@@ -29,7 +29,7 @@ variable "db_creds" {
   type = object({
     host = string
     port = number
-    name = string
+    user = string
     password = string
   })
   sensitive = true

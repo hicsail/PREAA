@@ -28,7 +28,7 @@ resource "kubernetes_secret_v1" "database" {
     # Pulled from CrunchyData generated secret
     "DB_POSTGRESDB_HOST" = var.db_creds.host
     "DB_POSTGRESDB_PORT" = var.db_creds.port
-    "DB_POSTGRESDB_USER" = var.db_creds.name
+    "DB_POSTGRESDB_USER" = var.db_creds.user
     "DB_POSTGRESDB_PASSWORD" = var.db_creds.password
 
     # TLS config, paths will be mounted into the container

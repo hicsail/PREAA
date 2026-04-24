@@ -6,7 +6,7 @@ output "credentials" {
     user => {
       host = secret.data["host"]
       port = secret.data["port"]
-      name = secret.data["name"]
+      user = secret.data["user"]
       password = secret.data["password"]
     }
   }
