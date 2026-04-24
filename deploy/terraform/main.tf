@@ -32,3 +32,11 @@ module "psql" {
   # Users for each service
   users = []
 }
+
+module "n8n" {
+  source = "./n8n/"
+
+  # Meta Configs
+  namespce = var.namespace
+  docker_pull_secret = module.commpon.docker_pull_secret
+}
