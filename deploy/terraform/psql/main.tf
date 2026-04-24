@@ -52,3 +52,12 @@ resource "kubernetes_manifest" "psql" {
     }
   }
 }
+
+data "kubernetes_secret_v1" "credentials" {
+  for_each = toset([for user in var.users : user.name])
+  depends_on = [kubernetes_manifest.psql]
+  metadata {
+    name = "preaa-psql-pguser-${each.value}"
+    namespace = var.namespace
+  }
+}
