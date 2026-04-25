@@ -1,10 +1,11 @@
 locals {
   psql_ssl_ca_path = "/psql/ca.crt"
   psql_ssl_cert_path = "/psql/tls.crt"
-  psql_ssl_key_path = "/psql/tsl.key"
+  psql_ssl_key_path = "/psql/tls.key"
   psql_ssl_mount = "n8n-psql-ssl"
   app_name = "preaa-n8n"
   storage_name = "preaa-n8n-storage"
+  cache_storage_name = "preaa-n8n-cache-storage"
   n8n_port = 5678
 }
 
@@ -31,6 +32,21 @@ resource "kubernetes_persistent_volume_claim_v1" "storage" {
   }
 }
 
+resource "kubernetes_persistent_volume_claim_v1" "cache" {
+  metadata {
+    name = local.cache_storage_name
+    namespace = var.namespace
+  }
+  spec {
+    access_modes = ["ReadWriteOnce"]
+    resources {
+      requests = {
+        storage = "5Gi"
+      }
+    }
+  }
+}
+
 resource "kubernetes_secret_v1" "database" {
   metadata {
     name = "preaa-n8n-db-creds"
@@ -46,11 +62,12 @@ resource "kubernetes_secret_v1" "database" {
     "DB_POSTGRESDB_PORT" = var.db_creds.port
     "DB_POSTGRESDB_USER" = var.db_creds.user
     "DB_POSTGRESDB_PASSWORD" = var.db_creds.password
+    "DB_POSTGRESDB_SCHEMA" = var.db_creds.user
 
     # TLS config, paths will be mounted into the container
-    "DB_POSTGRESDB_SSL_CA" = local.psql_ssl_ca_path
-    "DB_POSTGRESDB_SSL_CERT" = local.psql_ssl_cert_path
-    "DB_POSTGRESDB_SSL_KEY" = local.psql_ssl_key_path
+    "DB_POSTGRESDB_SSL_CA_FILE" = local.psql_ssl_ca_path
+    "DB_POSTGRESDB_SSL_CERT_FILE" = local.psql_ssl_cert_path
+    "DB_POSTGRESDB_SSL_KEY_FILE" = local.psql_ssl_key_path
   }
 }
 
@@ -120,6 +137,12 @@ resource "kubernetes_deployment_v1" "n8n" {
             mount_path = "/.n8n"
           }
 
+          # Cache
+          volume_mount {
+            name = local.cache_storage_name
+            mount_path = "/.cache"
+          }
+
           # Database connection settings
           env_from {
             secret_ref {
@@ -156,6 +179,12 @@ resource "kubernetes_deployment_v1" "n8n" {
           name = local.storage_name
           persistent_volume_claim {
             claim_name = kubernetes_persistent_volume_claim_v1.storage.metadata.0.name
+          }
+        }
+        volume {
+          name = local.cache_storage_name
+          persistent_volume_claim {
+            claim_name = kubernetes_persistent_volume_claim_v1.cache.metadata.0.name
           }
         }
       }
