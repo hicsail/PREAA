@@ -26,13 +26,13 @@ module "psql" {
   source = "./psql/"
 
   # Meta Configs
-  namespace = var.namespace
+  namespace          = var.namespace
   docker_pull_secret = module.common.docker_pull_secret
 
   # Users for each service
   users = [
     {
-      name = "n8n"
+      name      = "n8n"
       databases = ["n8n"]
     }
   ]
@@ -42,13 +42,13 @@ module "n8n" {
   source = "./n8n/"
 
   # Meta Configs
-  namespace = var.namespace
+  namespace          = var.namespace
   docker_pull_secret = module.common.docker_pull_secret
 
   # Database connection
   db_creds = module.psql.credentials["n8n"]
 
   # Endpoint configuration
-  hostname = "n8n.sail.codes"
+  hostname    = "n8n.sail.codes"
   webhook_url = "https://n8n.sail.codes/"
 }

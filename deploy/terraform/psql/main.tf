@@ -2,14 +2,14 @@
 
 resource "kubernetes_manifest" "psql" {
   manifest = {
-    kind = "PostgresCluster"
+    kind       = "PostgresCluster"
     apiVersion = "postgres-operator.crunchydata.com/v1beta1"
     metadata = {
-      name = "preaa-psql"
+      name      = "preaa-psql"
       namespace = var.namespace
     }
     spec = {
-      postgresVersion = 16
+      postgresVersion  = 16
       imagePullSecrets = [{ name = var.docker_pull_secret }]
       instances = [
         {
@@ -54,10 +54,10 @@ resource "kubernetes_manifest" "psql" {
 }
 
 data "kubernetes_secret_v1" "credentials" {
-  for_each = toset([for user in var.users : user.name])
+  for_each   = toset([for user in var.users : user.name])
   depends_on = [kubernetes_manifest.psql]
   metadata {
-    name = "preaa-psql-pguser-${each.value}"
+    name      = "preaa-psql-pguser-${each.value}"
     namespace = var.namespace
   }
 }

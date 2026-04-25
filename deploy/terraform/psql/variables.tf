@@ -1,6 +1,6 @@
 variable "namespace" {
   description = "K8s namespace for resource deployment"
-  type = string
+  type        = string
 }
 
 variable "docker_pull_secret" {
@@ -11,8 +11,8 @@ variable "docker_pull_secret" {
 variable "users" {
   description = "Each psql user and the database they should have access to"
   type = list(object({
-    name = string
+    name      = string
     databases = optional(list(string))
-    options = optional(string)
+    options   = optional(string)
   }))
 }
