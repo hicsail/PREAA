@@ -1,0 +1,28 @@
+{
+    "name": "healthcheck",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "dev": "next dev --port 3003",
+        "build": "next build",
+        "start": "next start --port 3003",
+        "lint": "next lint",
+        "codegen:langflow": "openapi-ts --file openapi-ts-langflow.config.ts",
+        "codegen:n8n": "openapi-ts --file openapi-ts-n8n.config.ts",
+        "codegen:langfuse": "openapi-ts --file openapi-ts-langfuse.config.ts"
+    },
+    "dependencies": {
+        "next": "15.3.5",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0"
+    },
+    "devDependencies": {
+        "@types/node": "^20",
+        "@types/react": "^19",
+        "@types/react-dom": "^19",
+        "eslint": "^9",
+        "eslint-config-next": "15.3.5",
+        "typescript": "^5",
+        "@hey-api/openapi-ts": "^0.78.2"
+    }
+}
