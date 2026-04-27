@@ -1,10 +1,13 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
 import { useSession, signIn, signOut } from 'next-auth/react';
+import { OnboardingWizard } from './components/onboarding/Onboarding';
 
 export default function HomePage() {
   const { data: session, status } = useSession();
+  const [wizardOpen, setWizardOpen] = useState(false);
 
   if (status === 'loading') {
     return (
@@ -61,7 +64,20 @@ export default function HomePage() {
               </div>
             </Link>
 
-            {/* Add more navigation cards here as you add more pages */}
+            <button
+              onClick={() => setWizardOpen(true)}
+              className="group relative overflow-hidden rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 p-6 shadow-sm transition-all hover:shadow-md hover:scale-105 text-left w-full"
+            >
+              <div className="space-y-2">
+                <h2 className="text-xl font-semibold">Create Widget</h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Set up a new chatbot widget with a Langflow project and embed script
+                </p>
+              </div>
+              <div className="mt-4 text-sm font-medium text-blue-600 dark:text-blue-400 group-hover:underline">
+                Get started →
+              </div>
+            </button>
           </div>
         )}
 
@@ -70,6 +86,8 @@ export default function HomePage() {
             <p>Select a section above to navigate</p>
           </div>
         )}
+
+        <OnboardingWizard open={wizardOpen} onClose={() => setWizardOpen(false)} />
       </div>
     </div>
   );

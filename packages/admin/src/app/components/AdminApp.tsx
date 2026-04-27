@@ -6,11 +6,12 @@ import { ModelCreate } from './admin/models/ModelCreate.component';
 import simpleRestProvider from 'ra-data-simple-rest';
 import { ProxyCreate } from './admin/proxies/ProxyCreate.component';
 import { ProxiesList } from './admin/proxies/ProxiesList.component';
+import { OnboardingDashboard } from './OnboardingDashboard';
 
 const dataProvider = simpleRestProvider('/api');
 
 const AdminApp: FC = () => (
-  <Admin dataProvider={dataProvider}>
+  <Admin dataProvider={dataProvider} dashboard={OnboardingDashboard}>
     <Resource name="models" list={ModelsList} create={ModelCreate} />
     <Resource name="proxies" list={ProxiesList} create={ProxyCreate} />
   </Admin>

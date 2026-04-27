@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { parseConfigFromUrl } from './config';
 import {
   Box,
   Button,
@@ -36,20 +37,22 @@ interface WidgetConfig {
 
 // Demo page to showcase how to embed the widget
 const App: React.FC = () => {
+  const urlConfig = parseConfigFromUrl();
+
   const [widgetConfig, setWidgetConfig] = useState<WidgetConfig>({
-    modelId: '688a954d91c7a967e8ad6584',
-    title: 'May I help you?',
-    botName: 'Hariri Chat',
-    placeholder: 'Ask me anything about HIC @ BU...',
-    supportTopics: 'BU HIC',
-    botAvatarSrc: '/assets/bu-logo.svg',
-    baseUrl: 'https://embedded-preaa.sail.codes',
-    language: 'en',
-    streaming: false,
+    modelId: urlConfig.modelId ?? '688a954d91c7a967e8ad6584',
+    title: urlConfig.title ?? 'May I help you?',
+    botName: urlConfig.botName ?? 'Hariri Chat',
+    placeholder: urlConfig.placeholder ?? 'Ask me anything about HIC @ BU...',
+    supportTopics: (urlConfig.supportTopics as string) ?? 'BU HIC',
+    botAvatarSrc: urlConfig.botAvatarSrc ?? '/assets/bu-logo.svg',
+    baseUrl: urlConfig.baseUrl ?? 'https://embedded-preaa.sail.codes',
+    language: urlConfig.language ?? 'en',
+    streaming: urlConfig.streaming ?? false,
     theme: {
-      primary: '#cc0000',
-      background: '#ffffff',
-      text: '#212121'
+      primary: urlConfig.theme?.primary ?? '#cc0000',
+      background: urlConfig.theme?.background ?? '#ffffff',
+      text: urlConfig.theme?.text ?? '#212121'
     }
   });
 
