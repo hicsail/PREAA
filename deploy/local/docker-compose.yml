@@ -15,11 +15,13 @@ services:
     image: pgvector/pgvector:pg16
     container_name: custom-rag-PostgreSQL
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - custom-rag-postgres-data:/var/lib/postgresql/data
       - ./postgres-init:/docker-entrypoint-initdb.d
-    entrypoint: ["/bin/bash", "/docker-entrypoint-initdb.d/entrypoint.sh"]
+    # Removed custom entrypoint: it called docker-entrypoint.sh which re-ran init scripts
+    # causing a double postgres start and postmaster.pid conflict. Default entrypoint
+    # handles the SQL init scripts in /docker-entrypoint-initdb.d/ correctly.
     env_file: "config/.env.psql"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready", "--host=localhost", "--username psql"]
@@ -162,6 +164,18 @@ services:
       - "3002:3000"
     volumes:
       - custom-rag-grafana-data:/var/lib/grafana
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    container_name: custom-rag-keycloak
+    command: start-dev --import-realm
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./config/keycloak-realm.json:/opt/keycloak/data/import/realm.json
 
   n8n:
     image: docker.n8n.io/n8nio/n8n

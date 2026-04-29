@@ -3,6 +3,14 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useSession, signIn, signOut } from 'next-auth/react';
+
+async function keycloakLogout() {
+  const keycloakUrl = process.env.NEXT_PUBLIC_KEYCLOAK_URL || 'http://localhost:8080';
+  const realm = process.env.NEXT_PUBLIC_KEYCLOAK_REALM || 'myrealm';
+  const redirectUri = encodeURIComponent(window.location.origin + '/');
+  await signOut({ redirect: false });
+  window.location.href = `${keycloakUrl}/realms/${realm}/protocol/openid-connect/logout?post_logout_redirect_uri=${redirectUri}&client_id=admin-client`;
+}
 import { OnboardingWizard } from './components/onboarding/Onboarding';
 
 export default function HomePage() {
@@ -28,7 +36,7 @@ export default function HomePage() {
                 Welcome, {session.user?.name || session.user?.email}!
               </p>
               <button
-                onClick={() => signOut()}
+                onClick={() => keycloakLogout()}
                 className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
               >
                 Sign Out
@@ -78,6 +86,21 @@ export default function HomePage() {
                 Get started →
               </div>
             </button>
+
+            <Link
+              href="/health"
+              className="group relative overflow-hidden rounded-lg border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 p-6 shadow-sm transition-all hover:shadow-md hover:scale-105"
+            >
+              <div className="space-y-2">
+                <h2 className="text-xl font-semibold">Health Check</h2>
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  Monitor the status of LangFlow, LiteLLM, Langfuse, and n8n
+                </p>
+              </div>
+              <div className="mt-4 text-sm font-medium text-blue-600 dark:text-blue-400 group-hover:underline">
+                View status →
+              </div>
+            </Link>
           </div>
         )}
 
