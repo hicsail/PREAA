@@ -1,18 +1,26 @@
 services:
   langflow:
-    image: langflowai/langflow:latest
+    image: langflowai/langflow:1.9.2
     restart: unless-stopped
     container_name: portainer-LangFlow
     ports:
-      - "7860:7860"
+      - "127.0.0.1:7860:7860"
     depends_on:
       - postgres
     volumes:
       - portainer-langflow-data:/app/langflow
       - portainer-langflow-components:/app/custom_components/
-    env_file:
-      - ../../stack.env
-      - stack.env
+    environment:
+      - LANGFLOW_DATABASE_URL
+      - LANGFLOW_CONFIG_DIR
+      - LANGFLOW_COMPONENTS_PATH
+      - LANGFLOW_LOG_LEVEL
+      - LANGFLOW_PROMETHEUS_ENABLE
+      - LANGFLOW_AUTO_LOGIN
+      - LANGFLOW_SUPERUSER
+      - LANGFLOW_SUPERUSER_PASSWORD
+      - LANGFLOW_SECRET_KEY
+      - LANGFLOW_NEW_USER_IS_ACTIVE
 
   postgres:
     image: pgvector/pgvector:pg16
