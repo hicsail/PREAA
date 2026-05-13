@@ -4,7 +4,7 @@ services:
     restart: unless-stopped
     container_name: portainer-LangFlow
     ports:
-      - "127.0.0.1:7860:7860"
+      - "7860:7860"
     depends_on:
       - postgres
     volumes:
