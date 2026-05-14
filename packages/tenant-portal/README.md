@@ -14,9 +14,8 @@ incremental commit plan.
 Under active development. Current scope this branch ships:
 
 - [x] Design doc + flow template seed
-- [x] Package scaffold (this commit) — builds and runs, sign-in button is a
-      placeholder
-- [ ] Auth wiring (Keycloak + roles)
+- [x] Package scaffold — builds and runs
+- [x] Auth wiring (Keycloak + roles + route guards)
 - [ ] Tenant model + CRUD
 - [ ] Integration clients (Langflow / Langfuse / Keycloak admin / LiteLLM)
 - [ ] Provisioning saga
@@ -30,11 +29,24 @@ Under active development. Current scope this branch ships:
 
 ```sh
 npm install
+cp .env.local.example .env.local   # then fill in NEXTAUTH_SECRET + KEYCLOAK_CLIENT_SECRET
 npm run dev
 ```
 
-Opens on `http://localhost:3000`. Until auth is wired, no env vars are
-required.
+Opens on `http://localhost:3000`. Without `.env.local` filled in, the
+home page still renders but sign-in fails (Keycloak will reject an empty
+client_secret).
+
+Required Keycloak client config (for the `preaa-staging` client):
+
+- Add `http://localhost:3000/api/auth/callback/keycloak` to **Valid
+  Redirect URIs** for local dev (production URL for staging/prod).
+- Confirm the client has a **realm roles** mapper (Client → Client
+  Scopes → roles), so `realm_access.roles` is in the access token —
+  otherwise the role-gated routes always 403.
+- Create realm roles `embedded-chat-admin` and `embedded-chat-tenant`
+  if they don't exist; assign at least one to a user you can test
+  with.
 
 ## Required env (once auth + integrations are wired)
 
