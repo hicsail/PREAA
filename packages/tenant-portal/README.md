@@ -17,7 +17,7 @@ Under active development. Current scope this branch ships:
 - [x] Package scaffold — builds and runs
 - [x] Auth wiring (Keycloak + roles + route guards)
 - [x] Tenant model + CRUD service + admin-gated `/api/tenants/*`
-- [ ] Integration clients (Langflow / Langfuse / Keycloak admin / LiteLLM)
+- [x] Integration clients (Langflow / Langfuse / Keycloak admin / LiteLLM)
 - [ ] Provisioning saga
 - [ ] Admin UI
 - [ ] Tenant dashboard
