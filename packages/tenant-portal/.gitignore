@@ -31,6 +31,10 @@ yarn-error.log*
 .pnpm-debug.log*
 
 .env
+.env.local
+.env.*.local
+*.kc.env
+.kc.env
 
 # vercel
 .vercel
