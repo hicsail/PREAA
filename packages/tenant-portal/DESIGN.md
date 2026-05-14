@@ -1,4 +1,4 @@
-# embedded-chat-admin — Design
+# tenant-portal — Design
 
 > A merged replacement for `packages/admin` and `packages/embedded-chat`. Lets
 > a platform admin provision "embedded chat tenants" — each gets their own
@@ -34,7 +34,7 @@
                                  │ OIDC
                                  ▼
         ┌─────────────────────────────────────────────────────────┐
-        │  embedded-chat-admin (Next.js, port 3018)               │
+        │  tenant-portal (Next.js, port 3018)               │
         │  ┌────────────────┐  ┌──────────────────────────────┐   │
         │  │ /admin/...     │  │ /dashboard/...               │   │
         │  │ (role: admin)  │  │ (role: tenant)               │   │
@@ -80,7 +80,8 @@ complexity.
 
 ## Auth + role model
 
-Two realm roles in Keycloak:
+Two realm roles in Keycloak (named after the product domain, not the
+package, so they read sensibly in the Keycloak admin UI):
 
 - `embedded-chat-admin` — full access to `/admin/*`.
 - `embedded-chat-tenant` — access to their own `/dashboard/*`.
@@ -199,7 +200,7 @@ interface ITenant {
 ```
 
 Secrets are encrypted at rest with a per-deploy key sourced from a new
-`EMBEDDED_CHAT_ADMIN_ENCRYPTION_KEY` env var (32 bytes hex). Admin UI
+`TENANT_PORTAL_ENCRYPTION_KEY` env var (32 bytes hex). Admin UI
 shows them masked; tenants can reveal-and-copy with a button (which
 triggers a server round-trip to decrypt).
 
@@ -227,7 +228,7 @@ origins).
 ## File layout
 
 ```
-packages/embedded-chat-admin/
+packages/tenant-portal/
 ├── DESIGN.md                         (this file)
 ├── README.md
 ├── Dockerfile
@@ -299,13 +300,13 @@ packages/embedded-chat-admin/
 
 ## Deployment
 
-- New Docker image `hicsail/preaa-embedded-chat-admin:main`.
+- New Docker image `hicsail/preaa-tenant-portal:main`.
 - New compose service in `deploy/portainer/docker-compose.yml` on port
   **3018** (3016=admin, 3017=embedded-chat — same range).
 - Required new stack env vars:
-  - `EMBEDDED_CHAT_ADMIN_ENCRYPTION_KEY` (32 bytes hex; generate locally,
+  - `TENANT_PORTAL_ENCRYPTION_KEY` (32 bytes hex; generate locally,
     paste into Portainer stack env)
-  - `EMBEDDED_CHAT_ADMIN_MONGO_URI` (Mongo connection string for a new
+  - `TENANT_PORTAL_MONGO_URI` (Mongo connection string for a new
     `embedded_chat_admin` DB on the existing Mongo)
   - `LANGFLOW_ADMIN_TOKEN` — a long-lived admin token for the
     `administrator` user, so the package can call Langflow's admin API.
@@ -335,23 +336,20 @@ I'll commit in chewable slices so review is easy:
 | 11 | Compose + deploy | add service to compose files; document new env vars in stack.env.sample |
 | 12 | Deprecate old packages | once new package is verified in staging, delete packages/admin/ and packages/embedded-chat/, remove their compose entries |
 
-## Open questions before I scaffold
+## Decisions log
 
-1. **Package name** — I went with `embedded-chat-admin`. OK with that, or
-   prefer something else (`tenant-portal`, `chat-console`, `pad` =
-   PREAA admin dashboard, etc.)?
-2. **react-admin** — confirming you're OK dropping it in favor of plain
-   MUI + Next.js. Existing admin uses it but only for a couple of
-   tables; the new package's UX is different enough that I think
-   plain MUI is cleaner.
-3. **Deep-link vs proxied data** — confirming you accept the deep-link
-   recommendation. Faster to build, less duplication. SSO wiring is a
-   future PR.
-4. **Encryption-at-rest for tenant secrets** — I'm proposing AES-256-GCM
-   with a per-deploy key. Reasonable, or do you have a KMS pattern
-   you'd rather use?
-5. **Langflow admin auth** — do you want me to provision a dedicated
-   long-lived admin token (more leakage risk if it gets stored
-   somewhere it shouldn't), OR have the backend log in as
-   `administrator` on each operation (slower but no token to leak)?
-6. **Compose port** — 3018 OK?
+Architectural questions and what was decided. All revisitable in a
+followup PR, but locks ongoing implementation here.
+
+| # | Question | Decision | Decided by |
+|---|---|---|---|
+| 1 | Package name | `tenant-portal` | team |
+| 2 | UI framework (react-admin vs plain Next.js + MUI) | Plain Next.js + MUI; drop react-admin | team |
+| 3 | Tenant data access (deep-link vs proxy) | Deep-link out to LiteLLM and Langfuse UIs | team |
+| 4 | Encryption at rest for tenant secrets | AES-256-GCM with per-deploy key in `TENANT_PORTAL_ENCRYPTION_KEY` env var | default |
+| 5 | Langflow admin auth | Dedicated long-lived admin API key, stored in `LANGFLOW_ADMIN_API_KEY` env | default |
+| 6 | Compose host port | 3018 (extends the 3016/3017 range) | default |
+
+"default" = my recommended choice, not actively chosen by the team —
+flag and push back any of these as the scaffold lands if you'd rather
+go another way.
