@@ -19,7 +19,7 @@ Under active development. Current scope this branch ships:
 - [x] Tenant model + CRUD service + admin-gated `/api/tenants/*`
 - [x] Integration clients (Langflow / Langfuse / Keycloak admin / LiteLLM)
 - [x] Flow template loader (clones ECE Chat per-tenant, blanks secrets)
-- [ ] Provisioning saga
+- [x] Provisioning saga + `/api/tenants/provision` + deprovision endpoint
 - [ ] Admin UI
 - [ ] Tenant dashboard
 - [ ] Widget port + embed loader

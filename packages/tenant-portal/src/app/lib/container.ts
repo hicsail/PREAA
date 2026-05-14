@@ -3,6 +3,7 @@ import { container } from 'tsyringe';
 import { CryptoService } from './services/crypto.service';
 import { TenantService } from './services/tenant.service';
 import { FlowTemplateService } from './services/flow-template.service';
+import { ProvisioningService } from './services/provisioning.service';
 import { KeycloakAdminClient } from './clients/keycloak-admin';
 import { LangflowClient } from './clients/langflow';
 import { LangfuseClient } from './clients/langfuse';
@@ -24,6 +25,7 @@ container.registerSingleton(KeycloakAdminClient);
 container.registerSingleton(LangflowClient);
 container.registerSingleton(LangfuseClient);
 container.registerSingleton(LiteLLMClient);
+container.registerSingleton(ProvisioningService);
 
 export { container };
 
@@ -36,3 +38,4 @@ export const getKeycloakAdminClient = () => container.resolve(KeycloakAdminClien
 export const getLangflowClient = () => container.resolve(LangflowClient);
 export const getLangfuseClient = () => container.resolve(LangfuseClient);
 export const getLiteLLMClient = () => container.resolve(LiteLLMClient);
+export const getProvisioningService = () => container.resolve(ProvisioningService);
