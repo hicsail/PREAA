@@ -54,7 +54,7 @@
                             ┌─────────────────────┘
                             │
                             ▼
-                     MongoDB (Tenant model)
+                     Postgres (Tenant model)
                      persisted IDs + config
 ```
 
@@ -63,7 +63,9 @@
 - **Next.js 15** (App Router) + **React 19**, single deployable.
 - **TypeScript**, ESLint, Prettier.
 - **next-auth** with `KeycloakProvider` — already proven in `packages/admin`.
-- **MongoDB** via **Mongoose** for tenant state.
+- **Postgres** via **`pg` (node-postgres)** with plain parameterized SQL
+  for tenant state. No ORM — schema is small (one table) and an ORM would
+  be overkill. JSONB columns hold the nested integration configs.
 - **MUI v7** for components (matches `embedded-chat`'s design system, avoids
   pulling in `react-admin` which is overkill for what we need).
 - **deep-chat-react** for the actual widget surface.
@@ -120,7 +122,7 @@ back or marked pending. Order matters because of FK-like dependencies:
    - max_budget: <admin-provided or default>
    - rpm_limit: <admin-provided or default>
                                     ↓ litellm_virtual_key
-7. INSERT Tenant document in MongoDB linking all of the above + the
+7. INSERT Tenant document in Postgres linking all of the above + the
    initial embedded_chat config (defaults: theme, welcome, origin list).
 8. EMAIL the tenant their Keycloak login link (Keycloak handles the
    password-reset flow on first login).
@@ -153,10 +155,15 @@ version can just give them their generated passwords.
 
 ## Tenant data model
 
+Top-level columns are typed scalars for fields we index or search by;
+nested integration configs live in JSONB columns so the provisioning saga
+can merge in partial updates with `column = column || $1::jsonb` without
+clobbering sibling subkeys.
+
 ```typescript
-// src/app/lib/db/models/tenant.ts
-interface ITenant {
-  _id: ObjectId;
+// src/app/lib/db/types.ts (mirrors columns in tenants table)
+interface TenantRow {
+  id: string;                        // uuid pk
   keycloak_user_id: string;          // sub claim, the unique key
   email: string;
   display_name: string;
@@ -306,8 +313,9 @@ packages/tenant-portal/
 - Required new stack env vars:
   - `TENANT_PORTAL_ENCRYPTION_KEY` (32 bytes hex; generate locally,
     paste into Portainer stack env)
-  - `TENANT_PORTAL_MONGO_URI` (Mongo connection string for a new
-    `embedded_chat_admin` DB on the existing Mongo)
+  - `TENANT_PORTAL_DATABASE_URL` (Postgres connection string for a new
+    `tenant_portal` database on the existing shared Postgres; schema is
+    auto-created on first connect via idempotent migration)
   - `LANGFLOW_ADMIN_TOKEN` — a long-lived admin token for the
     `administrator` user, so the package can call Langflow's admin API.
     (Alternative: store admin user/password and log in on each call —
@@ -326,7 +334,7 @@ I'll commit in chewable slices so review is easy:
 | 1 | this DESIGN.md | nothing executable; gets your sign-off |
 | 2 | scaffold | package.json, Dockerfile, next.config, tsconfig, layout.tsx, sign-in page; builds & runs but does nothing |
 | 3 | auth wiring | next-auth + Keycloak config, role check middleware, sign-in/out flow |
-| 4 | Tenant model + Mongo | schema, connection, CRUD service, /api/tenants/* routes (admin-gated) |
+| 4 | Tenant model + Postgres | SQL schema, connection pool, CRUD service, /api/tenants/* routes (admin-gated) |
 | 5 | Integration clients | langflow.ts, langfuse.ts, keycloak-admin.ts, regenerated litellm client; each individually testable |
 | 6 | Flow template + clone logic | flow-template.service.ts, ece-chat.json copy under public/ |
 | 7 | ProvisioningService | saga that calls 1–6 in order, retry-safe, surface status in DB |
@@ -349,6 +357,7 @@ followup PR, but locks ongoing implementation here.
 | 4 | Encryption at rest for tenant secrets | AES-256-GCM with per-deploy key in `TENANT_PORTAL_ENCRYPTION_KEY` env var | default |
 | 5 | Langflow admin auth | Dedicated long-lived admin API key, stored in `LANGFLOW_ADMIN_API_KEY` env | default |
 | 6 | Compose host port | 3018 (extends the 3016/3017 range) | default |
+| 7 | Datastore | Postgres via `pg` (initially Mongo via Mongoose; switched after commit 6 to align with rest of stack — Langflow, Langfuse, LiteLLM, n8n, RagFlow all on Postgres already) | team |
 
 "default" = my recommended choice, not actively chosen by the team —
 flag and push back any of these as the scaffold lands if you'd rather

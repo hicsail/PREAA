@@ -63,8 +63,5 @@ export const POST = apiHandler(async (req: Request) => {
     session.user?.sub ?? 'unknown',
   );
 
-  return NextResponse.json(
-    { tenant: { id: tenant._id.toString(), ...tenant } },
-    { status: 201 },
-  );
+  return NextResponse.json({ tenant }, { status: 201 });
 });

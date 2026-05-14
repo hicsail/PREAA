@@ -32,9 +32,7 @@ export const GET = apiHandler(async (_req: Request, ctx: RouteContext) => {
     }
   }
 
-  return NextResponse.json({
-    tenant: { id: tenant._id.toString(), ...tenant },
-  });
+  return NextResponse.json({ tenant });
 });
 
 /**
@@ -94,13 +92,13 @@ export const PATCH = apiHandler(async (req: Request, ctx: RouteContext) => {
       cleaned[k] = v;
     }
     const updated = await getTenantService().update(id, { embedded_chat: cleaned });
-    return NextResponse.json({ tenant: { id, ...updated } });
+    return NextResponse.json({ tenant: updated });
   }
 
   // Admin path: pass the patch through. The service rejects unknown
   // top-level keys silently (it only iterates the known shape).
   const updated = await getTenantService().update(id, body as never);
-  return NextResponse.json({ tenant: { id, ...updated } });
+  return NextResponse.json({ tenant: updated });
 });
 
 /**

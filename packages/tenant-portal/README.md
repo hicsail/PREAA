@@ -53,8 +53,9 @@ Required Keycloak client config (for the `preaa-staging` client):
 See `DESIGN.md` § Deployment for the full list. Notable new vars:
 
 - `TENANT_PORTAL_ENCRYPTION_KEY` (32 bytes hex) — encrypts tenant secrets
-  stored in Mongo.
-- `TENANT_PORTAL_MONGO_URI` — Mongo connection string.
+  stored in Postgres.
+- `TENANT_PORTAL_DATABASE_URL` — Postgres connection string. Schema is
+  auto-created on first connect (idempotent CREATE TABLE IF NOT EXISTS).
 - `LANGFLOW_ADMIN_API_KEY` — long-lived Langflow admin token for
   provisioning.
 - `LANGFUSE_ADMIN_API_KEY` — for creating projects.

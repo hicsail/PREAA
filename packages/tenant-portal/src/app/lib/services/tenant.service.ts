@@ -1,45 +1,53 @@
 import { injectable } from 'tsyringe';
-import { getMongo } from '@/app/lib/db/mongo';
+import { ensureSchema, getPool } from '@/app/lib/db/pg';
 import {
-  Tenant,
-  ITenant,
-  TenantStatus,
   defaultEmbeddedChatConfig,
-} from '@/app/lib/db/models/tenant';
+  EmbeddedChatFields,
+  LangflowFields,
+  LangfuseFields,
+  LiteLLMFields,
+  ProvisioningFields,
+  TenantRow,
+  TenantStatus,
+} from '@/app/lib/db/types';
 
 /**
- * Input for creating a tenant via the admin "Grant Access" flow. The
- * caller supplies the Keycloak user id + email + display name; the
- * service initializes the row with status='pending' and default
- * embedded-chat config. Integration fields (langflow, langfuse, litellm)
- * are populated later by the provisioning saga via update().
+ * Input for creating a tenant placeholder row. Provisioning saga fills in
+ * langflow/langfuse/litellm via update() after this returns.
  */
 export interface CreateTenantInput {
   keycloak_user_id: string;
   email: string;
   display_name: string;
-  embedded_chat?: Partial<ITenant['embedded_chat']>;
+  embedded_chat?: Partial<EmbeddedChatFields>;
 }
 
 /**
- * Patch shape for updates. All fields optional; nested objects (langflow
- * etc.) get merged onto the existing document via dot-paths so a saga
- * step that only knows the langflow_user_id can update just that.
+ * Partial patch shape. Each top-level integration field is JSONB on the
+ * Postgres side and gets merged with `||` (jsonb concatenation), which is
+ * a TOP-LEVEL merge -- existing sibling keys preserved, only the keys
+ * present in the patch are overwritten. That's exactly what the
+ * provisioning saga needs (a step that sets just langflow.user_id won't
+ * blow away a langflow.flow_id set by a later step).
+ *
+ * Note: the encrypted blobs (api_key_encrypted etc.) are leaf objects, so
+ * a patch like `{langflow: {api_key_encrypted: {ciphertext, iv, tag}}}`
+ * replaces the whole encrypted value -- which is correct (we never want
+ * to merge into half of an encrypted value).
+ *
+ * Pass `provisioning: null` to clear the provisioning column.
  */
 export type TenantPatch = Partial<{
   status: TenantStatus;
-  provisioning: ITenant['provisioning'] | null;
-  langflow: Partial<ITenant['langflow']>;
-  langfuse: Partial<ITenant['langfuse']>;
-  litellm: Partial<ITenant['litellm']>;
-  embedded_chat: Partial<ITenant['embedded_chat']>;
+  provisioning: ProvisioningFields | null;
+  langflow: Partial<LangflowFields>;
+  langfuse: Partial<LangfuseFields>;
+  litellm: Partial<LiteLLMFields>;
+  embedded_chat: Partial<EmbeddedChatFields>;
   display_name: string;
   email: string;
 }>;
 
-/**
- * Summary projection for the admin tenants list — no encrypted blobs.
- */
 export interface TenantSummary {
   id: string;
   keycloak_user_id: string;
@@ -53,9 +61,9 @@ export interface TenantSummary {
   updated_at: Date;
 }
 
-function toSummary(t: ITenant): TenantSummary {
+function toSummary(t: TenantRow): TenantSummary {
   return {
-    id: t._id.toString(),
+    id: t.id,
     keycloak_user_id: t.keycloak_user_id,
     email: t.email,
     display_name: t.display_name,
@@ -70,89 +78,136 @@ function toSummary(t: ITenant): TenantSummary {
 
 @injectable()
 export class TenantService {
-  private async db() {
-    await getMongo();
+  private async ready() {
+    // Make sure the schema is in place before any query. Idempotent + gated
+    // by a global flag so this is a one-time cost per process.
+    await ensureSchema();
   }
 
   async list(): Promise<TenantSummary[]> {
-    await this.db();
-    const tenants = await Tenant.find().sort({ created_at: -1 }).lean();
-    return tenants.map((t) => toSummary(t as unknown as ITenant));
+    await this.ready();
+    const { rows } = await getPool().query<TenantRow>(
+      `SELECT * FROM tenants ORDER BY created_at DESC`,
+    );
+    return rows.map(toSummary);
   }
 
-  async get(id: string): Promise<ITenant | null> {
-    await this.db();
-    return Tenant.findById(id).lean<ITenant>();
+  async get(id: string): Promise<TenantRow | null> {
+    await this.ready();
+    const { rows } = await getPool().query<TenantRow>(
+      `SELECT * FROM tenants WHERE id = $1`,
+      [id],
+    );
+    return rows[0] ?? null;
   }
 
-  async findByKeycloakSub(sub: string): Promise<ITenant | null> {
-    await this.db();
-    return Tenant.findOne({ keycloak_user_id: sub }).lean<ITenant>();
+  async findByKeycloakSub(sub: string): Promise<TenantRow | null> {
+    await this.ready();
+    const { rows } = await getPool().query<TenantRow>(
+      `SELECT * FROM tenants WHERE keycloak_user_id = $1`,
+      [sub],
+    );
+    return rows[0] ?? null;
   }
 
-  async create(input: CreateTenantInput, createdBy: string): Promise<ITenant> {
-    await this.db();
-    // Guard against double-provisioning the same Keycloak user.
-    const existing = await Tenant.findOne({ keycloak_user_id: input.keycloak_user_id });
-    if (existing) {
-      throw new Error(
-        `Tenant for Keycloak user ${input.keycloak_user_id} already exists (id ${existing._id}).`,
+  async create(
+    input: CreateTenantInput,
+    createdBy: string,
+  ): Promise<TenantRow> {
+    await this.ready();
+    const embedded = { ...defaultEmbeddedChatConfig(), ...input.embedded_chat };
+    try {
+      const { rows } = await getPool().query<TenantRow>(
+        `INSERT INTO tenants
+           (keycloak_user_id, email, display_name, status, embedded_chat, created_by)
+         VALUES ($1, $2, $3, 'pending', $4::jsonb, $5)
+         RETURNING *`,
+        [
+          input.keycloak_user_id,
+          input.email,
+          input.display_name,
+          JSON.stringify(embedded),
+          createdBy,
+        ],
       );
+      return rows[0];
+    } catch (e: unknown) {
+      // 23505 = unique_violation; only constraint here is the keycloak_user_id
+      // uniqueness, so we can give a precise message back.
+      if (
+        typeof e === 'object' &&
+        e !== null &&
+        'code' in e &&
+        (e as { code: string }).code === '23505'
+      ) {
+        throw new Error(
+          `Tenant for Keycloak user ${input.keycloak_user_id} already exists.`,
+        );
+      }
+      throw e;
     }
-    const tenant = await Tenant.create({
-      keycloak_user_id: input.keycloak_user_id,
-      email: input.email,
-      display_name: input.display_name,
-      status: 'pending',
-      embedded_chat: { ...defaultEmbeddedChatConfig(), ...input.embedded_chat },
-      langflow: {},
-      langfuse: {},
-      litellm: {},
-      created_by: createdBy,
-    });
-    return tenant.toObject();
   }
 
-  async update(id: string, patch: TenantPatch): Promise<ITenant | null> {
-    await this.db();
-    // Build $set with dot-paths for nested fields so partial nested
-    // updates don't clobber sibling subfields. Mongoose's default behavior
-    // when you pass `{ langflow: { user_id: 'x' } }` is to replace the
-    // whole `langflow` subdocument; the dot-path approach merges instead.
-    const set: Record<string, unknown> = {};
-    const unset: Record<string, unknown> = {};
-    for (const [k, v] of Object.entries(patch)) {
-      if (v === undefined) continue;
-      if (k === 'provisioning' && v === null) {
-        unset.provisioning = '';
-        continue;
-      }
-      if (
-        v !== null &&
-        typeof v === 'object' &&
-        !Array.isArray(v) &&
-        !(v instanceof Date)
-      ) {
-        for (const [nk, nv] of Object.entries(v)) {
-          if (nv !== undefined) set[`${k}.${nk}`] = nv;
-        }
-      } else {
-        set[k] = v;
-      }
+  async update(id: string, patch: TenantPatch): Promise<TenantRow | null> {
+    await this.ready();
+
+    // Build SET clauses dynamically. Top-level scalar columns use `= $n`;
+    // JSONB columns use `= column || $n::jsonb` for top-level merge.
+    // Provisioning explicitly set to null clears the column.
+    const sets: string[] = [];
+    const values: unknown[] = [];
+
+    const push = (sql: string, value: unknown) => {
+      values.push(value);
+      sets.push(sql.replace('$?', `$${values.length}`));
+    };
+
+    if (patch.status !== undefined) {
+      push(`status = $?`, patch.status);
     }
-    const updateDoc: Record<string, unknown> = {};
-    if (Object.keys(set).length > 0) updateDoc.$set = set;
-    if (Object.keys(unset).length > 0) updateDoc.$unset = unset;
-    if (Object.keys(updateDoc).length === 0) {
-      // Nothing to update; just fetch and return.
-      return Tenant.findById(id).lean<ITenant>();
+    if (patch.display_name !== undefined) {
+      push(`display_name = $?`, patch.display_name);
     }
-    return Tenant.findByIdAndUpdate(id, updateDoc, { new: true }).lean<ITenant>();
+    if (patch.email !== undefined) {
+      push(`email = $?`, patch.email);
+    }
+    if (patch.provisioning === null) {
+      // Explicit null = clear.
+      sets.push(`provisioning = NULL`);
+    } else if (patch.provisioning !== undefined) {
+      push(`provisioning = $?::jsonb`, JSON.stringify(patch.provisioning));
+    }
+    const mergeJsonb = (col: keyof TenantPatch, val: unknown) => {
+      push(`${col} = ${col} || $?::jsonb`, JSON.stringify(val));
+    };
+    if (patch.langflow !== undefined) mergeJsonb('langflow', patch.langflow);
+    if (patch.langfuse !== undefined) mergeJsonb('langfuse', patch.langfuse);
+    if (patch.litellm !== undefined) mergeJsonb('litellm', patch.litellm);
+    if (patch.embedded_chat !== undefined) {
+      mergeJsonb('embedded_chat', patch.embedded_chat);
+    }
+
+    if (sets.length === 0) {
+      // Nothing to update; return current row.
+      return this.get(id);
+    }
+
+    values.push(id);
+    const { rows } = await getPool().query<TenantRow>(
+      `UPDATE tenants SET ${sets.join(', ')}
+       WHERE id = $${values.length}
+       RETURNING *`,
+      values,
+    );
+    return rows[0] ?? null;
   }
 
   async delete(id: string): Promise<boolean> {
-    await this.db();
-    const res = await Tenant.findByIdAndDelete(id);
-    return res !== null;
+    await this.ready();
+    const { rowCount } = await getPool().query(
+      `DELETE FROM tenants WHERE id = $1`,
+      [id],
+    );
+    return (rowCount ?? 0) > 0;
   }
 }
