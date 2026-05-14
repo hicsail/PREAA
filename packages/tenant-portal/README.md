@@ -16,7 +16,7 @@ Under active development. Current scope this branch ships:
 - [x] Design doc + flow template seed
 - [x] Package scaffold — builds and runs
 - [x] Auth wiring (Keycloak + roles + route guards)
-- [ ] Tenant model + CRUD
+- [x] Tenant model + CRUD service + admin-gated `/api/tenants/*`
 - [ ] Integration clients (Langflow / Langfuse / Keycloak admin / LiteLLM)
 - [ ] Provisioning saga
 - [ ] Admin UI
