@@ -18,6 +18,7 @@ Under active development. Current scope this branch ships:
 - [x] Auth wiring (Keycloak + roles + route guards)
 - [x] Tenant model + CRUD service + admin-gated `/api/tenants/*`
 - [x] Integration clients (Langflow / Langfuse / Keycloak admin / LiteLLM)
+- [x] Flow template loader (clones ECE Chat per-tenant, blanks secrets)
 - [ ] Provisioning saga
 - [ ] Admin UI
 - [ ] Tenant dashboard

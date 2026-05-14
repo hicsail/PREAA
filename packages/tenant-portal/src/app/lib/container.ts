@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { container } from 'tsyringe';
 import { CryptoService } from './services/crypto.service';
 import { TenantService } from './services/tenant.service';
+import { FlowTemplateService } from './services/flow-template.service';
 import { KeycloakAdminClient } from './clients/keycloak-admin';
 import { LangflowClient } from './clients/langflow';
 import { LangfuseClient } from './clients/langfuse';
@@ -18,6 +19,7 @@ import { LiteLLMClient } from './clients/litellm';
  */
 container.registerSingleton(CryptoService);
 container.registerSingleton(TenantService);
+container.registerSingleton(FlowTemplateService);
 container.registerSingleton(KeycloakAdminClient);
 container.registerSingleton(LangflowClient);
 container.registerSingleton(LangfuseClient);
@@ -29,6 +31,7 @@ export { container };
 // directly, so swapping the DI library later is a single-file change.
 export const getCrypto = () => container.resolve(CryptoService);
 export const getTenantService = () => container.resolve(TenantService);
+export const getFlowTemplateService = () => container.resolve(FlowTemplateService);
 export const getKeycloakAdminClient = () => container.resolve(KeycloakAdminClient);
 export const getLangflowClient = () => container.resolve(LangflowClient);
 export const getLangfuseClient = () => container.resolve(LangfuseClient);
