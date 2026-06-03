@@ -211,7 +211,7 @@ services:
       - custom-rag-ragflow-logs:/ragflow/logs
       - ./ragflow/service_conf.yaml.template:/ragflow/conf/service_conf.yaml.template
       - ./ragflow/entrypoint.sh:/ragflow/entrypoint.sh
-      - ./ragflow/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./ragflow/nginx.conf:/etc/nginx/conf.d/ragflow.conf
       - ./ragflow/history_data_agent:/ragflow/history_data_agent
     extra_hosts:
       - "host.docker.internal:host-gateway"
