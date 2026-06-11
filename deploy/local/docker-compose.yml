@@ -223,7 +223,6 @@ services:
     env_file: "config/.env.ragflow"
     environment:
       - node.name=ragflow-es
-      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD:-ragflow_elastic_pass}
       - bootstrap.memory_lock=false
       - discovery.type=single-node
       - xpack.security.enabled=true
