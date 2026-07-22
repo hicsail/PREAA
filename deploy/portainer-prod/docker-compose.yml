@@ -37,36 +37,6 @@ services:
       timeout: 3s
       retries: 10
 
-  librechat:
-    image: hicsail/librechat:main
-    restart: unless-stopped
-    container_name: portainer-LibreChat
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    ports:
-      - "3080:3080"
-    environment:
-      - GOOGLE_CLIENT_ID=${LIBRECHAT_GOOGLE_CLIENT_ID}
-      - GOOGLE_CLIENT_SECRET=${LIBRECHAT_GOOGLE_CLIENT_SECRET}
-      - GOOGLE_CALLBACK_URL=${LIBRECHAT_GOOGLE_CALLBACK_URL}
-    env_file:
-      - ../../stack.env
-      - stack.env
-    volumes:
-      - portainer-librechat-images:/app/client/public/images
-      - portainer-librechat-logs:/app/api/logs
-      - portainer-librechat-config:/app/config/
-    depends_on:
-      - mongodb
-
-  mongodb:
-    image: mongo
-    restart: unless-stopped
-    container_name: portainer-MongoDB
-    volumes:
-      - portainer-mongodb-data:/data/db
-    command: mongod --noauth
-
   litellm:
     image: ghcr.io/berriai/litellm:litellm_stable_release_branch-v1.68.0-stable
     restart: unless-stopped
@@ -174,34 +144,6 @@ services:
       - ../../stack.env
       - stack.env
 
-  prometheus:
-    image: prom/prometheus:v3.2.1
-    restart: unless-stopped
-    container_name: portainer-prometheus
-    volumes:
-      - portainer-prometheus-config:/etc/prometheus/config/
-    command:
-      - '--config.file=/etc/prometheus/config/prometheus.yml'
-
-  librechat-metrics:
-    image: ghcr.io/virtuos/librechat_exporter:main
-    container_name: portainer-librechat-metrics
-    restart: unless-stopped
-    depends_on:
-      - mongodb
-    env_file:
-      - ../../stack.env
-      - stack.env
-
-  grafana:
-    image: grafana/grafana-enterprise
-    container_name: portainer-grafana
-    restart: unless-stopped
-    ports:
-      - "3007:3000"
-    volumes:
-      - portainer-grafana-data:/var/lib/grafana
-
   chat-client:
     image: hicsail/preaa-chat-client:prod
     pull_policy: always
@@ -221,7 +163,13 @@ services:
     ports:
       - "3016:3000"
     depends_on:
-      - mongodb
+      - postgres
+    environment:
+      # Admin-specific overrides so it doesn't inherit langfuse's DATABASE_URL /
+      # ENCRYPTION_KEY from the shared stack.env. The app self-provisions the
+      # `admin` database + tables on boot.
+      - DATABASE_URL=${ADMIN_DATABASE_URL}
+      - ENCRYPTION_KEY=${ADMIN_ENCRYPTION_KEY}
     env_file:
       - ../../stack.env
       - stack.env
@@ -238,13 +186,7 @@ volumes:
   portainer-langflow-data:
   portainer-langflow-components:
   portainer-postgres-data:
-  portainer-librechat-images:
-  portainer-librechat-logs:
-  portainer-librechat-config:
-  portainer-mongodb-data:
   portainer-litellm:
   portainer-langfuse-clickhouse-data:
   portainer-langfuse-clickhouse-logs:
   portainer-langfuse-minio-data:
-  portainer-prometheus-config:
-  portainer-grafana-data:

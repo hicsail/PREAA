@@ -12,10 +12,10 @@ export async function POST(request: Request) {
 
   const newProxy = await proxyService.create(body);
 
-  // Add id field and remove API field
+  // Return the client-safe view (never includes the API key)
   const proxyResponse = {
     modelName: newProxy.modelName,
-    id: newProxy._id
+    id: newProxy.id
   };
 
   return new Response(JSON.stringify(proxyResponse), {
@@ -34,15 +34,19 @@ export async function GET(_request: Request) {
 
     // Reshape the results
     const proxiesResponse = proxies.map((proxy) => ({
-      id: proxy._id,
+      id: proxy.id,
       modelName: proxy.modelName
     }));
+
+    const total = proxiesResponse.length;
+    const rangeEnd = total > 0 ? total - 1 : 0;
 
     return new Response(JSON.stringify(proxiesResponse), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Content-Range': 'proxies 0-2/3'
+        // react-admin (simpleRestProvider) reads the total from Content-Range
+        'Content-Range': `proxies 0-${rangeEnd}/${total}`
       }
     });
   } catch(error) {
