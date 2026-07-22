@@ -1,39 +1,57 @@
-import DeepchatProxy, { DeepchatProxies } from '@/app/schemas/deepchat-proxy';
+import { eq } from 'drizzle-orm';
 import { inject, singleton } from 'tsyringe';
 import { LITELLM_PROVIDER } from '../container';
 import type { Client as LiteLLMClient } from '../client-litellm/core/types';
 import { chatCompletionV1ChatCompletionsPost } from '../client-litellm';
+import { db } from '../db';
+import { deepchatProxies } from '../db/schema';
+import { encrypt } from '../crypto/encryption';
+
+/**
+ * Public (client-safe) view of a proxy. Never includes the API key.
+ */
+export interface ProxyView {
+  id: string;
+  modelName: string;
+}
 
 @singleton()
 export class ProxyService {
   constructor(@inject(LITELLM_PROVIDER) private readonly litellmClient: LiteLLMClient) {}
 
-  async create(newProxy: any): Promise<DeepchatProxies> {
-    return DeepchatProxy.create(newProxy);
+  async create(newProxy: { modelName: string; apiKey: string }): Promise<ProxyView> {
+    const [row] = await db
+      .insert(deepchatProxies)
+      .values({ modelName: newProxy.modelName, apiKey: encrypt(newProxy.apiKey) })
+      .returning({ id: deepchatProxies.id, modelName: deepchatProxies.modelName });
+    return row;
   }
 
-  async get(id: string): Promise<DeepchatProxies | null> {
-    return DeepchatProxy.findById(id);
+  async get(id: string): Promise<ProxyView | null> {
+    const [row] = await db
+      .select({ id: deepchatProxies.id, modelName: deepchatProxies.modelName })
+      .from(deepchatProxies)
+      .where(eq(deepchatProxies.id, id));
+    return row ?? null;
   }
 
-  async getAll(): Promise<DeepchatProxies[]> {
-    return DeepchatProxy.find({});
+  async getAll(): Promise<ProxyView[]> {
+    return db
+      .select({ id: deepchatProxies.id, modelName: deepchatProxies.modelName })
+      .from(deepchatProxies);
   }
 
-  async delete(id: string): Promise<DeepchatProxies | null> {
-    const existing = await this.get(id);
-    if (!existing) {
-      return null;
-    }
-
-    await DeepchatProxy.deleteOne({ _id: id });
-
-    return existing;
+  async delete(id: string): Promise<ProxyView | null> {
+    const [row] = await db
+      .delete(deepchatProxies)
+      .where(eq(deepchatProxies.id, id))
+      .returning({ id: deepchatProxies.id, modelName: deepchatProxies.modelName });
+    return row ?? null;
   }
 
   async proxyRequest(id: string, body: any, stream: boolean = false): Promise<any> {
     // Get the proxy information
-    const proxy = await DeepchatProxy.findById(id);
+    const [proxy] = await db.select().from(deepchatProxies).where(eq(deepchatProxies.id, id));
     if (!proxy) {
       console.error(`Proxy with id ${id} not found`);
       throw new Error('Missing proxy data for id');
@@ -50,7 +68,7 @@ export class ProxyService {
       })
       .map((message: any, index: number) => {
         let role = message.role;
-        
+
         // DeepChat uses "ai" for assistant, map to "assistant" for OpenAI/LiteLLM format
         if (role === 'ai') {
           role = 'assistant';
@@ -60,21 +78,21 @@ export class ProxyService {
           // So even indices (0, 2, 4...) are typically user messages
           role = index % 2 === 0 ? 'user' : 'assistant';
         }
-        
+
         // Ensure we have valid roles for OpenAI format
         if (role !== 'user' && role !== 'assistant' && role !== 'system') {
           // Default to user for invalid roles
           role = 'user';
         }
-        
+
         const content = message.text || message.content || '';
-        
+
         return {
           role: role,
           content: content
         };
       });
-    
+
     // Ensure we have at least one message
     if (messages.length === 0) {
       throw new Error('No valid messages provided');

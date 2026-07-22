@@ -12,7 +12,6 @@ PREAA integrates several best-in-class open-source technologies to create a comp
 
 ### Core Components
 
-- **LibreChat**: A ChatGPT-like all-in-one interface providing authentication, conversation history, and multi-model support
 - **Open WebUI**: A Perplexity-like all-in-one chat frontend that allows for custom backends in python, modular user access management, and text streaming
 - **LiteLLM**: Unified proxy for LLM requests with rate limiting and standardized OpenAI-compatible interface
 - **LangFlow**: Visual LLM workflow builder supporting multiple AI providers, agentic tools, RAG components, and custom integrations
@@ -28,20 +27,17 @@ PREAA integrates several best-in-class open-source technologies to create a comp
 
 ### Backend Services
 
-- **Helper Backend**: NestJS-based service providing request proxying capabilities and administrative functions
 - **Custom Integrations**: 
   - LangFlow custom components for enhanced chat completion interfaces
   - LiteLLM custom providers for workflow integration
 
 ### Supporting Infrastructure
 
-- **PostgreSQL**: Primary database for user data, conversation history, and analytics
-- **MongoDB**: Document storage for LibreChat data
+- **PostgreSQL**: Primary relational database (LiteLLM, LangFuse, LangFlow, n8n, RagFlow, and the Admin app)
 - **Redis**: Caching and session management
 - **ClickHouse**: High-performance analytics database for LangFuse metrics
 - **MinIO**: S3-compatible object storage
 - **Elasticsearch**: Search engine for RagFlow document retrieval
-- **Prometheus & Grafana**: Monitoring and visualization stack
 
 ## 🚀 Getting Started
 
@@ -74,10 +70,8 @@ PREAA integrates several best-in-class open-source technologies to create a comp
    cp config/.env.redis.sample config/.env.redis
    cp config/.env.psql.sample config/.env.psql
    cp config/.env.langfuse.sample config/.env.langfuse
-   cp config/.env.librechat.sample config/.env.librechat
    cp config/.env.litellm.sample config/.env.litellm
    cp config/.env.open-webui.sample config/.env.open-webui
-   cp config/.env.librechat-metrics.sample config/.env.librechat-metrics
    cp config/.env.langflow.sample config/.env.langflow
    cp config/.env.ragflow.sample config/.env.ragflow
    cp config/.env.n8n.sample config/.env.n8n
@@ -106,13 +100,6 @@ PREAA integrates several best-in-class open-source technologies to create a comp
    # DATABASE_URL=postgresql://postgres:<POSTGRES_PASSWORD>@postgres:5432/postgres
    ```
 
-   **LibreChat configuration** (`config/.env.librechat`):
-   ```bash
-   # Generate LibreChat secrets using their generator: https://www.librechat.ai/toolkit/creds_generator
-   # Set: CREDS_KEY, CREDS_IV, JWT_SECRET, JWT_REFRESH_SECRET
-   # Set: LITELLM_API_KEY=<matching LITELLM_MASTER_KEY from .env.litellm>
-   ```
-
    **LiteLLM configuration** (`config/.env.litellm`):
    ```bash
    # Set: LITELLM_MASTER_KEY=<any secure string>
@@ -125,14 +112,12 @@ PREAA integrates several best-in-class open-source technologies to create a comp
    ```
 
 6. **Access the services:**
-   - LibreChat (Chat Interface): http://localhost:3080
    - Open WebUI (Chat Interface): http://localhost:7600
    - LangFuse (Analytics): http://localhost:3000
    - LiteLLM (Proxy Management): http://localhost:4000
    - LangFlow (Workflow Builder): http://localhost:7860
    - n8n (Workflow Automation): http://localhost:5678
    - RagFlow (Document Processing): http://localhost:7080
-   - Grafana (Monitoring): http://localhost:3002
    - Admin Dashboard: *Configure separately in packages/admin*
 
 ### Post-Installation Configuration
@@ -184,14 +169,11 @@ npm install
 npm run dev
 ```
 
-### Backend Development
+### Admin Dashboard (Backend + UI)
 
-```bash
-# Helper Backend (NestJS)
-cd packages/helper-backend
-npm install
-npm run start:dev
-```
+The Next.js Admin app (`packages/admin`) provides LiteLLM proxying and
+administrative functions (formerly the standalone NestJS "Helper Backend").
+See its dev instructions under **Frontend Development** above.
 
 ### Custom Components
 
@@ -211,12 +193,12 @@ pip install -r requirements.txt
 
 ## 📊 Monitoring and Analytics
 
-The platform includes comprehensive monitoring capabilities:
+The platform includes LLM observability out of the box:
 
-- **LangFuse**: Track LLM usage, costs, and performance metrics
-- **Prometheus**: System metrics collection
-- **Grafana**: Visualization and dashboards
-- **LibreChat Metrics**: Specialized metrics exporter for LibreChat
+- **LangFuse**: Track LLM usage, costs, traces, and performance metrics
+
+Host/infrastructure metrics are left to the deployment environment (e.g.
+CloudWatch on AWS) rather than a bundled Prometheus/Grafana stack.
 
 ## 🔐 Security Considerations
 

@@ -33,14 +33,6 @@ then follow the instructions below to find each secret that needs to be added in
 * `REDIS_AUTH`: matching `REDIS_PASSWORD` from `.env.redis`
 * `DATABASE_URL`: updated to match from `.env.psql`
 
-#### config/.env.librechat
-
-* `LITELLM_API_KEY`: matching `LITELLM_MASTER_KEY` from `.env.litellm`
-* `CREDS_KEY`: see [LibreChat provided generator](https://www.librechat.ai/toolkit/creds_generator)
-* `CREDS_IV`: see [LibreChat provided generator](https://www.librechat.ai/toolkit/creds_generator)
-* `JWT_SECRET`: see [LibreChat provided generator](https://www.librechat.ai/toolkit/creds_generator)
-* `JWT_REFRESH_SECRET`: see [LibreChat provided generator](https://www.librechat.ai/toolkit/creds_generator)
-
 #### config/.env.litellm
 
 * `LITELLM_MASTER_KEY`: any generated string

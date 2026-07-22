@@ -27,32 +27,6 @@ services:
       timeout: 3s
       retries: 10
 
-  librechat:
-    image: hicsail/librechat:main
-    container_name: custom-rag-LibreChat
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    ports:
-      - "3080:3080"
-    env_file: "config/.env.librechat"
-    volumes:
-      - custom-rag-librechat-images:/app/client/public/images
-      - custom-rag-librechat-logs:/app/api/logs
-      - type: bind
-        source: ./config/librechat.yaml
-        target: /app/librechat.yaml
-    depends_on:
-      - mongodb
-
-  mongodb:
-    image: mongo
-    container_name: custom-rag-MongoDB
-    volumes:
-      - custom-rag-mongodb-data:/data/db
-    command: mongod --noauth
-    ports:
-      - "27017:27017"
-
   litellm:
     image: ghcr.io/berriai/litellm:litellm_stable_release_branch-v1.68.0-stable
     ports:
@@ -142,27 +116,6 @@ services:
       retries: 10
     env_file: "config/.env.redis"
 
-  prometheus:
-    image: prom/prometheus:v3.2.1
-    container_name: custom-rag-prometheus
-    volumes:
-      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-
-  librechat-metrics:
-    image: ghcr.io/virtuos/librechat_exporter:main
-    depends_on:
-      - mongodb
-    env_file: "config/.env.librechat-metrics"
-
-  grafana:
-    image: grafana/grafana-enterprise
-    ports:
-      - "3002:3000"
-    volumes:
-      - custom-rag-grafana-data:/var/lib/grafana
-
   n8n:
     image: docker.n8n.io/n8nio/n8n
     container_name: custom-rag-n8n
@@ -251,13 +204,9 @@ services:
 volumes:
   custom-rag-langflow-data:
   custom-rag-postgres-data:
-  custom-rag-librechat-images:
-  custom-rag-librechat-logs:
-  custom-rag-mongodb-data:
   custom-rag-langfuse-clickhouse-data:
   custom-rag-langfuse-clickhouse-logs:
   custom-rag-langfuse-minio-data:
-  custom-rag-grafana-data:
   custom-rag-n8n-data:
   custom-rag-open-webui-data:
   custom-rag-ragflow-logs:
