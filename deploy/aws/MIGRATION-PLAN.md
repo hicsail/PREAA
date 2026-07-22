@@ -77,10 +77,25 @@ Terraform.
   docker-compose stack. Managed via a **Portainer agent** added to the team's
   central Portainer (matches current ops); the in-repo compose stays the source
   of truth.
-- **Sizing (staging):** the stack needs ~16–24 GB RAM (Elasticsearch alone is
-  pinned to 4 GB; ClickHouse + RagFlow + Langfuse are the next heaviest).
-  Recommend **`m7i.2xlarge` (8 vCPU / 32 GB)** for staging with headroom.
-  → *Decision D1: confirm instance size; prod may want more or a split.*
+- **Sizing (staging):** **`m7i-flex.xlarge` (4 vCPU / 16 GB)** — cost-optimized
+  (~$138/mo, roughly half the 32 GB option). The **flex family** fits the
+  bursty workload (mostly idle with spikes during RAG parsing / LLM proxying;
+  flex gives burstable CPU at ~5% lower cost). 16 GB is adequate because this
+  config is lighter than it looks: Elasticsearch runs a **512 MB heap** (not
+  its 4 GB cap), and RagFlow has docling/mineru **off** with **external**
+  embeddings, so realistic idle footprint is ~8–13 GB.
+  - **RAM safety nets** (RAM, unlike CPU, is not reclaimed when a service is
+    idle): (1) **~8 GB swap** on the EBS data volume so a spike degrades to
+    slow rather than OOM-killing a container; (2) **per-container `mem_limit`s**
+    so no single service starves the rest; (3) resize is a 2-min
+    stop/change-type/start — bump to `m7i-flex.2xlarge` (32 GB) if CloudWatch
+    shows sustained memory pressure, no rebuild.
+  - **Right-size from data:** treat 16 GB as the starting point; review
+    CloudWatch memory/CPU under real use and adjust. If sustained (not bursty)
+    heavy RAG parsing appears, flex CPU may throttle → switch to plain
+    `m7i.xlarge`/`m7i.2xlarge` (same trivial resize).
+  - → *Decision D1: **RESOLVED** — start on `m7i-flex.xlarge`; prod sized
+    separately (§8).*
 - **Storage:** root EBS + a dedicated **gp3 data volume (~100 GB, resizable)**
   mounted at `/data` holding all docker volumes (ES, ClickHouse, Postgres,
   MinIO, n8n, langflow). Keeps data separable from the instance.
@@ -193,20 +208,21 @@ validated. Revisit sizing (D1) and whether to split heavy stateful services
 
 | Item | Est. / mo |
 |---|---|
-| EC2 `m7i.2xlarge` | ~$290 (less with Savings Plan / RI) |
+| EC2 `m7i-flex.xlarge` (4/16) | ~$138 (less with Savings Plan / RI) |
 | EBS gp3 100 GB | ~$8 |
 | Elastic IP (attached) | $0 |
 | S3 (backups/state) | ~$1–5 |
 | Data transfer | minor |
-| **Total** | **~$300/mo** |
+| **Total** | **~$150/mo** |
 
-Prod comparable or larger.
+Bumping to `m7i-flex.2xlarge` (32 GB) if needed would add ~$138/mo. Prod sized
+separately.
 
 ## 10. Open decisions (need sign-off before Terraform)
 
 | # | Decision | Recommendation |
 |---|---|---|
-| D1 | Staging instance size | `m7i.2xlarge` (8/32) |
+| D1 | Staging instance size | ✅ **RESOLVED: `m7i-flex.xlarge` (4/16)** + swap; resize if pressure |
 | D2 | Ingress/TLS | In-stack Caddy (portable) |
 | D3 | Object storage on AWS | Keep MinIO in-stack (portability) |
 | D4 | Orchestration on the box | Portainer agent (matches ops) |
