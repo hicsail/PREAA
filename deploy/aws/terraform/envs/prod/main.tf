@@ -52,9 +52,8 @@ module "preaa" {
   vpc_cidr           = "10.21.0.0/16"
   public_subnet_cidr = "10.21.1.0/24"
 
-  portainer_server_cidrs = [] # set before apply
-  allowed_web_cidrs      = ["0.0.0.0/0"]
-  admin_ssh_cidrs        = []
+  allowed_web_cidrs = ["0.0.0.0/0"]
+  admin_ssh_cidrs   = []
 }
 
 output "public_ip" {

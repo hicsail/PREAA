@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 # PREAA instance bootstrap (Amazon Linux 2023).
-# Idempotent-ish: safe to re-run. Prepares the data volume, swap, Docker, and
-# the Portainer agent. The application stack itself is deployed via Portainer
-# (the in-repo docker-compose is the source of truth) — this script only
-# prepares the host and management agent.
+# Idempotent-ish: safe to re-run. Prepares the data volume, swap, Docker, and a
+# self-contained deploy mechanism (systemd unit + SSM-rendered env). There is
+# NO external management dependency (no Portainer agent): the box manages its
+# own compose stack. The compose files are the in-repo source of truth and are
+# placed in /opt/preaa out of band (see README).
 set -euxo pipefail
 
 # --- Data volume: find, format (once), mount at /data -----------------------
@@ -74,17 +75,56 @@ if [ ! -x /usr/libexec/docker/cli-plugins/docker-compose ]; then
   chmod +x /usr/libexec/docker/cli-plugins/docker-compose
 fi
 
-# --- Portainer agent (management) -------------------------------------------
-# The central Portainer server adds this host as an environment via <eip>:9001.
-if ! docker ps --format '{{.Names}}' | grep -q '^portainer_agent$'; then
-  docker run -d \
-    --name portainer_agent \
-    --restart=always \
-    -p 9001:9001 \
-    -v /var/run/docker.sock:/var/run/docker.sock \
-    -v /data/docker/volumes:/var/lib/docker/volumes \
-    -v /data:/data \
-    portainer/agent:lts
+# --- AWS CLI (used to render secrets from SSM) ------------------------------
+if ! command -v aws >/dev/null 2>&1; then
+  dnf install -y unzip || true
+  curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip
+  (cd /tmp && unzip -q awscliv2.zip && ./aws/install)
 fi
+
+# --- Self-contained deploy: /opt/preaa + SSM->env render + systemd unit ------
+# No external orchestrator. The compose files (in-repo source of truth) are
+# placed in /opt/preaa out of band; this sets up how the host runs them.
+install -d -m 750 /opt/preaa
+
+# Render stack.env from the SSM SecureString parameters under the env prefix.
+cat > /opt/preaa/render-env.sh <<RENDER
+#!/usr/bin/env bash
+set -euo pipefail
+umask 077
+OUT=/opt/preaa/stack.env
+: > "\$OUT"
+aws ssm get-parameters-by-path --region "${region}" --path "${ssm_prefix}" \
+  --with-decryption --query 'Parameters[].[Name,Value]' --output text \
+  | while IFS=\$'\t' read -r name value; do
+      echo "\$(basename "\$name")=\$value" >> "\$OUT"
+    done
+RENDER
+chmod +x /opt/preaa/render-env.sh
+
+# systemd unit: render env, then bring the compose stack up.
+cat > /etc/systemd/system/preaa.service <<'UNIT'
+[Unit]
+Description=PREAA docker compose stack
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/opt/preaa
+ExecStartPre=/opt/preaa/render-env.sh
+ExecStart=/usr/bin/docker compose --env-file /opt/preaa/stack.env up -d
+ExecStop=/usr/bin/docker compose --env-file /opt/preaa/stack.env down
+TimeoutStartSec=0
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+systemctl daemon-reload
+systemctl enable preaa.service
+# Not started here — place the compose file(s) in /opt/preaa first, then:
+#   systemctl start preaa.service
 
 echo "PREAA host bootstrap complete."

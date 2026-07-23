@@ -25,16 +25,6 @@ resource "aws_vpc_security_group_ingress_rule" "https" {
   to_port           = 443
 }
 
-resource "aws_vpc_security_group_ingress_rule" "portainer_agent" {
-  for_each          = toset(var.portainer_server_cidrs)
-  security_group_id = aws_security_group.instance.id
-  description       = "Portainer agent (from the central Portainer server only)"
-  cidr_ipv4         = each.value
-  ip_protocol       = "tcp"
-  from_port         = 9001
-  to_port           = 9001
-}
-
 resource "aws_vpc_security_group_ingress_rule" "ssh" {
   for_each          = toset(var.admin_ssh_cidrs)
   security_group_id = aws_security_group.instance.id

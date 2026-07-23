@@ -57,12 +57,6 @@ variable "allowed_web_cidrs" {
   default     = ["0.0.0.0/0"]
 }
 
-variable "portainer_server_cidrs" {
-  description = "CIDRs allowed to reach the Portainer agent (9001) — the central Portainer server. Empty = agent port closed."
-  type        = list(string)
-  default     = []
-}
-
 variable "admin_ssh_cidrs" {
   description = "CIDRs allowed SSH (22). Leave empty to disable SSH entirely and use SSM Session Manager (preferred)."
   type        = list(string)

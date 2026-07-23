@@ -15,6 +15,8 @@ resource "aws_instance" "this" {
   user_data = templatefile("${path.module}/user_data.sh.tftpl", {
     data_volume_device = "/dev/sdf"
     swap_size_gb       = var.swap_size_gb
+    region             = var.region
+    ssm_prefix         = local.ssm_prefix
   })
 
   root_block_device {

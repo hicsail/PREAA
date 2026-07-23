@@ -52,12 +52,11 @@ module "preaa" {
   # this true for a stable address before real DNS cutover.
   use_eip = false
 
-  # Central Portainer server ("portainer & time tracker & proxy" EC2) — allowed
-  # to reach the agent on 9001. Web left open (behind Cloudflare); SSH disabled
-  # (use SSM Session Manager).
-  portainer_server_cidrs = ["52.87.70.124/32"]
-  allowed_web_cidrs      = ["0.0.0.0/0"]
-  admin_ssh_cidrs        = []
+  # No external orchestrator — the box runs its own compose stack via systemd
+  # (see modules/preaa-stack/user_data.sh.tftpl). Web left open (behind
+  # Cloudflare); SSH disabled (use SSM Session Manager).
+  allowed_web_cidrs = ["0.0.0.0/0"]
+  admin_ssh_cidrs   = []
 }
 
 output "public_ip" {
