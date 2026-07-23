@@ -121,9 +121,10 @@ Terraform.
   the instance role reads them). Instance gets an IAM role with scoped SSM read.
 
 ### 4.5 Object storage
-- MinIO stays as the default. On AWS we *may* point Langfuse + RagFlow at **S3**
-  (same S3 API) via config + an IAM role instead of running MinIO — optional,
-  per-deployment, no code change. → *Decision D3: MinIO-in-stack vs S3 on AWS.*
+- **Decision D3: RESOLVED — keep MinIO in-stack** (portability; no AWS lock-in).
+  Because MinIO speaks the S3 API, a future deployment can still repoint
+  Langfuse + RagFlow at real S3 via config + an IAM role with no code change —
+  kept as an option, not adopted now.
 
 ## 5. Terraform layout
 
@@ -151,8 +152,9 @@ deploy/aws/terraform/
 - **State:** S3 bucket `preaa-terraform-state` (to create), native S3 locking.
 - `user_data` installs Docker + Docker Compose + the Portainer agent, mounts the
   gp3 data volume at `/data`, and pulls the stack. Actual `docker compose up`
-  is driven by Portainer (or a systemd unit if we skip Portainer).
-  → *Decision D4: Portainer-managed vs plain compose + systemd.*
+  is driven by Portainer.
+  → *Decision D4: RESOLVED — Portainer agent (matches existing team ops;
+  in-repo compose remains the source of truth).*
 
 ## 6. Data migration runbook (staging cutover)
 
@@ -229,8 +231,8 @@ separately.
 |---|---|---|
 | D1 | Staging instance size | ✅ **RESOLVED: `m7i-flex.xlarge` (4/16)** + swap; resize if pressure |
 | D2 | Ingress/TLS | ✅ **RESOLVED: in-stack `nginx-proxy-manager`** |
-| D3 | Object storage on AWS | Keep MinIO in-stack (portability) — *pending* |
-| D4 | Orchestration on the box | Portainer agent (matches ops) — *pending* |
+| D3 | Object storage on AWS | ✅ **RESOLVED: keep MinIO in-stack** (S3 stays an option) |
+| D4 | Orchestration on the box | ✅ **RESOLVED: Portainer agent** (compose = source of truth) |
 | D5 | ClickHouse + ES history | ✅ **RESOLVED:** Langfuse traces archived + fresh; **RagFlow snapshot→restore** (datasets preserved, consistent ES+pg+MinIO) |
 | D6 | Keycloak users | ✅ **RESOLVED: start fresh**, recreate realm as JSON import, no user migration |
 | D7 | Prod domain scheme | Decide at prod phase |
