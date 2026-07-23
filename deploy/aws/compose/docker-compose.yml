@@ -1,0 +1,272 @@
+# PREAA — self-contained AWS deployment (no external orchestrator).
+#
+# Deploy on the box:
+#   /opt/preaa/render-env.sh          # renders stack.env = base + SSM secrets
+#   docker compose --env-file stack.env up -d
+# (the preaa.service systemd unit does both — see modules/preaa-stack/user_data)
+#
+# Secrets come from the rendered stack.env (from SSM). DB connection strings
+# that embed the Postgres password are built here via ${POSTGRES_PASSWORD} so
+# no secret is committed. env_file injects the shared config/secrets into each
+# service; per-service `environment:` blocks override/construct what differs.
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: preaa-postgres
+    restart: unless-stopped
+    env_file: stack.env
+    volumes:
+      - preaa-postgres-data:/var/lib/postgresql/data
+      - ./postgres-init:/docker-entrypoint-initdb.d
+    entrypoint: ["/bin/bash", "/docker-entrypoint-initdb.d/entrypoint.sh"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $${POSTGRES_USER:-psql} -d postgres"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7
+    container_name: preaa-redis
+    restart: unless-stopped
+    command:
+      - /bin/sh
+      - -c
+      - redis-server --requirepass "$${REDIS_PASSWORD:?REDIS_PASSWORD is not set}"
+    env_file: stack.env
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 10s
+      retries: 10
+
+  clickhouse:
+    image: clickhouse/clickhouse-server
+    container_name: preaa-clickhouse
+    restart: unless-stopped
+    user: "101:101"
+    env_file: stack.env
+    volumes:
+      - preaa-clickhouse-data:/var/lib/clickhouse
+      - preaa-clickhouse-logs:/var/log/clickhouse-server
+    healthcheck:
+      test: wget --no-verbose --tries=1 --spider http://localhost:8123/ping || exit 1
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 1s
+
+  minio:
+    image: minio/minio
+    container_name: preaa-minio
+    restart: unless-stopped
+    entrypoint: sh
+    command: -c 'mkdir -p /data/langfuse && minio server --address ":9000" --console-address ":9001" /data'
+    env_file: stack.env
+    volumes:
+      - preaa-minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 1s
+      timeout: 5s
+      retries: 5
+      start_period: 1s
+
+  langfuse-worker:
+    image: langfuse/langfuse-worker:3
+    container_name: preaa-langfuse-worker
+    restart: unless-stopped
+    depends_on: &langfuse-deps
+      postgres: { condition: service_healthy }
+      minio: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      clickhouse: { condition: service_healthy }
+    env_file: stack.env
+    environment: &langfuse-env
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-psql}:${POSTGRES_PASSWORD}@postgres:5432/langfuse"
+      SALT: "${LANGFUSE_SALT}"
+      ENCRYPTION_KEY: "${LANGFUSE_ENCRYPTION_KEY}"
+      REDIS_AUTH: "${REDIS_PASSWORD}"
+      CLICKHOUSE_PASSWORD: "${CLICKHOUSE_PASSWORD}"
+      LANGFUSE_S3_EVENT_UPLOAD_SECRET_ACCESS_KEY: "${MINIO_ROOT_PASSWORD}"
+      LANGFUSE_S3_MEDIA_UPLOAD_SECRET_ACCESS_KEY: "${MINIO_ROOT_PASSWORD}"
+      NEXTAUTH_SECRET: "${NEXTAUTH_SECRET}"
+      LANGFUSE_INIT_PROJECT_PUBLIC_KEY: "${LANGFUSE_PUBLIC_KEY}"
+      LANGFUSE_INIT_PROJECT_SECRET_KEY: "${LANGFUSE_SECRET_KEY}"
+
+  langfuse-web:
+    image: langfuse/langfuse:3
+    container_name: preaa-langfuse-web
+    restart: unless-stopped
+    depends_on: *langfuse-deps
+    ports:
+      - "3000:3000"
+    env_file: stack.env
+    environment:
+      <<: *langfuse-env
+      # set per env to the public URL; localhost is fine for a first bring-up
+      NEXTAUTH_URL: "${LANGFUSE_NEXTAUTH_URL:-http://localhost:3000}"
+
+  litellm:
+    image: ghcr.io/berriai/litellm:litellm_stable_release_branch-v1.68.0-stable
+    container_name: preaa-litellm
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    depends_on:
+      - postgres
+      - langfuse-web
+    env_file: stack.env
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-psql}:${POSTGRES_PASSWORD}@postgres:5432/litellm"
+    volumes:
+      - ./litellm-custom/:/app/langflowEP
+      - ./config/litellm.yaml:/app/litellm.yaml
+    command: "--config /app/litellm.yaml"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  langflow:
+    image: langflowai/langflow:1.9.2
+    container_name: preaa-langflow
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    ports:
+      - "7860:7860"
+    env_file: stack.env
+    environment:
+      LANGFLOW_DATABASE_URL: "postgresql://${POSTGRES_USER:-psql}:${POSTGRES_PASSWORD}@postgres:5432/langflow"
+    volumes:
+      - preaa-langflow-data:/app/langflow
+      - preaa-langflow-components:/app/custom_components/
+
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:2.2.4
+    container_name: preaa-n8n
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    depends_on:
+      - postgres
+    env_file: stack.env
+    environment:
+      NODE_ENV: production
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_PORT: "5432"
+      DB_POSTGRESDB_DATABASE: n8n
+      DB_POSTGRESDB_USER: "${POSTGRES_USER:-psql}"
+      DB_POSTGRESDB_PASSWORD: "${POSTGRES_PASSWORD}"
+    volumes:
+      - preaa-n8n-data:/home/node/.n8n
+
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: preaa-open-webui
+    restart: unless-stopped
+    ports:
+      - "7600:8080"
+    env_file: stack.env
+    volumes:
+      - preaa-open-webui-data:/app/backend/data
+
+  ragflow:
+    image: infiniflow/ragflow:v0.24.0
+    platform: linux/amd64
+    container_name: preaa-ragflow
+    restart: on-failure
+    depends_on:
+      ragflow-es: { condition: service_healthy }
+      minio: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      postgres: { condition: service_healthy }
+    ports:
+      - "7080:80"
+      - "7443:443"
+      - "9380:9380"
+    env_file: stack.env
+    volumes:
+      - preaa-ragflow-logs:/ragflow/logs
+      - ./ragflow/service_conf.yaml.template:/ragflow/conf/service_conf.yaml.template
+      - ./ragflow/entrypoint.sh:/ragflow/entrypoint.sh
+      - ./ragflow/nginx.conf:/etc/nginx/conf.d/ragflow.conf
+      - ./ragflow/history_data_agent:/ragflow/history_data_agent
+    entrypoint: ["/bin/bash", "/ragflow/entrypoint.sh"]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  ragflow-es:
+    image: elasticsearch:8.11.3
+    container_name: preaa-ragflow-es
+    restart: on-failure
+    env_file: stack.env
+    environment:
+      - node.name=ragflow-es
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - bootstrap.memory_lock=false
+      - discovery.type=single-node
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+      - cluster.routing.allocation.disk.watermark.low=5gb
+      - cluster.routing.allocation.disk.watermark.high=3gb
+      - cluster.routing.allocation.disk.watermark.flood_stage=2gb
+      - ES_JAVA_OPTS=${ES_JAVA_OPTS:--Xms512m -Xmx512m}
+    mem_limit: 4g
+    volumes:
+      - preaa-ragflow-es-data:/usr/share/elasticsearch/data
+    ulimits:
+      memlock: { soft: -1, hard: -1 }
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -u elastic:$${ELASTIC_PASSWORD} http://localhost:9200 >/dev/null"]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+
+  admin:
+    image: hicsail/preaa-admin:main
+    pull_policy: always
+    container_name: preaa-admin
+    restart: unless-stopped
+    ports:
+      - "3016:3000"
+    depends_on:
+      postgres: { condition: service_healthy }
+    env_file: stack.env
+    environment:
+      DATABASE_URL: "postgresql://${POSTGRES_USER:-psql}:${POSTGRES_PASSWORD}@postgres:5432/admin"
+      ENCRYPTION_KEY: "${ADMIN_ENCRYPTION_KEY}"
+      LITELLM_BASE_URL: "http://litellm:4000"
+      NEXTAUTH_URL: "${ADMIN_NEXTAUTH_URL:-http://localhost:3016}"
+      NEXTAUTH_SECRET: "${NEXTAUTH_SECRET}"
+
+  chat-client:
+    image: hicsail/preaa-chat-client:main
+    pull_policy: always
+    container_name: preaa-chat-client
+    restart: unless-stopped
+    ports:
+      - "3009:80"
+    env_file: stack.env
+
+  embedded-chat:
+    image: hicsail/preaa-embedded-chat:main
+    pull_policy: always
+    container_name: preaa-embedded-chat
+    restart: unless-stopped
+    ports:
+      - "3017:80"
+
+volumes:
+  preaa-postgres-data:
+  preaa-clickhouse-data:
+  preaa-clickhouse-logs:
+  preaa-minio-data:
+  preaa-langflow-data:
+  preaa-langflow-components:
+  preaa-n8n-data:
+  preaa-open-webui-data:
+  preaa-ragflow-logs:
+  preaa-ragflow-es-data:

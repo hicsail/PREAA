@@ -1,0 +1,2 @@
+# rendered at deploy time from base + SSM — never commit
+stack.env

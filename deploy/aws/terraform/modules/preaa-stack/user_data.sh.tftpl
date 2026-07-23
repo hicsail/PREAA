@@ -87,13 +87,17 @@ fi
 # placed in /opt/preaa out of band; this sets up how the host runs them.
 install -d -m 750 /opt/preaa
 
-# Render stack.env from the SSM SecureString parameters under the env prefix.
+# Render stack.env = committed non-secret base + SecureString secrets from SSM.
+# Secrets are appended last so they win on any duplicate key (env_file: last
+# occurrence wins).
 cat > /opt/preaa/render-env.sh <<RENDER
 #!/usr/bin/env bash
 set -euo pipefail
 umask 077
 OUT=/opt/preaa/stack.env
+BASE=/opt/preaa/stack.env.base
 : > "\$OUT"
+if [ -f "\$BASE" ]; then cat "\$BASE" >> "\$OUT"; printf '\n' >> "\$OUT"; fi
 aws ssm get-parameters-by-path --region "${region}" --path "${ssm_prefix}" \
   --with-decryption --query 'Parameters[].[Name,Value]' --output text \
   | while IFS=\$'\t' read -r name value; do
