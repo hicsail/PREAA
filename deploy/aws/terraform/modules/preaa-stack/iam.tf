@@ -23,11 +23,16 @@ resource "aws_iam_role_policy_attachment" "ssm_core" {
 }
 
 data "aws_iam_policy_document" "instance" {
-  # Read the stack's secret parameters at boot.
+  # Read the stack's secret parameters at boot. GetParametersByPath authorizes
+  # against the path resource itself, GetParameter(s) against the children — so
+  # both the prefix and prefix/* are required.
   statement {
-    sid       = "ReadSecrets"
-    actions   = ["ssm:GetParameter", "ssm:GetParameters", "ssm:GetParametersByPath"]
-    resources = ["arn:aws:ssm:${var.region}:${data.aws_caller_identity.current.account_id}:parameter${local.ssm_prefix}/*"]
+    sid     = "ReadSecrets"
+    actions = ["ssm:GetParameter", "ssm:GetParameters", "ssm:GetParametersByPath"]
+    resources = [
+      "arn:aws:ssm:${var.region}:${data.aws_caller_identity.current.account_id}:parameter${local.ssm_prefix}",
+      "arn:aws:ssm:${var.region}:${data.aws_caller_identity.current.account_id}:parameter${local.ssm_prefix}/*",
+    ]
   }
 
   # Read/write the per-env backups bucket (DB dumps, snapshots, archives).

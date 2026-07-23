@@ -18,8 +18,8 @@ services:
     env_file: stack.env
     volumes:
       - preaa-postgres-data:/var/lib/postgresql/data
+      # Official image runs *.sql here once, on first init (empty data dir).
       - ./postgres-init:/docker-entrypoint-initdb.d
-    entrypoint: ["/bin/bash", "/docker-entrypoint-initdb.d/entrypoint.sh"]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U $${POSTGRES_USER:-psql} -d postgres"]
       interval: 3s
@@ -115,8 +115,8 @@ services:
     ports:
       - "4000:4000"
     depends_on:
-      - postgres
-      - langfuse-web
+      postgres: { condition: service_healthy }
+      langfuse-web: { condition: service_started }
     env_file: stack.env
     environment:
       DATABASE_URL: "postgresql://${POSTGRES_USER:-psql}:${POSTGRES_PASSWORD}@postgres:5432/litellm"
@@ -131,8 +131,10 @@ services:
     image: langflowai/langflow:1.9.2
     container_name: preaa-langflow
     restart: unless-stopped
+    # run as root so it can write secret_key into the (root-owned) named volume
+    user: "0:0"
     depends_on:
-      - postgres
+      postgres: { condition: service_healthy }
     ports:
       - "7860:7860"
     env_file: stack.env
@@ -149,7 +151,7 @@ services:
     ports:
       - "5678:5678"
     depends_on:
-      - postgres
+      postgres: { condition: service_healthy }
     env_file: stack.env
     environment:
       NODE_ENV: production
@@ -187,6 +189,11 @@ services:
       - "7443:443"
       - "9380:9380"
     env_file: stack.env
+    environment:
+      # RagFlow defaults DATABASE_TYPE to mysql; force postgres so it reads the
+      # postgres section of service_conf (else KeyError 'password' on startup).
+      DB_TYPE: postgres
+      DATABASE_TYPE: postgres
     volumes:
       - preaa-ragflow-logs:/ragflow/logs
       - ./ragflow/service_conf.yaml.template:/ragflow/conf/service_conf.yaml.template

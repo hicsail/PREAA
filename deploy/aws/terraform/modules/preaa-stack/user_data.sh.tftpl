@@ -44,8 +44,10 @@ if [ -n "$data_dev" ]; then
 fi
 
 # --- Swap: RAM-spike safety net (plan D1) -----------------------------------
+# Use dd, not fallocate: fallocate'd files can be sparse/"have holes", which
+# swapon rejects — leaving no swap active after boot.
 if [ "${swap_size_gb}" -gt 0 ] && [ ! -f /data/swapfile ]; then
-  fallocate -l ${swap_size_gb}G /data/swapfile || dd if=/dev/zero of=/data/swapfile bs=1M count=$(( ${swap_size_gb} * 1024 ))
+  dd if=/dev/zero of=/data/swapfile bs=1M count=$(( ${swap_size_gb} * 1024 )) status=none
   chmod 600 /data/swapfile
   mkswap /data/swapfile
   swapon /data/swapfile
