@@ -52,10 +52,10 @@ module "preaa" {
   # this true for a stable address before real DNS cutover.
   use_eip = false
 
-  # TODO before apply: set the central Portainer server IP (CIDR /32) so it can
-  # reach the agent on 9001. Leave web open (behind Cloudflare) or tighten to
-  # Cloudflare ranges. SSH left disabled (use SSM Session Manager).
-  portainer_server_cidrs = [] # e.g. ["203.0.113.10/32"]
+  # Central Portainer server ("portainer & time tracker & proxy" EC2) — allowed
+  # to reach the agent on 9001. Web left open (behind Cloudflare); SSH disabled
+  # (use SSM Session Manager).
+  portainer_server_cidrs = ["52.87.70.124/32"]
   allowed_web_cidrs      = ["0.0.0.0/0"]
   admin_ssh_cidrs        = []
 }
