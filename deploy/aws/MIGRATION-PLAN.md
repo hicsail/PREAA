@@ -108,13 +108,10 @@ Terraform.
   open SSH — preferred).
 
 ### 4.3 Ingress / TLS
-- **Recommended:** an in-stack reverse proxy (**Caddy** for auto-Let's-Encrypt
-  simplicity, or **nginx-proxy-manager** which the team already runs on the
-  grist/GDP stack) terminating TLS per subdomain, with Cloudflare in front.
-  Portable, cloud-agnostic, matches the mission.
-- **Alternative:** AWS ALB + ACM. More AWS-native, auto-renewing certs, but
-  couples to AWS and adds per-service target groups to Terraform.
-  → *Decision D2: Caddy vs nginx-proxy-manager vs ALB+ACM.*
+- **Decision D2: RESOLVED — in-stack `nginx-proxy-manager`** (the team already
+  runs it on the grist/GDP stack), terminating TLS per subdomain with
+  Let's Encrypt, Cloudflare in front. Portable, cloud-agnostic, matches
+  existing ops. (AWS ALB+ACM considered and set aside to avoid AWS coupling.)
 
 ### 4.4 Secrets
 - **SSM Parameter Store** (SecureString) holds every value currently in
@@ -167,19 +164,21 @@ NERC is mutated.
 | **Postgres** (litellm, langfuse, langflow, n8n, rag_flow) | `pg_dump` per DB → restore on AWS | Straightforward. Preserve roles/passwords. |
 | **admin proxies** | Export Mongo `deepchatproxies` from NERC → transform → insert into new `deepchat_proxies` Postgres table | One-time script. Keys are plaintext in Mongo; **encrypt on insert** with the new `ADMIN_ENCRYPTION_KEY`. Small dataset. |
 | **MinIO** | `mc mirror` NERC → AWS (langfuse + ragflow buckets) | Or skip if switching to S3 (D3). |
-| **ClickHouse** (Langfuse traces) | `clickhouse-backup` or Langfuse export | Non-trivial. → *Decision D5: migrate history vs start fresh on staging.* |
-| **Elasticsearch** (RagFlow indices) | ES snapshot → restore, or re-ingest from MinIO source docs | Snapshot/restore cleanest. → *Decision D5 applies here too.* |
+| **ClickHouse** (Langfuse traces) | **D5 RESOLVED:** export existing traces to a **local archive** (Langfuse export / `clickhouse-backup` dump kept off-box), then **start fresh** — no live import. | Historical traces preserved as an archive for reference, not loaded into AWS. |
+| **Elasticsearch** (RagFlow indices) | **D5 RESOLVED:** **start fresh.** | ⚠️ RagFlow knowledge bases are re-created: datasets must be **re-ingested/re-parsed** on the new instance. MinIO source docs can be mirrored so files aren't lost, but parsing/embedding is redone. Confirm this is acceptable, or we snapshot/restore ES instead. |
 | **Redis** | none | Ephemeral cache/queues. |
 | **n8n** | Postgres (if DB-backed) + carry `N8N_ENCRYPTION_KEY` | **Critical:** without the same encryption key, stored credentials break. |
 | **LangFlow** | `langflow` Postgres DB + `LANGFLOW_SECRET_KEY` | Same: secret key must match or encrypted creds break. |
 
-### Keycloak realm migration
-- Export the `preaa` realm from `damplab-keycloak` (`kc.sh export` or Admin API):
-  clients, roles, and (if we own them) users.
-- Import into the new in-stack Keycloak; repoint every service's OIDC issuer +
-  `KEYCLOAK_URL` to the new host.
-- → *Decision D6: migrate users with password hashes (full export) vs
-  re-invite / keep federating to damplab for a transition period.*
+### Keycloak realm setup
+- **Decision D6: RESOLVED — start fresh.** The `preaa` realm on
+  `damplab-keycloak` was added late and has few users, so we do **not** migrate
+  users.
+- Stand up the in-stack Keycloak and **recreate the `preaa` realm + clients**
+  fresh (realm config can be authored as a JSON realm-import file committed to
+  the repo — clients, roles, redirect URIs — so it's reproducible IaC). Users
+  re-register / are re-invited.
+- Repoint every service's OIDC issuer + `KEYCLOAK_URL` to the new host.
 
 ## 7. Cutover sequence
 
@@ -223,11 +222,11 @@ separately.
 | # | Decision | Recommendation |
 |---|---|---|
 | D1 | Staging instance size | ✅ **RESOLVED: `m7i-flex.xlarge` (4/16)** + swap; resize if pressure |
-| D2 | Ingress/TLS | In-stack Caddy (portable) |
-| D3 | Object storage on AWS | Keep MinIO in-stack (portability) |
-| D4 | Orchestration on the box | Portainer agent (matches ops) |
-| D5 | ClickHouse + ES history | Start fresh on **staging**; migrate for prod |
-| D6 | Keycloak users | Full realm export incl. users |
+| D2 | Ingress/TLS | ✅ **RESOLVED: in-stack `nginx-proxy-manager`** |
+| D3 | Object storage on AWS | Keep MinIO in-stack (portability) — *pending* |
+| D4 | Orchestration on the box | Portainer agent (matches ops) — *pending* |
+| D5 | ClickHouse + ES history | ✅ **RESOLVED: archive traces locally, start fresh** (RagFlow re-ingest — confirm) |
+| D6 | Keycloak users | ✅ **RESOLVED: start fresh**, recreate realm as JSON import, no user migration |
 | D7 | Prod domain scheme | Decide at prod phase |
 
 ## 11. Out of scope (tracked elsewhere)
