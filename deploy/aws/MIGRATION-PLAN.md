@@ -165,7 +165,13 @@ NERC is mutated.
 | **admin proxies** | Export Mongo `deepchatproxies` from NERC → transform → insert into new `deepchat_proxies` Postgres table | One-time script. Keys are plaintext in Mongo; **encrypt on insert** with the new `ADMIN_ENCRYPTION_KEY`. Small dataset. |
 | **MinIO** | `mc mirror` NERC → AWS (langfuse + ragflow buckets) | Or skip if switching to S3 (D3). |
 | **ClickHouse** (Langfuse traces) | **D5 RESOLVED:** export existing traces to a **local archive** (Langfuse export / `clickhouse-backup` dump kept off-box), then **start fresh** — no live import. | Historical traces preserved as an archive for reference, not loaded into AWS. |
-| **Elasticsearch** (RagFlow indices) | **D5 RESOLVED:** **start fresh.** | ⚠️ RagFlow knowledge bases are re-created: datasets must be **re-ingested/re-parsed** on the new instance. MinIO source docs can be mirrored so files aren't lost, but parsing/embedding is redone. Confirm this is acceptable, or we snapshot/restore ES instead. |
+| **Elasticsearch** (RagFlow indices) | **D5 RESOLVED:** **snapshot → restore** to preserve datasets (no re-parsing). Register an ES snapshot repo, snapshot the `ragflow_*` indices, restore on AWS. | Versions match (`elasticsearch:8.11.3` both sides), so restore is clean. Must be taken as a **consistent set** with the `rag_flow` Postgres dump + MinIO mirror, RagFlow **quiesced** during the window (see note below). |
+
+**RagFlow consistency note:** RagFlow state spans Elasticsearch (chunks +
+embeddings), Postgres `rag_flow` (dataset/document/chunk metadata), and MinIO
+(source files). To preserve knowledge bases intact, all three are captured at
+the same quiesced point and restored together; carrying metadata without the
+matching ES index would break retrieval.
 | **Redis** | none | Ephemeral cache/queues. |
 | **n8n** | Postgres (if DB-backed) + carry `N8N_ENCRYPTION_KEY` | **Critical:** without the same encryption key, stored credentials break. |
 | **LangFlow** | `langflow` Postgres DB + `LANGFLOW_SECRET_KEY` | Same: secret key must match or encrypted creds break. |
@@ -225,7 +231,7 @@ separately.
 | D2 | Ingress/TLS | ✅ **RESOLVED: in-stack `nginx-proxy-manager`** |
 | D3 | Object storage on AWS | Keep MinIO in-stack (portability) — *pending* |
 | D4 | Orchestration on the box | Portainer agent (matches ops) — *pending* |
-| D5 | ClickHouse + ES history | ✅ **RESOLVED: archive traces locally, start fresh** (RagFlow re-ingest — confirm) |
+| D5 | ClickHouse + ES history | ✅ **RESOLVED:** Langfuse traces archived + fresh; **RagFlow snapshot→restore** (datasets preserved, consistent ES+pg+MinIO) |
 | D6 | Keycloak users | ✅ **RESOLVED: start fresh**, recreate realm as JSON import, no user migration |
 | D7 | Prod domain scheme | Decide at prod phase |
 
