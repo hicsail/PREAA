@@ -9,21 +9,28 @@ set -euxo pipefail
 # --- Data volume: find, format (once), mount at /data -----------------------
 # On Nitro instances the requested device (${data_volume_device}) surfaces as a
 # /dev/nvme*n1 disk with a non-deterministic name, so locate the data disk as
-# the single unpartitioned, unmounted disk that is not the root disk.
-root_disk="$(lsblk -ndo PKNAME "$(findmnt -no SOURCE /)" | head -n1 || true)"
+# the single unpartitioned, unmounted disk that is not the root disk. The
+# volume attaches a few seconds AFTER boot, so poll for it (up to ~150s) rather
+# than racing it.
+find_data_dev() {
+  local root_disk dev
+  root_disk="$(lsblk -ndo PKNAME "$(findmnt -no SOURCE /)" | head -n1 || true)"
+  for dev in $(lsblk -dn -o NAME,TYPE | awk '$2=="disk"{print $1}'); do
+    [ "$dev" = "$root_disk" ] && continue
+    # already-formatted PREAA data disk (label) — reuse on reboot/re-run
+    if [ "$(lsblk -no LABEL "/dev/$dev")" = "preaa-data" ]; then echo "/dev/$dev"; return; fi
+    # otherwise the first unpartitioned, filesystem-less disk
+    if [ -z "$(lsblk -no FSTYPE "/dev/$dev")" ] && [ -z "$(lsblk -no NAME "/dev/$dev" | tail -n +2)" ]; then
+      echo "/dev/$dev"; return
+    fi
+  done
+}
+
 data_dev=""
-for dev in $(lsblk -dn -o NAME,TYPE | awk '$2=="disk"{print $1}'); do
-  [ "$dev" = "$root_disk" ] && continue
-  # skip disks that already have a filesystem or children (partitions)
-  if [ -z "$(lsblk -no FSTYPE "/dev/$dev")" ] && [ -z "$(lsblk -no NAME "/dev/$dev" | tail -n +2)" ]; then
-    data_dev="/dev/$dev"
-    break
-  fi
-  # already-formatted PREAA data disk (label) — reuse on reboot/re-run
-  if [ "$(lsblk -no LABEL "/dev/$dev")" = "preaa-data" ]; then
-    data_dev="/dev/$dev"
-    break
-  fi
+for _ in $(seq 1 30); do
+  data_dev="$(find_data_dev)"
+  [ -n "$data_dev" ] && break
+  sleep 5
 done
 
 mkdir -p /data
@@ -75,7 +82,7 @@ if ! docker ps --format '{{.Names}}' | grep -q '^portainer_agent$'; then
     --restart=always \
     -p 9001:9001 \
     -v /var/run/docker.sock:/var/run/docker.sock \
-    -v /var/lib/docker/volumes:/var/lib/docker/volumes \
+    -v /data/docker/volumes:/var/lib/docker/volumes \
     -v /data:/data \
     portainer/agent:lts
 fi

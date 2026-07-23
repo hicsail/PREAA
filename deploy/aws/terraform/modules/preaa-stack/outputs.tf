@@ -1,6 +1,6 @@
 output "public_ip" {
-  description = "Elastic IP — point Cloudflare DNS records here."
-  value       = aws_eip.this.public_ip
+  description = "Public IP to point Cloudflare DNS records at (Elastic IP if use_eip, else the instance's ephemeral public IP)."
+  value       = var.use_eip ? aws_eip.this[0].public_ip : aws_instance.this.public_ip
 }
 
 output "instance_id" {

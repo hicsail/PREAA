@@ -104,6 +104,16 @@ variable "secret_parameter_names" {
   ]
 }
 
+variable "use_eip" {
+  description = <<-EOT
+    Allocate an Elastic IP for a stable address. Set false to use the
+    instance's auto-assigned (ephemeral) public IP instead — useful when the
+    account's EIP quota is exhausted. Ephemeral IPs change on stop/start.
+  EOT
+  type        = bool
+  default     = true
+}
+
 variable "tags" {
   description = "Extra tags applied to all resources."
   type        = map(string)

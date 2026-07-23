@@ -53,6 +53,7 @@ resource "aws_volume_attachment" "data" {
 }
 
 resource "aws_eip" "this" {
+  count      = var.use_eip ? 1 : 0
   domain     = "vpc"
   instance   = aws_instance.this.id
   tags       = merge(local.common_tags, { Name = local.name })

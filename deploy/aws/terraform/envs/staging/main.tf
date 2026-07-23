@@ -47,6 +47,11 @@ module "preaa" {
   data_volume_size_gb = 100
   swap_size_gb        = 8
 
+  # The shared account's EIP quota is exhausted, so staging uses the instance's
+  # ephemeral public IP for now. Request an EIP quota bump (or free one) and set
+  # this true for a stable address before real DNS cutover.
+  use_eip = false
+
   # TODO before apply: set the central Portainer server IP (CIDR /32) so it can
   # reach the agent on 9001. Leave web open (behind Cloudflare) or tighten to
   # Cloudflare ranges. SSH left disabled (use SSM Session Manager).
