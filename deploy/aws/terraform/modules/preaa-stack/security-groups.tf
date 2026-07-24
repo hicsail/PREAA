@@ -1,8 +1,23 @@
 resource "aws_security_group" "instance" {
   name        = "${local.name}-instance"
-  description = "PREAA ${var.environment} instance: web ingress + Portainer agent + optional SSH"
-  vpc_id      = aws_vpc.this.id
+  description = "PREAA ${var.environment} instance: web + reverse-proxy service ports + optional SSH"
+  vpc_id      = local.vpc_id
   tags        = merge(local.common_tags, { Name = "${local.name}-instance" })
+}
+
+# App service ports reachable from the shared reverse proxy (private). One rule
+# per (port, proxy CIDR) pair.
+resource "aws_vpc_security_group_ingress_rule" "service_ports" {
+  for_each = {
+    for pair in setproduct(var.service_ports, var.proxy_cidrs) :
+    "${pair[0]}-${pair[1]}" => { port = pair[0], cidr = pair[1] }
+  }
+  security_group_id = aws_security_group.instance.id
+  description       = "App service port ${each.value.port} from reverse proxy"
+  cidr_ipv4         = each.value.cidr
+  ip_protocol       = "tcp"
+  from_port         = each.value.port
+  to_port           = each.value.port
 }
 
 resource "aws_vpc_security_group_ingress_rule" "http" {

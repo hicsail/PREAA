@@ -7,7 +7,7 @@ resource "aws_instance" "this" {
   ami                    = data.aws_ssm_parameter.al2023.value
   instance_type          = var.instance_type
   availability_zone      = var.availability_zone
-  subnet_id              = aws_subnet.public.id
+  subnet_id              = local.subnet_id
   vpc_security_group_ids = [aws_security_group.instance.id]
   iam_instance_profile   = aws_iam_instance_profile.instance.name
   key_name               = length(var.admin_ssh_cidrs) > 0 ? var.key_name : null

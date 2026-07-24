@@ -9,16 +9,51 @@ variable "region" {
   default     = "us-east-1"
 }
 
+variable "create_network" {
+  description = <<-EOT
+    true: create a dedicated VPC + public subnet + IGW for the box.
+    false: launch into an existing VPC/subnet (set existing_vpc_id +
+    existing_subnet_id) — e.g. the account default VPC so the shared
+    nginx-proxy-manager can reach the box's service ports privately.
+  EOT
+  type        = bool
+  default     = true
+}
+
+variable "existing_vpc_id" {
+  description = "VPC to launch into when create_network = false."
+  type        = string
+  default     = ""
+}
+
+variable "existing_subnet_id" {
+  description = "Subnet to launch into when create_network = false (must be in availability_zone)."
+  type        = string
+  default     = ""
+}
+
 variable "vpc_cidr" {
-  description = "CIDR for the dedicated VPC."
+  description = "CIDR for the dedicated VPC (only when create_network = true)."
   type        = string
   default     = "10.20.0.0/16"
 }
 
 variable "public_subnet_cidr" {
-  description = "CIDR for the public subnet the instance lives in."
+  description = "CIDR for the public subnet (only when create_network = true)."
   type        = string
   default     = "10.20.1.0/24"
+}
+
+variable "proxy_cidrs" {
+  description = "CIDRs allowed to reach the app service ports (the shared reverse proxy). Empty = closed."
+  type        = list(string)
+  default     = []
+}
+
+variable "service_ports" {
+  description = "Host ports the app services publish, reachable from proxy_cidrs."
+  type        = list(number)
+  default     = [3000, 3009, 3016, 3017, 4000, 5678, 7080, 7600, 7860]
 }
 
 variable "availability_zone" {

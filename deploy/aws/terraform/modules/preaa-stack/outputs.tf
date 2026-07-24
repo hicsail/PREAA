@@ -8,8 +8,13 @@ output "instance_id" {
   value       = aws_instance.this.id
 }
 
+output "private_ip" {
+  description = "Private IP — point the shared reverse proxy's upstreams here (<private_ip>:<service_port>)."
+  value       = aws_instance.this.private_ip
+}
+
 output "vpc_id" {
-  value = aws_vpc.this.id
+  value = local.vpc_id
 }
 
 output "ssm_prefix" {

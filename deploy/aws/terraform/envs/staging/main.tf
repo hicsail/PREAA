@@ -47,16 +47,19 @@ module "preaa" {
   data_volume_size_gb = 100
   swap_size_gb        = 8
 
-  # The shared account's EIP quota is exhausted, so staging uses the instance's
-  # ephemeral public IP for now. Request an EIP quota bump (or free one) and set
-  # this true for a stable address before real DNS cutover.
-  use_eip = false
+  # Model B: launch into the ACCOUNT DEFAULT VPC (us-east-1a subnet) so the
+  # shared nginx-proxy-manager (on 52.87.70.124, default VPC) can reach the
+  # box's service ports privately. Cloudflare points *-preaa-staging.sail.codes
+  # at the proxy's public IP; the proxy forwards to <private_ip>:<port>. No EIP
+  # needed (private reachability), and no public web ingress on this box.
+  create_network     = false
+  existing_vpc_id    = "vpc-242ec241"    # default VPC (172.31.0.0/16)
+  existing_subnet_id = "subnet-fe290ab8" # default VPC, us-east-1a
+  use_eip            = false
 
-  # No external orchestrator — the box runs its own compose stack via systemd
-  # (see modules/preaa-stack/user_data.sh.tftpl). Web left open (behind
-  # Cloudflare); SSH disabled (use SSM Session Manager).
-  allowed_web_cidrs = ["0.0.0.0/0"]
-  admin_ssh_cidrs   = []
+  proxy_cidrs       = ["172.31.94.46/32"] # nginx-proxy-manager private IP
+  allowed_web_cidrs = []                  # no public web on this box; proxy fronts it
+  admin_ssh_cidrs   = []                  # use SSM Session Manager
 }
 
 output "public_ip" {
@@ -65,6 +68,10 @@ output "public_ip" {
 
 output "instance_id" {
   value = module.preaa.instance_id
+}
+
+output "private_ip" {
+  value = module.preaa.private_ip
 }
 
 output "secret_parameter_names" {
