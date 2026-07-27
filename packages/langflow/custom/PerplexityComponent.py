@@ -3,7 +3,7 @@ import json
 
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import BaseMessage, AIMessageChunk, HumanMessage, SystemMessage
-from langchain_core.outputs import ChatGenerationChunk, ChatGeneration
+from langchain_core.outputs import ChatGenerationChunk, ChatGeneration, ChatResult
 from langchain_core.callbacks import CallbackManagerForLLMRun
 from pydantic.v1 import Field
 import httpx
@@ -174,7 +174,7 @@ class PerplexityChatModel(BaseChatModel):
         stop: Optional[List[str]] = None,
         run_manager: Optional[CallbackManagerForLLMRun] = None,
         **kwargs: Any,
-    ) -> ChatGeneration:
+    ) -> ChatResult:
         """Generate a non-streaming response."""
         # For non-streaming, accumulate the stream
         accumulated_content = ""
@@ -184,7 +184,10 @@ class PerplexityChatModel(BaseChatModel):
         
         from langchain_core.messages import AIMessage
         message = AIMessage(content=accumulated_content)
-        return ChatGeneration(message=message)
+        # BaseChatModel._generate must return a ChatResult (LangChain reads
+        # result.generations); returning a bare ChatGeneration raises
+        # "'ChatGeneration' object has no attribute 'generations'".
+        return ChatResult(generations=[ChatGeneration(message=message)])
 
 
 class PerplexityComponent(LCModelComponent):
