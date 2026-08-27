@@ -266,6 +266,36 @@ services:
     ports:
       - "3017:80"
 
+  # DIY agentic-RAG admin portal (hicsail/preaa-agentic-rag, packages/portal).
+  # Stateless glue over the EXISTING services: RagFlow (datasets + agents),
+  # LiteLLM (publish agents as models -> Open WebUI), Keycloak (SSO).
+  # Secrets come from SSM via stack.env: RAGFLOW_API_KEY, PORTAL_AUTH_SECRET,
+  # PORTAL_KEYCLOAK_CLIENT_SECRET.
+  portal:
+    image: hicsail/preaa-portal:main
+    pull_policy: always
+    container_name: preaa-portal
+    restart: unless-stopped
+    ports:
+      - "3018:3000"
+    env_file: stack.env
+    environment:
+      RAGFLOW_BASE_URL: http://ragflow:80
+      LITELLM_BASE_URL: http://litellm:4000
+      RAGFLOW_DEFAULT_LLM_ID: gpt-4.1-mini@OpenAI
+      AUTH_SECRET: ${PORTAL_AUTH_SECRET}
+      NEXTAUTH_URL: https://portal-preaa-staging.sail.codes
+      KEYCLOAK_ISSUER: https://damplab-keycloak.sail.codes/realms/preaa
+      KEYCLOAK_CLIENT_ID: ${PORTAL_KEYCLOAK_CLIENT_ID:-preaa-portal}
+      KEYCLOAK_CLIENT_SECRET: ${PORTAL_KEYCLOAK_CLIENT_SECRET}
+      PUBLIC_URL_CHAT: https://openwebui-preaa-staging.sail.codes
+      PUBLIC_URL_RAG: https://ragflow-preaa-staging.sail.codes
+      PUBLIC_URL_TRACES: https://langfuse-preaa-staging.sail.codes
+      PUBLIC_URL_LLM: https://litellm-preaa-staging.sail.codes
+      PUBLIC_URL_AUTH: https://damplab-keycloak.sail.codes
+    depends_on:
+      - litellm
+
 volumes:
   preaa-postgres-data:
   preaa-clickhouse-data:

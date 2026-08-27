@@ -53,7 +53,7 @@ variable "proxy_cidrs" {
 variable "service_ports" {
   description = "Host ports the app services publish, reachable from proxy_cidrs."
   type        = list(number)
-  default     = [3000, 3009, 3016, 3017, 4000, 5678, 7080, 7600, 7860]
+  default     = [3000, 3009, 3016, 3017, 3018, 4000, 5678, 7080, 7600, 7860]
 }
 
 variable "availability_zone" {
