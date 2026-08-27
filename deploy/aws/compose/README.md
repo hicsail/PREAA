@@ -42,6 +42,8 @@ aws s3 sync . "s3://$BUCKET/compose" --delete \
   --exclude '.git/*' --exclude 'stack.env'
 
 # 2) On the host (via SSM Session Manager or Run Command):
+#    NEVER add --delete here: /opt/preaa also holds render-env.sh (written by
+#    Terraform user_data) and the rendered stack.env, neither of which is in S3.
 sudo aws s3 sync "s3://$BUCKET/compose" /opt/preaa
 sudo systemctl start preaa.service      # renders stack.env, then compose up -d
 #   ... check status:
