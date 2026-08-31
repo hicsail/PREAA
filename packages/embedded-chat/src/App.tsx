@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Box,
   Button,
@@ -44,9 +44,22 @@ const BACKEND_BASE_URL = import.meta.env.VITE_BACKEND_BASE_URL;
 type BotSettingsState =
   | { status: 'idle' }
   | { status: 'loading' }
-  | { status: 'loaded'; modelName: string; enabled: boolean; saving: boolean }
+  | { status: 'loaded'; id: string; modelName: string; enabled: boolean; saving: boolean; saveFailed?: boolean }
   | { status: 'notfound' }
   | { status: 'error' };
+
+const botSettingsUrl = (modelId: string) => `${BACKEND_BASE_URL}/api/proxies/${encodeURIComponent(modelId)}`;
+
+const loadedBotSettings = (
+  id: string,
+  proxy: { modelName: string; suggestionsEnabled?: unknown }
+): BotSettingsState => ({
+  status: 'loaded',
+  id,
+  modelName: proxy.modelName,
+  enabled: proxy.suggestionsEnabled === true,
+  saving: false
+});
 
 // Demo page to showcase how to embed the widget
 const App: React.FC = () => {
@@ -71,36 +84,35 @@ const App: React.FC = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [botSettings, setBotSettings] = useState<BotSettingsState>({ status: 'idle' });
 
+  // Current Model ID, readable from async completions so a stale response
+  // never overwrites state that belongs to a different bot.
+  const modelIdRef = useRef(widgetConfig.modelId);
+  modelIdRef.current = widgetConfig.modelId;
+
   // Look up the bot's server-side settings whenever the Model ID changes.
   useEffect(() => {
-    const modelId = widgetConfig.modelId.trim();
+    const modelId = widgetConfig.modelId;
     if (!modelId) {
-      setBotSettings({ status: 'idle' });
+      setBotSettings((prev) => (prev.status === 'idle' ? prev : { status: 'idle' }));
       return;
     }
 
-    setBotSettings({ status: 'loading' });
+    setBotSettings((prev) => (prev.status === 'loading' ? prev : { status: 'loading' }));
     const controller = new AbortController();
     const timer = setTimeout(async () => {
       try {
-        const response = await fetch(`${BACKEND_BASE_URL}/api/proxies/${encodeURIComponent(modelId)}`, {
-          signal: controller.signal
-        });
+        const response = await fetch(botSettingsUrl(modelId), { signal: controller.signal });
         if (response.ok) {
           const proxy = await response.json();
-          setBotSettings({
-            status: 'loaded',
-            modelName: proxy.modelName,
-            enabled: proxy.suggestionsEnabled === true,
-            saving: false
-          });
+          setBotSettings(loadedBotSettings(modelId, proxy));
         } else if (response.status === 404) {
           setBotSettings({ status: 'notfound' });
         } else {
           setBotSettings({ status: 'error' });
         }
-      } catch (_err) {
+      } catch (err) {
         if (!controller.signal.aborted) {
+          console.error('Failed to load bot settings:', err);
           setBotSettings({ status: 'error' });
         }
       }
@@ -112,33 +124,28 @@ const App: React.FC = () => {
     };
   }, [widgetConfig.modelId]);
 
-  // Persist the follow-up-suggestions flag on the bot itself.
+  // Persist the follow-up-suggestions flag on the bot the panel has loaded.
   const toggleBotSuggestions = async (enabled: boolean) => {
     if (botSettings.status !== 'loaded' || botSettings.saving) return;
-    const previous = botSettings;
-    setBotSettings({ ...previous, enabled, saving: true });
+    const target = botSettings;
+    setBotSettings({ ...target, enabled, saving: true, saveFailed: false });
     try {
-      const response = await fetch(
-        `${BACKEND_BASE_URL}/api/proxies/${encodeURIComponent(widgetConfig.modelId.trim())}`,
-        {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ suggestionsEnabled: enabled })
-        }
-      );
+      const response = await fetch(botSettingsUrl(target.id), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ suggestionsEnabled: enabled })
+      });
       if (!response.ok) {
         throw new Error(`Request failed: ${response.status}`);
       }
       const proxy = await response.json();
-      setBotSettings({
-        status: 'loaded',
-        modelName: proxy.modelName,
-        enabled: proxy.suggestionsEnabled === true,
-        saving: false
-      });
+      // The Model ID field moved on — the lookup effect owns the state now.
+      if (modelIdRef.current !== target.id) return;
+      setBotSettings(loadedBotSettings(target.id, proxy));
     } catch (err) {
       console.error('Failed to update follow-up suggestions:', err);
-      setBotSettings({ ...previous, saving: false });
+      if (modelIdRef.current !== target.id) return;
+      setBotSettings({ ...target, saving: false, saveFailed: true });
     }
   };
 
@@ -153,9 +160,9 @@ const App: React.FC = () => {
       case 'error':
         return 'Could not load bot settings';
       case 'loaded':
-        return botSettings.saving
-          ? 'Saving…'
-          : `Show clickable follow-up questions after each answer from “${botSettings.modelName}”`;
+        if (botSettings.saving) return 'Saving…';
+        if (botSettings.saveFailed) return 'Couldn’t save — check your connection and try again';
+        return `Show clickable follow-up questions after each answer from “${botSettings.modelName}”`;
     }
   };
 
@@ -165,8 +172,10 @@ const App: React.FC = () => {
     // then remove the surrounding quotes to embed into single-quoted literals.
     const jsonEscaped = JSON.stringify(str);
     const inner = jsonEscaped.substring(1, jsonEscaped.length - 1);
-    // Optionally escape characters that could interfere with HTML parsing.
-    return inner.replace(/</g, '\\u003C').replace(/>/g, '\\u003E').replace(/&/g, '\\u0026');
+    // JSON.stringify never escapes single quotes, but the generated script
+    // interpolates into single-quoted literals — escape them, plus characters
+    // that could interfere with HTML parsing.
+    return inner.replace(/'/g, '\\u0027').replace(/</g, '\\u003C').replace(/>/g, '\\u003E').replace(/&/g, '\\u0026');
   };
 
   // Function to generate the script tag
@@ -289,10 +298,12 @@ const App: React.FC = () => {
                   onChange={(e) =>
                     setWidgetConfig({
                       ...widgetConfig,
-                      modelId: e.target.value
+                      // Trimmed at the source so the lookup, the saved setting,
+                      // and the generated embed script all target the same id.
+                      modelId: e.target.value.trim()
                     })
                   }
-                  helperText="The ID of the AI model to use"
+                  helperText="Required — the ID of the AI model to use"
                 />
               </Grid>
 
@@ -566,7 +577,7 @@ const App: React.FC = () => {
             </Grid>
 
             <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
-              <Button variant="contained" color="primary" onClick={loadWidget}>
+              <Button variant="contained" color="primary" onClick={loadWidget} disabled={!widgetConfig.modelId}>
                 Test Widget
               </Button>
               <Button
@@ -574,6 +585,7 @@ const App: React.FC = () => {
                 color="success"
                 startIcon={copySuccess ? <CheckIcon /> : <ContentCopyIcon />}
                 onClick={copyToClipboard}
+                disabled={!widgetConfig.modelId}
               >
                 Copy Script to Clipboard
               </Button>
@@ -629,6 +641,7 @@ const App: React.FC = () => {
               sx={{ mt: 2 }}
               startIcon={<ContentCopyIcon />}
               onClick={copyToClipboard}
+              disabled={!widgetConfig.modelId}
             >
               Copy Script
             </Button>

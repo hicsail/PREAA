@@ -1,17 +1,10 @@
 import { container } from '@/app/lib/container';
 import { ProxyService } from '@/app/lib/proxies/proxy.service';
-import { getCorsHeaders } from '@/app/lib/cors';
 
-// GET and PUT are CORS-enabled so the embedded-chat configuration page
-// (a different origin) can read and toggle client-safe proxy settings.
-const CORS_METHODS = 'GET, PUT, OPTIONS';
-
-export async function OPTIONS(request: Request) {
-  return new Response(null, {
-    status: 204,
-    headers: getCorsHeaders(request.headers.get('origin'), CORS_METHODS)
-  });
-}
+// Cross-origin access (e.g. the embedded-chat configuration page) is served
+// by the blanket CORS headers next.config.ts applies to /api/:path* — no
+// route-level CORS here. Only /api/proxies/proxy/* does its own
+// origin-validating CORS, as noted in next.config.ts.
 
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const proxyService = container.resolve(ProxyService);
@@ -36,65 +29,67 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
   }
 }
 
-export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const proxyService = container.resolve(ProxyService);
-  const corsHeaders = getCorsHeaders(request.headers.get('origin'), CORS_METHODS);
 
   const id = (await params).id;
   if (!id) {
-    return new Response('Missing ID param', { status: 400, headers: corsHeaders });
+    return new Response('Missing ID param', { status: 400 });
   }
 
-  const proxy = await proxyService.get(id);
-  if (!proxy) {
-    return new Response('Failed to find proxy', { status: 404, headers: corsHeaders });
-  }
-
-  return new Response(JSON.stringify(proxy), {
-    status: 200,
-    headers: {
-      'Content-Type': 'application/json',
-      ...corsHeaders
+  try {
+    const proxy = await proxyService.get(id);
+    if (!proxy) {
+      return new Response('Failed to find proxy', { status: 404 });
     }
-  });
+
+    return new Response(JSON.stringify(proxy), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+  } catch (error) {
+    // e.g. ids that don't parse as the column type (fresh installs use uuid)
+    console.error(error);
+    return new Response('Failed to look up proxy', { status: 500 });
+  }
 }
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const proxyService = container.resolve(ProxyService);
-  const corsHeaders = getCorsHeaders(request.headers.get('origin'), CORS_METHODS);
 
   const id = (await params).id;
   if (!id) {
-    return new Response('Missing ID param', { status: 400, headers: corsHeaders });
+    return new Response('Missing ID param', { status: 400 });
   }
 
   let body;
   try {
     body = await request.json();
   } catch (_error) {
-    return new Response('Invalid JSON in request body', { status: 400, headers: corsHeaders });
+    return new Response('Invalid JSON in request body', { status: 400 });
   }
 
   if (typeof body?.suggestionsEnabled !== 'boolean') {
-    return new Response('suggestionsEnabled must be a boolean', { status: 400, headers: corsHeaders });
+    return new Response('suggestionsEnabled must be a boolean', { status: 400 });
   }
 
   try {
     // Only suggestionsEnabled is updatable — modelName/apiKey stay create-and-delete only.
     const updated = await proxyService.update(id, { suggestionsEnabled: body.suggestionsEnabled });
     if (!updated) {
-      return new Response('Failed to find proxy', { status: 404, headers: corsHeaders });
+      return new Response('Failed to find proxy', { status: 404 });
     }
 
     return new Response(JSON.stringify(updated), {
       status: 200,
       headers: {
-        'Content-Type': 'application/json',
-        ...corsHeaders
+        'Content-Type': 'application/json'
       }
     });
   } catch (error) {
     console.error(error);
-    return new Response('Failed to update model', { status: 500, headers: corsHeaders });
+    return new Response('Failed to update model', { status: 500 });
   }
 }
