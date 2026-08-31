@@ -33,6 +33,10 @@ export async function register() {
         created_at timestamptz NOT NULL DEFAULT now()
       )
     `);
+    await pool.query(`
+      ALTER TABLE deepchat_proxies
+        ADD COLUMN IF NOT EXISTS suggestions_enabled boolean NOT NULL DEFAULT false
+    `);
   } finally {
     await pool.end();
   }

@@ -1,5 +1,5 @@
 import { FC } from 'react';
-import { Create, SimpleForm, TextInput } from 'react-admin';
+import { BooleanInput, Create, SimpleForm, TextInput } from 'react-admin';
 
 export const ProxyCreate: FC = () => {
   return (
@@ -7,6 +7,12 @@ export const ProxyCreate: FC = () => {
       <SimpleForm>
         <TextInput source="modelName" />
         <TextInput source="apiKey" />
+        <BooleanInput
+          source="suggestionsEnabled"
+          label="Follow-up suggestions"
+          defaultValue={false}
+          helperText="Show clickable follow-up questions after each answer in the embedded chat widget"
+        />
       </SimpleForm>
     </Create>
   );

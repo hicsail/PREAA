@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, timestamp, boolean } from 'drizzle-orm/pg-core';
 
 /**
  * DeepChat proxy definitions.
@@ -11,6 +11,7 @@ export const deepchatProxies = pgTable('deepchat_proxies', {
   id: uuid('id').primaryKey().defaultRandom(),
   modelName: text('model_name').notNull(),
   apiKey: text('api_key').notNull(),
+  suggestionsEnabled: boolean('suggestions_enabled').notNull().default(false),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow()
 });
 

@@ -6,6 +6,7 @@ import { chatCompletionV1ChatCompletionsPost } from '../client-litellm';
 import { db } from '../db';
 import { deepchatProxies } from '../db/schema';
 import { encrypt } from '../crypto/encryption';
+import { attachSuggestionsToSseStream, generateFollowUpSuggestions, suggestionsModel } from './suggestions';
 
 /**
  * Public (client-safe) view of a proxy. Never includes the API key.
@@ -13,23 +14,34 @@ import { encrypt } from '../crypto/encryption';
 export interface ProxyView {
   id: string;
   modelName: string;
+  suggestionsEnabled: boolean;
 }
+
+const PROXY_VIEW_COLUMNS = {
+  id: deepchatProxies.id,
+  modelName: deepchatProxies.modelName,
+  suggestionsEnabled: deepchatProxies.suggestionsEnabled
+};
 
 @singleton()
 export class ProxyService {
   constructor(@inject(LITELLM_PROVIDER) private readonly litellmClient: LiteLLMClient) {}
 
-  async create(newProxy: { modelName: string; apiKey: string }): Promise<ProxyView> {
+  async create(newProxy: { modelName: string; apiKey: string; suggestionsEnabled?: boolean }): Promise<ProxyView> {
     const [row] = await db
       .insert(deepchatProxies)
-      .values({ modelName: newProxy.modelName, apiKey: encrypt(newProxy.apiKey) })
-      .returning({ id: deepchatProxies.id, modelName: deepchatProxies.modelName });
+      .values({
+        modelName: newProxy.modelName,
+        apiKey: encrypt(newProxy.apiKey),
+        suggestionsEnabled: newProxy.suggestionsEnabled === true
+      })
+      .returning(PROXY_VIEW_COLUMNS);
     return row;
   }
 
   async get(id: string): Promise<ProxyView | null> {
     const [row] = await db
-      .select({ id: deepchatProxies.id, modelName: deepchatProxies.modelName })
+      .select(PROXY_VIEW_COLUMNS)
       .from(deepchatProxies)
       .where(eq(deepchatProxies.id, id));
     return row ?? null;
@@ -37,15 +49,28 @@ export class ProxyService {
 
   async getAll(): Promise<ProxyView[]> {
     return db
-      .select({ id: deepchatProxies.id, modelName: deepchatProxies.modelName })
+      .select(PROXY_VIEW_COLUMNS)
       .from(deepchatProxies);
+  }
+
+  /**
+   * Update the client-safe settings of a proxy. Deliberately limited to
+   * `suggestionsEnabled` — modelName/apiKey stay create-and-delete only.
+   */
+  async update(id: string, updates: { suggestionsEnabled: boolean }): Promise<ProxyView | null> {
+    const [row] = await db
+      .update(deepchatProxies)
+      .set({ suggestionsEnabled: updates.suggestionsEnabled })
+      .where(eq(deepchatProxies.id, id))
+      .returning(PROXY_VIEW_COLUMNS);
+    return row ?? null;
   }
 
   async delete(id: string): Promise<ProxyView | null> {
     const [row] = await db
       .delete(deepchatProxies)
       .where(eq(deepchatProxies.id, id))
-      .returning({ id: deepchatProxies.id, modelName: deepchatProxies.modelName });
+      .returning(PROXY_VIEW_COLUMNS);
     return row ?? null;
   }
 
@@ -129,6 +154,15 @@ export class ProxyService {
         throw new Error('LiteLLM streaming response has no body');
       }
 
+      // When enabled, append a suggestions event before [DONE] once the
+      // upstream answer finishes streaming.
+      if (proxy.suggestionsEnabled && suggestionsModel()) {
+        const wrappedBody = attachSuggestionsToSseStream(response.body, (answerText) =>
+          generateFollowUpSuggestions(messages, answerText)
+        );
+        return new Response(wrappedBody, { status: response.status, headers: response.headers });
+      }
+
       return response;
     }
 
@@ -151,6 +185,10 @@ export class ProxyService {
     // Transform the data
     const response = result.data as any;
     response.text = response.choices[0].message.content;
+
+    if (proxy.suggestionsEnabled && suggestionsModel()) {
+      response.suggestions = await generateFollowUpSuggestions(messages, response.text || '');
+    }
 
     return response;
   }

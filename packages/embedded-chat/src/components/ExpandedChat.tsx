@@ -3,6 +3,7 @@ import { Box, AppBar, Toolbar, Typography, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { DeepChat } from 'deep-chat-react';
 import { ChatConfig } from '../config';
+import { appendSuggestionsMessage, sanitizeSuggestions } from './suggestions';
 
 interface ExpandedChatProps {
   config: ChatConfig;
@@ -105,12 +106,19 @@ export const ExpandedChat: React.FC<ExpandedChatProps> = ({ config, onMinimize, 
 
                       const decoder = new TextDecoder();
                       let buffer = '';
+                      // Follow-up suggestions sent by the proxy right before [DONE]
+                      let suggestions: string[] = [];
+
+                      const finishStream = () => {
+                        signals.onClose();
+                        appendSuggestionsMessage(chatRef, suggestions, primaryColor);
+                      };
 
                       while (true) {
                         const { done, value } = await reader.read();
 
                         if (done) {
-                          signals.onClose();
+                          finishStream();
                           break;
                         }
 
@@ -125,31 +133,33 @@ export const ExpandedChat: React.FC<ExpandedChatProps> = ({ config, onMinimize, 
                           if (line.trim() === '') continue;
 
                           if (line.startsWith('data: ')) {
-                            const data = line.slice(6);
+                            const data = line.slice(6).trim();
 
                             if (data === '[DONE]') {
-                              signals.onClose();
+                              finishStream();
                               return;
                             }
 
                             try {
                               const parsed = JSON.parse(data);
 
+                              if (parsed.suggestions) {
+                                suggestions = sanitizeSuggestions(parsed.suggestions);
+                              }
+
                               // Extract content from OpenAI-compatible SSE format
                               if (parsed.choices && parsed.choices[0]) {
                                 const delta = parsed.choices[0].delta || {};
                                 const content = delta.content || '';
-                                const finishReason = parsed.choices[0].finish_reason;
 
                                 if (content) {
                                   // Send chunk content - DeepChat appends automatically
                                   await signals.onResponse({ text: content });
                                 }
 
-                                if (finishReason) {
-                                  signals.onClose();
-                                  return;
-                                }
+                                // Note: finish_reason no longer ends the stream here —
+                                // the suggestions event arrives after it, so keep
+                                // reading until [DONE] (or the reader is done).
                               }
                             } catch (parseError) {
                               console.error('[DeepChat] Error parsing SSE chunk:', parseError);
@@ -192,6 +202,7 @@ export const ExpandedChat: React.FC<ExpandedChatProps> = ({ config, onMinimize, 
                   if (response && typeof response === 'object' && response.choices) {
                     const content = response.choices[0]?.message?.content;
                     if (content) {
+                      appendSuggestionsMessage(chatRef, sanitizeSuggestions(response.suggestions), primaryColor);
                       return { text: content };
                     }
                   }
