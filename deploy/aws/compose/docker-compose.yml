@@ -194,6 +194,12 @@ services:
       # postgres section of service_conf (else KeyError 'password' on startup).
       DB_TYPE: postgres
       DATABASE_TYPE: postgres
+      # service_conf.yaml.template reads ${MINIO_PASSWORD}; the secret only
+      # exists as MINIO_ROOT_PASSWORD (the MinIO server's var), so without this
+      # mapping RagFlow silently falls back to the upstream default password
+      # and every MinIO op fails SignatureDoesNotMatch (= all document parsing
+      # breaks; chat over already-parsed KBs still works since chunks are in ES).
+      MINIO_PASSWORD: ${MINIO_ROOT_PASSWORD}
     volumes:
       - preaa-ragflow-logs:/ragflow/logs
       - ./ragflow/service_conf.yaml.template:/ragflow/conf/service_conf.yaml.template
