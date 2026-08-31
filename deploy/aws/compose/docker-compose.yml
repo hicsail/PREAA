@@ -278,6 +278,11 @@ services:
   # Secrets come from SSM via stack.env: RAGFLOW_API_KEY, PORTAL_AUTH_SECRET,
   # PORTAL_KEYCLOAK_CLIENT_SECRET.
   portal:
+    # Gated behind a profile until the image exists on Docker Hub and the
+    # ingress (DNS + NPM route) is set up. Enable with:
+    #   docker compose --env-file stack.env --profile portal up -d
+    # or COMPOSE_PROFILES=portal in the unit; a plain `up -d` ignores it.
+    profiles: ["portal"]
     image: hicsail/preaa-portal:main
     pull_policy: always
     container_name: preaa-portal
