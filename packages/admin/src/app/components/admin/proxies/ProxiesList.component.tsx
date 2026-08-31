@@ -1,11 +1,12 @@
 import { FC } from 'react';
-import { Datagrid, List, TextField } from 'react-admin';
+import { BooleanField, Datagrid, List, TextField } from 'react-admin';
 
 export const ProxiesList: FC = () => (
   <List>
-    <Datagrid>
+    <Datagrid rowClick="edit">
       <TextField source="modelName" />
       <TextField source="id" />
+      <BooleanField source="suggestionsEnabled" label="Follow-up suggestions" />
     </Datagrid>
   </List>
 );

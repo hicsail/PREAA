@@ -10,12 +10,17 @@ export async function POST(request: Request) {
 
   const body = await request.json();
 
-  const newProxy = await proxyService.create(body);
+  const newProxy = await proxyService.create({
+    modelName: body.modelName,
+    apiKey: body.apiKey,
+    suggestionsEnabled: body.suggestionsEnabled === true
+  });
 
   // Return the client-safe view (never includes the API key)
   const proxyResponse = {
     modelName: newProxy.modelName,
-    id: newProxy.id
+    id: newProxy.id,
+    suggestionsEnabled: newProxy.suggestionsEnabled
   };
 
   return new Response(JSON.stringify(proxyResponse), {
@@ -35,7 +40,8 @@ export async function GET(_request: Request) {
     // Reshape the results
     const proxiesResponse = proxies.map((proxy) => ({
       id: proxy.id,
-      modelName: proxy.modelName
+      modelName: proxy.modelName,
+      suggestionsEnabled: proxy.suggestionsEnabled
     }));
 
     const total = proxiesResponse.length;
