@@ -1,6 +1,10 @@
 import { container } from '@/app/lib/container';
 import { ProxyService } from '@/app/lib/proxies/proxy.service';
 
+// Cross-origin access (e.g. the embedded-chat configuration page) is served
+// by the blanket CORS headers next.config.ts applies to /api/:path* — no
+// route-level CORS here. Only /api/proxies/proxy/* does its own
+// origin-validating CORS, as noted in next.config.ts.
 
 export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const proxyService = container.resolve(ProxyService);
@@ -19,7 +23,7 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
         'Content-Type': 'application/json'
       }
     });
-  } catch(error) {
+  } catch (error) {
     console.error(error);
     return new Response('Failed to delete model', { status: 500 });
   }
@@ -33,12 +37,23 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     return new Response('Missing ID param', { status: 400 });
   }
 
-  const proxy = await proxyService.get(id);
-  if (!proxy) {
-    return new Response('Failed to find proxy', { status: 404 });
-  }
+  try {
+    const proxy = await proxyService.get(id);
+    if (!proxy) {
+      return new Response('Failed to find proxy', { status: 404 });
+    }
 
-  return new Response(JSON.stringify(proxy), { status: 200 });
+    return new Response(JSON.stringify(proxy), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+  } catch (error) {
+    // e.g. ids that don't parse as the column type (fresh installs use uuid)
+    console.error(error);
+    return new Response('Failed to look up proxy', { status: 500 });
+  }
 }
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
