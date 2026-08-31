@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Button,
@@ -34,16 +34,30 @@ interface WidgetConfig {
   };
 }
 
+// Backend that stores bot-level (server-side) settings — the same API the
+// admin dashboard uses.
+const BACKEND_BASE_URL = import.meta.env.VITE_BACKEND_BASE_URL;
+
+// Server-side state of the bot named by the Model ID field. Unlike the rest
+// of this page (per-embed presentation config), these settings live in the
+// backend and apply to the bot everywhere it is embedded.
+type BotSettingsState =
+  | { status: 'idle' }
+  | { status: 'loading' }
+  | { status: 'loaded'; modelName: string; enabled: boolean; saving: boolean }
+  | { status: 'notfound' }
+  | { status: 'error' };
+
 // Demo page to showcase how to embed the widget
 const App: React.FC = () => {
   const [widgetConfig, setWidgetConfig] = useState<WidgetConfig>({
-    modelId: '688a954d91c7a967e8ad6584',
+    modelId: '',
     title: 'May I help you?',
     botName: 'Hariri Chat',
     placeholder: 'Ask me anything about HIC @ BU...',
     supportTopics: 'BU HIC',
     botAvatarSrc: '/assets/bu-logo.svg',
-    baseUrl: 'https://embedded-preaa.sail.codes',
+    baseUrl: window.location.origin,
     language: 'en',
     streaming: false,
     theme: {
@@ -55,6 +69,95 @@ const App: React.FC = () => {
 
   const [copySuccess, setCopySuccess] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [botSettings, setBotSettings] = useState<BotSettingsState>({ status: 'idle' });
+
+  // Look up the bot's server-side settings whenever the Model ID changes.
+  useEffect(() => {
+    const modelId = widgetConfig.modelId.trim();
+    if (!modelId) {
+      setBotSettings({ status: 'idle' });
+      return;
+    }
+
+    setBotSettings({ status: 'loading' });
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      try {
+        const response = await fetch(`${BACKEND_BASE_URL}/api/proxies/${encodeURIComponent(modelId)}`, {
+          signal: controller.signal
+        });
+        if (response.ok) {
+          const proxy = await response.json();
+          setBotSettings({
+            status: 'loaded',
+            modelName: proxy.modelName,
+            enabled: proxy.suggestionsEnabled === true,
+            saving: false
+          });
+        } else if (response.status === 404) {
+          setBotSettings({ status: 'notfound' });
+        } else {
+          setBotSettings({ status: 'error' });
+        }
+      } catch (_err) {
+        if (!controller.signal.aborted) {
+          setBotSettings({ status: 'error' });
+        }
+      }
+    }, 500);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [widgetConfig.modelId]);
+
+  // Persist the follow-up-suggestions flag on the bot itself.
+  const toggleBotSuggestions = async (enabled: boolean) => {
+    if (botSettings.status !== 'loaded' || botSettings.saving) return;
+    const previous = botSettings;
+    setBotSettings({ ...previous, enabled, saving: true });
+    try {
+      const response = await fetch(
+        `${BACKEND_BASE_URL}/api/proxies/${encodeURIComponent(widgetConfig.modelId.trim())}`,
+        {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ suggestionsEnabled: enabled })
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`Request failed: ${response.status}`);
+      }
+      const proxy = await response.json();
+      setBotSettings({
+        status: 'loaded',
+        modelName: proxy.modelName,
+        enabled: proxy.suggestionsEnabled === true,
+        saving: false
+      });
+    } catch (err) {
+      console.error('Failed to update follow-up suggestions:', err);
+      setBotSettings({ ...previous, saving: false });
+    }
+  };
+
+  const botSuggestionsCaption = (): string => {
+    switch (botSettings.status) {
+      case 'idle':
+        return 'Enter a Model ID above to load this bot’s setting';
+      case 'loading':
+        return 'Loading bot settings…';
+      case 'notfound':
+        return 'No bot found with this Model ID';
+      case 'error':
+        return 'Could not load bot settings';
+      case 'loaded':
+        return botSettings.saving
+          ? 'Saving…'
+          : `Show clickable follow-up questions after each answer from “${botSettings.modelName}”`;
+    }
+  };
 
   // Function to safely escape strings for embedding in JavaScript source
   const escapeJsString = (str: string): string => {
@@ -316,6 +419,39 @@ const App: React.FC = () => {
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
                         Enable real-time streaming responses for better user experience
+                      </Typography>
+                    </Box>
+                  }
+                />
+              </Grid>
+
+              {/* Bot Settings (server-side, keyed by Model ID) */}
+              <Grid size={12} sx={{ mt: 2 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>
+                  Bot Settings
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Unlike the settings above, these are saved on the bot itself and apply everywhere this Model ID is
+                  embedded.
+                </Typography>
+              </Grid>
+
+              <Grid size={12}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={botSettings.status === 'loaded' && botSettings.enabled}
+                      disabled={botSettings.status !== 'loaded' || botSettings.saving}
+                      onChange={(e) => toggleBotSuggestions(e.target.checked)}
+                    />
+                  }
+                  label={
+                    <Box>
+                      <Typography variant="body2" sx={{ fontWeight: 'medium' }}>
+                        Follow-up suggestions
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {botSuggestionsCaption()}
                       </Typography>
                     </Box>
                   }
