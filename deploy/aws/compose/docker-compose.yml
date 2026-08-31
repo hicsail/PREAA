@@ -254,6 +254,12 @@ services:
       LITELLM_BASE_URL: "http://litellm:4000"
       NEXTAUTH_URL: "${ADMIN_NEXTAUTH_URL:-http://localhost:3016}"
       NEXTAUTH_SECRET: "${NEXTAUTH_SECRET}"
+      # NextAuth Keycloak provider (lib/auth/config.ts builds the issuer as
+      # KEYCLOAK_URL/realms/KEYCLOAK_REALM). KEYCLOAK_CLIENT_SECRET comes from
+      # stack.env (SSM). Without these three, login is broken.
+      KEYCLOAK_URL: "${ADMIN_KEYCLOAK_URL:-https://damplab-keycloak.sail.codes}"
+      KEYCLOAK_REALM: "${ADMIN_KEYCLOAK_REALM:-preaa}"
+      KEYCLOAK_CLIENT_ID: "${ADMIN_KEYCLOAK_CLIENT_ID:-preaa-staging}"
       # LiteLLM model used to generate follow-up suggestion chips for DeepChat
       # proxies that have suggestionsEnabled. Unset = feature off everywhere.
       SUGGESTIONS_MODEL: "gpt-4.1-mini"
