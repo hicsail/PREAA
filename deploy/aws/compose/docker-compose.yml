@@ -145,7 +145,7 @@ services:
       - preaa-langflow-components:/app/custom_components/
 
   n8n:
-    image: docker.n8n.io/n8nio/n8n:2.2.4
+    image: docker.n8n.io/n8nio/n8n:2.47.5
     container_name: preaa-n8n
     restart: unless-stopped
     ports:
